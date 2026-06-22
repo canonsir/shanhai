@@ -1,0 +1,39 @@
+[project]
+name = "shanhai"
+version = "0.1.0"
+description = "ShanHai (山海) — AI Native 中国资本市场认知与决策系统"
+requires-python = ">=3.11"
+readme = "README.md"
+
+[tool.uv.workspace]
+members = [
+    "services/harness-core",
+    "services/model-router",
+    "services/agent-runtime",
+    "services/wiki-engine",
+    "services/data-pipeline",
+    "services/evaluation",
+    "packages/schemas",
+    "packages/prompts",
+    "packages/tools",
+    "apps/api",
+]
+
+[tool.uv.sources]
+shanhai-schemas = { workspace = true }
+shanhai-prompts = { workspace = true }
+shanhai-tools = { workspace = true }
+shanhai-harness-core = { workspace = true }
+shanhai-model-router = { workspace = true }
+shanhai-agent-runtime = { workspace = true }
+shanhai-wiki-engine = { workspace = true }
+shanhai-data-pipeline = { workspace = true }
+shanhai-evaluation = { workspace = true }
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"

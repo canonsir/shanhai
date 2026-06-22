@@ -1,0 +1,31 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.uv/
+uv.lock.tmp
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# ---- Node ----
+node_modules/
+.pnpm-store/
+dist/
+.next/
+*.log
+
+# ---- Env ----
+.env
+.env.local
+*.local
+
+# ---- OS / Editor ----
+.DS_Store
+.idea/
+.vscode/

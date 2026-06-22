@@ -56,19 +56,18 @@ chore(infra): 添加docker环境
 
 ### 5.1 分支模型
 
-```
-main          稳定线，仅经 develop 合入，受保护
- ↑
-develop       集成线，feature 评审通过后合入
- ↑
-feature/*      功能开发分支，一功能一分支
-```
+个人项目，简化为两条分支：
 
-示例：`feature/model-router-v1`、`feature/wiki-schema-v1`、`feature/agent-runtime-v1`。
+```
+main      稳定线，仅经 develop 合入
+ ↑
+develop   开发线，所有开发直接在此进行
+```
 
 约定：
-- 不直接向 `main` push 开发性提交；评审针对 feature 分支或指定 commit。
-- feature 完成 → push → Review → 通过后合入 `develop` → 阶段稳定后合入 `main`。
+- 所有开发直接在 `develop` 进行，不开 feature 分支。
+- `develop` 阶段稳定后 merge 到 `main`；不直接向 `main` push 开发性提交。
+- 评审针对 `develop` 或指定 commit。
 
 ### 5.2 AI 评审协作
 

@@ -57,4 +57,4 @@ v0.1.0 · Phase 0 — Harness Foundation
 
 > Review
 
-评审针对 feature 分支或指定 commit；通过后再 merge 到 develop / main。
+评审针对 `develop` 或指定 commit；稳定后再 merge 到 `main`。

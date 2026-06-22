@@ -1,0 +1,15 @@
+[project]
+name = "shanhai-wiki-engine"
+version = "0.1.0"
+description = "ShanHai Wiki Engine — 知识编译层（Phase 0 仅 Schema）"
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.6",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["shanhai_wiki_engine"]

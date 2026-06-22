@@ -1,0 +1,9 @@
+{
+  "name": "@shanhai/web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "ShanHai Web 前端（Phase 0 占位）",
+  "scripts": {
+    "dev": "echo \"Phase 0: web 前端尚未实现\" && exit 0"
+  }
+}

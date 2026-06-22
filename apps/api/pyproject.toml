@@ -1,0 +1,19 @@
+[project]
+name = "shanhai-api"
+version = "0.1.0"
+description = "ShanHai API — FastAPI 应用层（Phase 0 健康检查 + Router 演示）"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.110",
+    "uvicorn>=0.29",
+    "shanhai-schemas",
+    "shanhai-model-router",
+    "shanhai-agent-runtime",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["shanhai_api"]

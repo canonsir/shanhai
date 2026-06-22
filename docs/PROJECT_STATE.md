@@ -40,7 +40,7 @@ Phase 1 — Agent Runtime（进行中）
 ## 下一步（已确定路线）
 
 1. [x] 固化 Local-first 持久化（ADR 0009，已完成）
-2. [ ] 建立 Evaluation Loop（基于 `RunStore.list_runs` 读取本地 SQLite 轨迹做度量；ADR 0010 待起草）
+2. [ ] 建立 Evaluation Loop（ADR 0010 已采纳，待实现：三层模型，本阶段落地 Layer 1 Runtime Evaluation，基于 `RunStore` 只读取数）
 3. [ ] 再接真实 Model Provider（OpenAI / DeepSeek / Qwen；ADR 0011 待起草）
 
 > 方针：**数据库作为增强能力，不作为开发前置环境**。开发/测试/单机默认 local-first（SQLite），并发/规模/共享场景再切 `SHANHAI_RUN_STORE=postgres`。

@@ -20,6 +20,7 @@
   - [0007 Wiki 信息提取流程](架构决策记录/0007-Wiki信息提取流程.md)
   - [0008 运行记录持久化](架构决策记录/0008-运行记录持久化.md)
   - [0009 Local-first 持久化](架构决策记录/0009-Local-first持久化.md)
+  - [0010 Evaluation Loop 架构](架构决策记录/0010-Evaluation-Loop-Architecture.md)
 
 ## AI 评审入口
 

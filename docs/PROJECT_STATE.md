@@ -23,6 +23,7 @@ Phase 1 — Agent Runtime（进行中）
 - [x] 生命周期 `AgentStatus` + 结构化运行记录 `Step` / `RunResult`
 - [x] `AgentContext` 收口模型/工具访问；`AgentRunner` 编排
 - [x] `BaseAgent` 钩子化 + `ToolEchoAgent` 示例（保留向后兼容）
+- [x] 多步推理 Agent：`AgentRunner` 多轮 think/act/observe 循环 + `max_steps` 调度；`AgentContext` 增加 `iteration`/`observations`；`MultiStepToolAgent` 示例
 - [x] Agent Runtime 单元测试（通过）
 
 ## 当前目标
@@ -35,7 +36,6 @@ Phase 1 — Agent Runtime（进行中）
 
 ## 下一步（Phase 1 候选）
 
-- 多步推理 Agent：think/act/observe 循环 + max_steps 调度策略
 - Workflow 条件分支 / 并行（评估是否引入 LangGraph）
 - Wiki Engine：信息提取 / 实体识别 / 关系发现（当前仅 Schema）
 - Model Router：接入真实 Provider（OpenAI / DeepSeek / Qwen）

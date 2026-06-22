@@ -30,7 +30,8 @@ class AgentRunner:
         error: str | None = None
 
         try:
-            for _ in range(max(1, self.agent.max_steps)):
+            for i in range(max(1, self.agent.max_steps)):
+                ctx.iteration = i
                 plan = self.agent.think(ctx)
                 ctx.record(Step(index=0, type=StepType.THINK, content=plan.thought))
 
@@ -46,6 +47,7 @@ class AgentRunner:
                     )
                 )
                 output = result
+                ctx.observations.append(getattr(result, "data", result))
 
                 done = self.agent.observe(ctx, plan, result)
                 ctx.record(

@@ -8,7 +8,7 @@
 
 from shanhai_agent_runtime.agent import Agent, BaseAgent
 from shanhai_agent_runtime.context import AgentContext
-from shanhai_agent_runtime.examples import ToolEchoAgent
+from shanhai_agent_runtime.examples import MultiStepToolAgent, ToolEchoAgent
 from shanhai_agent_runtime.memory import InMemoryMemory, Memory
 from shanhai_agent_runtime.runner import AgentRunner
 from shanhai_agent_runtime.types import (
@@ -23,6 +23,7 @@ __all__ = [
     "Agent",
     "BaseAgent",
     "ToolEchoAgent",
+    "MultiStepToolAgent",
     "AgentContext",
     "AgentRunner",
     "Memory",

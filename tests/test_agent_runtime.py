@@ -16,6 +16,7 @@ from shanhai_agent_runtime import (
     AgentRunner,
     AgentStatus,
     BaseAgent,
+    MultiStepToolAgent,
     StepType,
     ToolEchoAgent,
 )
@@ -65,11 +66,49 @@ def test_workflow_backward_compat() -> None:
     print("[OK] 向后兼容：Workflow 路径不变")
 
 
+def test_multistep_loop() -> None:
+    if not registry.has("echo"):
+        registry.register(EchoTool())
+    items = ["a", "b", "c"]
+    agent = MultiStepToolAgent(
+        name="multi-agent", router=_router(), tools=["echo"], max_steps=5
+    )
+    result = agent.run(items)
+    assert result.ok, "多步 Agent 运行失败"
+
+    # 三项输入 → 三轮 think/act/observe，共 9 个 step
+    acts = [s for s in result.steps if s.type == StepType.ACT]
+    assert len(acts) == len(items), f"应执行 {len(items)} 轮，实际 {len(acts)}"
+    assert len(result.steps) == len(items) * 3, "每轮应产出 think/act/observe 三个 step"
+    assert [a.tool_result for a in acts] == [{"q": x} for x in items], "逐项处理顺序错误"
+
+    # observe 应在最后一轮才结束（前两轮 continue）
+    observes = [s.content for s in result.steps if s.type == StepType.OBSERVE]
+    assert observes == ["continue", "continue", "done"], "observe 终止判定错误"
+    print("[OK] 多步 think→act→observe 循环与逐项调度通过")
+
+
+def test_max_steps_caps_iterations() -> None:
+    if not registry.has("echo"):
+        registry.register(EchoTool())
+    items = ["a", "b", "c", "d"]
+    # max_steps=2：即使还有未处理项，也应被上限截断为 2 轮
+    agent = MultiStepToolAgent(
+        name="capped-agent", router=_router(), tools=["echo"], max_steps=2
+    )
+    result = agent.run(items)
+    acts = [s for s in result.steps if s.type == StepType.ACT]
+    assert result.ok and len(acts) == 2, "max_steps 未正确限制迭代次数"
+    print("[OK] max_steps 上限正确截断多步循环")
+
+
 def main() -> None:
     test_default_agent_lifecycle()
     test_tool_agent_chain()
     test_unauthorized_tool_fails()
     test_workflow_backward_compat()
+    test_multistep_loop()
+    test_max_steps_caps_iterations()
     print("\nAgent Runtime 单元测试全部通过 ✅")
 
 

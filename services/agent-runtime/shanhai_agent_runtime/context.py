@@ -35,9 +35,17 @@ class AgentContext:
         self.input = input
         self.memory = memory
         self.steps: list[Step] = []
+        # 多步推理状态：当前迭代序号与历轮观察结果，供 think 基于上一轮规划
+        self.iteration: int = 0
+        self.observations: list[Any] = []
         self._router = router
         self._registry = tool_registry
         self._granted = set(granted_tools)
+
+    @property
+    def last_observation(self) -> Any:
+        """上一轮 observe 记录的结果；首轮为 None。"""
+        return self.observations[-1] if self.observations else None
 
     def complete(
         self,

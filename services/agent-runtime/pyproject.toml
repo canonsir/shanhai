@@ -1,7 +1,7 @@
 [project]
 name = "shanhai-agent-runtime"
 version = "0.1.0"
-description = "ShanHai Agent Runtime — Agent 基类、Memory 接口、生命周期"
+description = "ShanHai Agent Runtime — Agent 执行模型(think/act/observe)、生命周期、运行记录、Memory 接口"
 requires-python = ">=3.11"
 dependencies = [
     "shanhai-schemas",

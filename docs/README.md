@@ -6,6 +6,7 @@
   - [0003 Workflow 引擎自研最小骨架](架构决策记录/0003-Workflow引擎自研最小骨架.md)
   - [0004 Model Router 使用 Mock Provider](架构决策记录/0004-ModelRouter使用MockProvider.md)
   - [0005 AI 评审协作流程与分支模型](架构决策记录/0005-AI评审协作流程与分支模型.md)
+  - [0006 Agent Runtime 执行模型](架构决策记录/0006-AgentRuntime执行模型.md)
 
 ## AI 评审入口
 

@@ -2,7 +2,19 @@
 
 本项目变更记录。格式参考 Keep a Changelog，遵循语义化版本。
 
-## [Unreleased] — Phase 0：Harness Foundation
+## [Unreleased] — Phase 1：Agent Runtime
+
+### Added
+- `services/agent-runtime`：执行模型 think → act → observe（ADR 0006）。
+  - `types.py`：`AgentStatus` 生命周期 + `Step` / `RunResult` 结构化运行记录 + `Plan`。
+  - `context.py`：`AgentContext` 收口模型/工具访问（`complete()`→ModelRouter，`use_tool()`→ToolRegistry），从结构上保证架构铁律。
+  - `runner.py`：`AgentRunner` 驱动生命周期与运行记录。
+  - `agent.py`：`BaseAgent`（think/act/observe 钩子 + max_steps），保留 `Agent` 别名与 `use_tool`/`run` 向后兼容。
+  - `examples.py`：`ToolEchoAgent` 示例。
+- ADR 0006：Agent Runtime 执行模型。
+- `tests/test_agent_runtime.py`：生命周期 / Agent→Tool / 未授权拒绝 / Workflow 兼容，已通过；Phase 0 冒烟测试不受影响。
+
+## [Phase 0] — Harness Foundation
 
 ### Added
 - 初始化 Monorepo 工程结构（apps / services / packages / infrastructure / docs / tests）。

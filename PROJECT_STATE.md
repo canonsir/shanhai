@@ -9,27 +9,21 @@ v0.1.0
 
 ## 当前阶段
 
-Phase 0 — Harness Foundation
+Phase 1 — Agent Runtime（进行中）
 
 ## 最新提交
 
-- 分支：`main`
-- Commit：`d8f9bee`（请以仓库最新为准）
+- 分支：`develop`（个人项目：直接在 develop 开发，完成后 merge 到 main）
 - 仓库：https://github.com/canonsir/shanhai
 
 ## 已完成
 
-- [x] Monorepo 工程结构（apps / services / packages / infrastructure / docs / tests）
-- [x] uv + pnpm 双工作区
-- [x] Model Router V0.1（Provider 抽象 + Mock + models.yaml + 能力/成本选择）
-- [x] Agent Runtime Skeleton（Agent 基类 + Memory 接口）
-- [x] Tool Registry（Tool 接口 + 注册机制）
-- [x] Harness Core Workflow 最小骨架
-- [x] Wiki Engine Schema（Entity / Relation / Document）
-- [x] 数据库基础环境（docker-compose：PostgreSQL + pgvector + Redis）
-- [x] FastAPI 应用层（/health、/models、/complete）
-- [x] Phase 0 冒烟测试（通过）
-- [x] ADR 0001-0004
+- [x] Phase 0 — Harness Foundation 全量（Monorepo / Model Router V0.1 / Tool Registry / Workflow 骨架 / Wiki Schema / DB 环境 / FastAPI / 冒烟测试 / ADR 0001-0005）
+- [x] Agent Runtime 执行模型：think → act → observe（ADR 0006）
+- [x] 生命周期 `AgentStatus` + 结构化运行记录 `Step` / `RunResult`
+- [x] `AgentContext` 收口模型/工具访问；`AgentRunner` 编排
+- [x] `BaseAgent` 钩子化 + `ToolEchoAgent` 示例（保留向后兼容）
+- [x] Agent Runtime 单元测试（通过）
 
 ## 进行中
 
@@ -37,10 +31,11 @@ Phase 0 — Harness Foundation
 
 ## 下一步（Phase 1 候选）
 
-- Agent Runtime 增强：多步执行、Tool 调度策略
+- 多步推理 Agent：think/act/observe 循环 + max_steps 调度策略
 - Workflow 条件分支 / 并行（评估是否引入 LangGraph）
 - Wiki Engine：信息提取 / 实体识别 / 关系发现（当前仅 Schema）
 - Model Router：接入真实 Provider（OpenAI / DeepSeek / Qwen）
+- 运行记录持久化（落库，另开 ADR）
 
 ## 不变量（不允许破坏）
 

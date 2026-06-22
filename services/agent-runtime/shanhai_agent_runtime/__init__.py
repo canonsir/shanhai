@@ -11,6 +11,7 @@ from shanhai_agent_runtime.context import AgentContext
 from shanhai_agent_runtime.examples import MultiStepToolAgent, ToolEchoAgent
 from shanhai_agent_runtime.memory import InMemoryMemory, Memory
 from shanhai_agent_runtime.runner import AgentRunner
+from shanhai_agent_runtime.store import InMemoryRunStore, RunRecord, RunStore
 from shanhai_agent_runtime.types import (
     AgentStatus,
     Plan,
@@ -28,6 +29,9 @@ __all__ = [
     "AgentRunner",
     "Memory",
     "InMemoryMemory",
+    "RunStore",
+    "InMemoryRunStore",
+    "RunRecord",
     "AgentStatus",
     "StepType",
     "Plan",

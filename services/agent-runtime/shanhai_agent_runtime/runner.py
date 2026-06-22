@@ -17,11 +17,13 @@ from shanhai_agent_runtime.types import (
 
 if TYPE_CHECKING:
     from shanhai_agent_runtime.agent import BaseAgent
+    from shanhai_agent_runtime.store import RunStore
 
 
 class AgentRunner:
-    def __init__(self, agent: "BaseAgent") -> None:
+    def __init__(self, agent: "BaseAgent", store: "RunStore | None" = None) -> None:
         self.agent = agent
+        self.store = store
 
     def run(self, input: Any = None) -> RunResult:
         ctx = self.agent.new_context(input)
@@ -61,10 +63,21 @@ class AgentRunner:
             status = AgentStatus.FAILED
             error = f"{type(exc).__name__}: {exc}"
 
-        return RunResult(
+        result = RunResult(
             agent=self.agent.name,
             status=status,
             output=output,
             steps=ctx.steps,
             error=error,
         )
+        self._persist(result)
+        return result
+
+    def _persist(self, result: RunResult) -> None:
+        """best-effort 落库：运行记录是可观测产物，落库失败不影响运行结果。"""
+        if self.store is None:
+            return
+        try:
+            self.store.save_run(result)
+        except Exception:  # noqa: BLE001 - 持久化不得反噬主流程
+            pass

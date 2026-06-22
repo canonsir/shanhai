@@ -18,6 +18,7 @@ from shanhai_tools.registry import ToolRegistry
 
 from shanhai_agent_runtime.context import AgentContext
 from shanhai_agent_runtime.memory import InMemoryMemory, Memory
+from shanhai_agent_runtime.store import RunStore
 from shanhai_agent_runtime.types import Plan
 
 
@@ -33,6 +34,7 @@ class BaseAgent:
         memory: Memory | None = None,
         workflow: Workflow | None = None,
         max_steps: int = 1,
+        store: RunStore | None = None,
     ) -> None:
         self.name = name
         self.router = router
@@ -41,6 +43,7 @@ class BaseAgent:
         self.memory = memory or InMemoryMemory()
         self.workflow = workflow
         self.max_steps = max_steps
+        self.store = store
 
     # ---- 执行钩子（子类覆写以定制行为）----
 
@@ -91,7 +94,7 @@ class BaseAgent:
         # 延迟导入避免循环依赖
         from shanhai_agent_runtime.runner import AgentRunner
 
-        return AgentRunner(self).run(input)
+        return AgentRunner(self, store=self.store).run(input)
 
 
 # 向后兼容别名

@@ -25,6 +25,7 @@ Phase 1 — Agent Runtime（进行中）
 - [x] `BaseAgent` 钩子化 + `ToolEchoAgent` 示例（保留向后兼容）
 - [x] 多步推理 Agent：`AgentRunner` 多轮 think/act/observe 循环 + `max_steps` 调度；`AgentContext` 增加 `iteration`/`observations`；`MultiStepToolAgent` 示例
 - [x] Wiki 信息提取（ADR 0007）：规则驱动 `Extractor`（model-agnostic）+ `WikiExtractTool` + `WikiExtractionAgent`（模型在环，Agent→Tool→Service）
+- [x] 运行记录持久化（ADR 0008）：`RunStore` 抽象 + `InMemoryRunStore` + `AgentRunner` best-effort 落库；新增 `services/persistence`（`PostgresRunStore`）
 - [x] Agent Runtime 单元测试（通过）
 
 ## 当前目标
@@ -40,7 +41,7 @@ Phase 1 — Agent Runtime（进行中）
 - Workflow 条件分支 / 并行（评估是否引入 LangGraph）
 - Wiki Engine：模型驱动抽取（接入真实 Provider 后，扩展更智能的实体/关系识别）
 - Model Router：接入真实 Provider（OpenAI / DeepSeek / Qwen）
-- 运行记录持久化（落库，另开 ADR）
+- 运行记录持久化：接入真实 Postgres 验证（待 Docker 环境）+ evaluation 基于 `RunStore.list_runs` 度量
 
 ## 暂不开发（明确禁止本阶段实现）
 
@@ -54,7 +55,7 @@ Phase 1 — Agent Runtime（进行中）
 
 - Model Router 隔离：Agent 禁止直接绑定/调用模型
 - Service 边界：Agent 不直接访问数据库，调用链 `Agent → Tool → Service → Database`
-- 模块独立：harness-core / agent-runtime / model-router / wiki-engine / data-pipeline 边界清晰
+- 模块独立：harness-core / agent-runtime / model-router / wiki-engine / data-pipeline / persistence 边界清晰
 - 任何架构调整先写 ADR（`docs/架构决策记录/`）
 
 ## 已知限制

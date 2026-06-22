@@ -65,6 +65,7 @@ Phase 1 — Agent Runtime（进行中）
 - Service 边界：Agent 不直接访问数据库，调用链 `Agent → Tool → Service → Database`
 - 模块独立：harness-core / agent-runtime / model-router / wiki-engine / data-pipeline / persistence 边界清晰
 - 任何架构调整先写 ADR（`docs/架构决策记录/`）
+- Review Gate：「下一步建议」须经架构 Review 批准后方可执行（建议 ≠ 批准）
 
 ## 已知限制
 

@@ -38,6 +38,7 @@ v0.1.0 · Phase 0 — Harness Foundation
 - Service 边界：`Agent → Tool → Service → Database`
 - 模块独立性：各 service/package 可单独替换
 - 已定型 ADR 不被推翻（如需调整，先提新 ADR）
+- Review Gate：Coding Agent 的「下一步建议」须经本评审批准后方可执行（建议 ≠ 批准）
 
 ## 评审产出建议格式
 

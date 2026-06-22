@@ -76,6 +76,10 @@ develop   开发线，所有开发直接在此进行
 每次需要评审时，保持 Git 为最新，并提供：仓库链接 + commit SHA + 本次目标。
 评审入口与读取顺序见根目录 [REVIEW.md](REVIEW.md)；项目实时状态见 [docs/PROJECT_STATE.md](docs/PROJECT_STATE.md)。
 
+### 5.3 Review Gate（建议 ≠ 批准）
+
+铁律：Coding Agent 每次输出「下一步建议」后，不得直接执行，必须先经一次架构 Review 确认方向，批准后才开工（`完成 A → 建议 B → Review → 批准 → 开始 B`）。目的：防止单个 Agent 在局部最优下不断迭代、累积偏差使系统偏离整体架构。当前已批准任务范围内的收尾（测试/文档/提交/合并）不受此限。详见 [docs/COLLABORATION_PROTOCOL.md](docs/COLLABORATION_PROTOCOL.md#4-architecture-review-流程)。
+
 ## 6. 架构变更规范（ADR）
 
 任何重大设计调整需创建 ADR，目录 `docs/架构决策记录/`，格式：

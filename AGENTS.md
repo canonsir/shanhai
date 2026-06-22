@@ -1,5 +1,7 @@
 # AGENTS.md — 山海（ShanHai）AI 平台开发协作规范
 
+> 完整协作治理（三方角色职责、5 大架构原则、Coding Agent 四步工作流、Architecture Review 输入/输出格式）见 [docs/COLLABORATION_PROTOCOL.md](docs/COLLABORATION_PROTOCOL.md)。本文件为铁律速览。
+
 ## 1. 项目定位
 
 山海是一套 AI Native 的中国资本市场认知与决策系统。目标不是传统股票软件，而是构建能持续学习、理解和分析中国资本市场的 AI 系统。

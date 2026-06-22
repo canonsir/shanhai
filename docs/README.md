@@ -2,6 +2,7 @@
 
 ## 项目上下文
 
+- [COLLABORATION_PROTOCOL.md](COLLABORATION_PROTOCOL.md)：AI 协作开发协议（三方角色、5 大架构原则、Coding Agent 工作流、Review 流程）
 - [PRODUCT_VISION.md](PRODUCT_VISION.md)：产品定位、长期目标、与股票/量化软件的区别、演进路线
 - [ARCHITECTURE_CONTEXT.md](ARCHITECTURE_CONTEXT.md)：架构设计原则（模型解耦 / Knowledge First / Harness First / 模块独立）
 - [DEVELOPMENT_PRINCIPLES.md](DEVELOPMENT_PRINCIPLES.md)：AI Native 开发原则（Git 唯一事实来源、文档优先、ADR、不依赖聊天历史）
@@ -18,6 +19,7 @@
   - [0006 Agent Runtime 执行模型](架构决策记录/0006-AgentRuntime执行模型.md)
   - [0007 Wiki 信息提取流程](架构决策记录/0007-Wiki信息提取流程.md)
   - [0008 运行记录持久化](架构决策记录/0008-运行记录持久化.md)
+  - [0009 Local-first 持久化](架构决策记录/0009-Local-first持久化.md)
 
 ## AI 评审入口
 

@@ -5,6 +5,12 @@
   - [0002 包管理工具链](架构决策记录/0002-包管理工具链.md)
   - [0003 Workflow 引擎自研最小骨架](架构决策记录/0003-Workflow引擎自研最小骨架.md)
   - [0004 Model Router 使用 Mock Provider](架构决策记录/0004-ModelRouter使用MockProvider.md)
+  - [0005 AI 评审协作流程与分支模型](架构决策记录/0005-AI评审协作流程与分支模型.md)
+
+## AI 评审入口
+
+- [REVIEW.md](../REVIEW.md)：评审入口、读取顺序、仓库 Raw/Diff 兜底地址
+- [PROJECT_STATE.md](../PROJECT_STATE.md)：项目实时状态与不变量
 
 ## 模块边界速览
 

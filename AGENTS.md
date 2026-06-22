@@ -54,6 +54,27 @@ feat(agent): 添加Agent基础结构
 chore(infra): 添加docker环境
 ```
 
+### 5.1 分支模型
+
+```
+main          稳定线，仅经 develop 合入，受保护
+ ↑
+develop       集成线，feature 评审通过后合入
+ ↑
+feature/*      功能开发分支，一功能一分支
+```
+
+示例：`feature/model-router-v1`、`feature/wiki-schema-v1`、`feature/agent-runtime-v1`。
+
+约定：
+- 不直接向 `main` push 开发性提交；评审针对 feature 分支或指定 commit。
+- feature 完成 → push → Review → 通过后合入 `develop` → 阶段稳定后合入 `main`。
+
+### 5.2 AI 评审协作
+
+每次需要评审时，保持 Git 为最新，并提供：仓库链接 + commit SHA + 本次目标。
+评审入口与读取顺序见根目录 [REVIEW.md](REVIEW.md)；项目实时状态见 [PROJECT_STATE.md](PROJECT_STATE.md)。
+
 ## 6. 架构变更规范（ADR）
 
 任何重大设计调整需创建 ADR，目录 `docs/架构决策记录/`，格式：

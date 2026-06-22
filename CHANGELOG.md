@@ -20,3 +20,6 @@
 - `apps/web`：pnpm workspace 占位。
 - `infrastructure/docker-compose.yml`：PostgreSQL(pgvector) + Redis；`database/init/001_init.sql` 启用 vector 扩展。
 - `tests/smoke.py`：Phase 0 冒烟测试（Router 切换 / Agent→Tool / Wiki Schema），已通过。
+- `PROJECT_STATE.md` / `REVIEW.md`：AI 评审入口与项目状态文件。
+- ADR 0005：AI 评审协作流程与分支模型（main ← develop ← feature/*）。
+- AGENTS.md 补充分支模型与 AI 评审协作约定。

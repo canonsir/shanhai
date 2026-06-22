@@ -20,12 +20,18 @@
   - `agent-runtime/store.py`：`RunStore` 抽象 + `InMemoryRunStore` + `RunRecord`，agent-runtime 不依赖 DB 驱动。
   - `AgentRunner` 增加可选 `store` 注入，运行结束 best-effort 落库；`BaseAgent` 支持透传 `store`，不注入则零行为变化。
   - 新增 `services/persistence`：`PostgresRunStore`（psycopg 惰性导入，可选依赖 `[postgres]`）+ `infrastructure/database/init/002_agent_runs.sql`（agent_runs / agent_steps）。
+- Local-first 持久化（ADR 0009）：数据库降为增强能力，非开发前置。
+  - `services/persistence/sqlite_run_store.py`：`SqliteRunStore`（标准库 `sqlite3`，零外部依赖、可落盘、可查询），复用 agent_runs / agent_steps 两表模型。
+  - `services/persistence/factory.py`：`default_run_store()` 按 `SHANHAI_RUN_STORE`（sqlite 默认 / memory / postgres）装配，存储选择权在应用装配层，`agent-runtime` 仍只依赖 `RunStore` 抽象。
+  - 本地落盘默认 `./.shanhai/runs.db`（已 gitignore）。
 - ADR 0006：Agent Runtime 执行模型。
 - ADR 0007：Wiki 信息提取流程（职责三层划分 + Agent→Tool→Service 调用链）。
 - ADR 0008：运行记录持久化（RunStore 抽象 + 依赖注入 + best-effort 落库）。
+- ADR 0009：Local-first 持久化（SQLite 默认后端 + 装配工厂，Postgres 降为增强）。
 - `tests/test_agent_runtime.py`：生命周期 / Agent→Tool / 未授权拒绝 / Workflow 兼容 / 多步循环 / max_steps 截断，已通过；Phase 0 冒烟测试不受影响。
 - `tests/test_wiki_extraction.py`：Extractor 实体/关系/别名/去噪单测 + WikiExtractionAgent 链路集成测，已通过。
 - `tests/test_run_store.py`：InMemoryRunStore 契约 + Runner 落库 + best-effort 失败容错，已通过。
+- `tests/test_local_persistence.py`：SqliteRunStore 契约 + 落盘 + 跨连接持久化 + Runner 落库 + 工厂选后端，已通过。
 
 ### Docs
 - 新增项目上下文文档体系：`docs/PRODUCT_VISION.md`、`docs/ARCHITECTURE_CONTEXT.md`、`docs/DEVELOPMENT_PRINCIPLES.md`。

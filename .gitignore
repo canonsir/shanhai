@@ -25,6 +25,9 @@ dist/
 .env.local
 *.local
 
+# ---- ShanHai local-first 落盘（见 ADR 0009）----
+.shanhai/
+
 # ---- OS / Editor ----
 .DS_Store
 .idea/

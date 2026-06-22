@@ -26,6 +26,7 @@ Phase 1 — Agent Runtime（进行中）
 - [x] 多步推理 Agent：`AgentRunner` 多轮 think/act/observe 循环 + `max_steps` 调度；`AgentContext` 增加 `iteration`/`observations`；`MultiStepToolAgent` 示例
 - [x] Wiki 信息提取（ADR 0007）：规则驱动 `Extractor`（model-agnostic）+ `WikiExtractTool` + `WikiExtractionAgent`（模型在环，Agent→Tool→Service）
 - [x] 运行记录持久化（ADR 0008）：`RunStore` 抽象 + `InMemoryRunStore` + `AgentRunner` best-effort 落库；新增 `services/persistence`（`PostgresRunStore`）
+- [x] Local-first 持久化（ADR 0009）：`SqliteRunStore`（标准库 sqlite3，零依赖、可落盘）+ `default_run_store()` 装配工厂（默认 sqlite）；数据库降为增强能力，非开发前置
 - [x] Agent Runtime 单元测试（通过）
 
 ## 当前目标
@@ -36,12 +37,19 @@ Phase 1 — Agent Runtime（进行中）
 
 - [ ] 架构 Review（等待评审反馈）
 
-## 下一步（Phase 1 候选）
+## 下一步（已确定路线）
 
-- Workflow 条件分支 / 并行（评估是否引入 LangGraph）
-- Wiki Engine：模型驱动抽取（接入真实 Provider 后，扩展更智能的实体/关系识别）
-- Model Router：接入真实 Provider（OpenAI / DeepSeek / Qwen）
-- 运行记录持久化：接入真实 Postgres 验证（待 Docker 环境）+ evaluation 基于 `RunStore.list_runs` 度量
+1. [x] 固化 Local-first 持久化（ADR 0009，已完成）
+2. [ ] 建立 Evaluation Loop（基于 `RunStore.list_runs` 读取本地 SQLite 轨迹做度量；ADR 0010 待起草）
+3. [ ] 再接真实 Model Provider（OpenAI / DeepSeek / Qwen；ADR 0011 待起草）
+
+> 方针：**数据库作为增强能力，不作为开发前置环境**。开发/测试/单机默认 local-first（SQLite），并发/规模/共享场景再切 `SHANHAI_RUN_STORE=postgres`。
+
+### 暂缓 / 候选
+
+- Workflow 条件分支 / 并行（评估是否引入 LangGraph，用户已暂缓）
+- Wiki Engine：模型驱动抽取（依赖真实 Provider 后扩展）
+- 运行记录持久化：接入真实 Postgres 验证（待 Docker 环境，作为增强后端）
 
 ## 暂不开发（明确禁止本阶段实现）
 

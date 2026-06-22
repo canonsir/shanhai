@@ -1,0 +1,44 @@
+# ShanHai 模型注册表
+#
+# Phase 0：所有条目均路由到 mock provider 运行（见 ADR 0004）。
+# 接入真实 API 时，实现对应 Provider 并在 router 中注册即可，无需改调用方。
+#
+# capability 分值越高越擅长；cost: low / medium / high。
+
+models:
+  gpt-5.5:
+    provider: openai
+    capability:
+      reasoning: 10
+      coding: 10
+      cost: high
+
+  claude-4.8:
+    provider: anthropic
+    capability:
+      reasoning: 10
+      summarization: 9
+      cost: high
+
+  deepseek:
+    provider: deepseek
+    capability:
+      reasoning: 7
+      coding: 8
+      cost: low
+
+  qwen:
+    provider: qwen
+    capability:
+      extraction: 8
+      summarization: 7
+      cost: low
+
+  local:
+    provider: local
+    capability:
+      extraction: 5
+      cost: low
+
+# 默认模型：未指定 task 或无更优匹配时使用
+default: deepseek

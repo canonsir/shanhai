@@ -1,0 +1,40 @@
+# ShanHai Phase 0 基础数据服务
+#
+# 启动：docker compose -f infrastructure/docker-compose.yml up -d
+# 服务：PostgreSQL(含 pgvector) + Redis
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: shanhai-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-shanhai}
+      POSTGRES_USER: ${POSTGRES_USER:-shanhai}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-shanhai}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - shanhai-pgdata:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-shanhai} -d ${POSTGRES_DB:-shanhai}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: shanhai-redis
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - shanhai-redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  shanhai-pgdata:
+  shanhai-redisdata:

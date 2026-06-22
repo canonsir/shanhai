@@ -1,9 +1,12 @@
 [project]
 name = "shanhai-evaluation"
 version = "0.1.0"
-description = "ShanHai Evaluation — Agent/模型评估框架（Phase 0 仅骨架）"
+description = "ShanHai Evaluation — Agent Runtime 反馈闭环（Layer 1 Runtime Evaluation，见 ADR 0010）"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "shanhai-agent-runtime",
+    "pydantic>=2.6",
+]
 
 [build-system]
 requires = ["hatchling"]

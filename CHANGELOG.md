@@ -12,8 +12,14 @@
   - `agent.py`：`BaseAgent`（think/act/observe 钩子 + max_steps），保留 `Agent` 别名与 `use_tool`/`run` 向后兼容。
   - `examples.py`：`ToolEchoAgent`（单步）、`MultiStepToolAgent`（多步逐项调度）示例。
 - 多步推理：`AgentRunner` 按 `max_steps` 驱动多轮 think → act → observe 循环；`AgentContext` 增加 `iteration`/`observations`/`last_observation`，支持 think 基于上一轮观察规划。
+- `services/wiki-engine`：规则驱动信息提取（ADR 0007）。
+  - `extractor.py`：`Extractor` 按词典识别实体、按文本模式发现关系，model-agnostic、确定性可复现。
+  - `tool.py`：`WikiExtractTool` 包装 Extractor，作为 Agent 触达 Service 的唯一通道。
+  - `agent.py`：`WikiExtractionAgent` 编排链路（think 经 ModelRouter 证明模型在环，act 经 Tool 调用 Service）。
 - ADR 0006：Agent Runtime 执行模型。
+- ADR 0007：Wiki 信息提取流程（职责三层划分 + Agent→Tool→Service 调用链）。
 - `tests/test_agent_runtime.py`：生命周期 / Agent→Tool / 未授权拒绝 / Workflow 兼容 / 多步循环 / max_steps 截断，已通过；Phase 0 冒烟测试不受影响。
+- `tests/test_wiki_extraction.py`：Extractor 实体/关系/别名/去噪单测 + WikiExtractionAgent 链路集成测，已通过。
 
 ### Docs
 - 新增项目上下文文档体系：`docs/PRODUCT_VISION.md`、`docs/ARCHITECTURE_CONTEXT.md`、`docs/DEVELOPMENT_PRINCIPLES.md`。

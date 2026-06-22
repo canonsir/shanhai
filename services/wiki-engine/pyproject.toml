@@ -1,10 +1,12 @@
 [project]
 name = "shanhai-wiki-engine"
 version = "0.1.0"
-description = "ShanHai Wiki Engine — 知识编译层（Phase 0 仅 Schema）"
+description = "ShanHai Wiki Engine — 知识编译层（Schema + 规则驱动信息提取）"
 requires-python = ">=3.11"
 dependencies = [
     "pydantic>=2.6",
+    "shanhai-tools",
+    "shanhai-agent-runtime",
 ]
 
 [build-system]

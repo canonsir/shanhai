@@ -7,7 +7,7 @@
 ```
 1. README.md            — 项目定位与快速开始
 2. AGENTS.md            — 协作规范与架构原则（铁律）
-3. PROJECT_STATE.md     — 当前进度与不变量
+3. docs/PROJECT_STATE.md — 当前进度与不变量
 4. REVIEW.md            — 本文件（评审范围与关注点）
 5. docs/架构决策记录/   — ADR（已定型的决策，不要推翻）
 6. 代码                 — 按本次目标定位关键文件

@@ -14,6 +14,10 @@
 - ADR 0006：Agent Runtime 执行模型。
 - `tests/test_agent_runtime.py`：生命周期 / Agent→Tool / 未授权拒绝 / Workflow 兼容，已通过；Phase 0 冒烟测试不受影响。
 
+### Docs
+- 新增项目上下文文档体系：`docs/PRODUCT_VISION.md`、`docs/ARCHITECTURE_CONTEXT.md`、`docs/DEVELOPMENT_PRINCIPLES.md`。
+- `PROJECT_STATE.md` 迁移至 `docs/PROJECT_STATE.md`，并同步修正 README / AGENTS / REVIEW / docs 索引 / ADR 0005 中的引用路径。
+
 ## [Phase 0] — Harness Foundation
 
 ### Added

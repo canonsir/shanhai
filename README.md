@@ -89,7 +89,10 @@ uv run python -m tests.smoke
 ## 文档
 
 - 协作规范与 Agent 开发约束：[AGENTS.md](AGENTS.md)
-- 项目实时状态：[PROJECT_STATE.md](PROJECT_STATE.md)
+- 产品愿景：[docs/PRODUCT_VISION.md](docs/PRODUCT_VISION.md)
+- 架构上下文：[docs/ARCHITECTURE_CONTEXT.md](docs/ARCHITECTURE_CONTEXT.md)
+- 开发原则：[docs/DEVELOPMENT_PRINCIPLES.md](docs/DEVELOPMENT_PRINCIPLES.md)
+- 项目实时状态：[docs/PROJECT_STATE.md](docs/PROJECT_STATE.md)
 - AI 架构评审入口：[REVIEW.md](REVIEW.md)
 - 架构决策记录：[docs/架构决策记录/](docs/架构决策记录/)
 - 变更记录：[CHANGELOG.md](CHANGELOG.md)

@@ -1,7 +1,7 @@
 # ShanHai Project State
 
-> 项目实时状态快照。供 AI（ChatGPT / Claude / Trae）与协作者快速对齐进度。
-> 每完成一个阶段或重要模块时更新本文件。
+> 项目实时状态快照。供 AI（ChatGPT / Claude / GPT / Codex / Trae）与协作者快速对齐进度。
+> 每完成一个阶段或重要模块时更新本文件。Git 是唯一事实来源。
 
 ## 版本
 
@@ -25,6 +25,10 @@ Phase 1 — Agent Runtime（进行中）
 - [x] `BaseAgent` 钩子化 + `ToolEchoAgent` 示例（保留向后兼容）
 - [x] Agent Runtime 单元测试（通过）
 
+## 当前目标
+
+完善 AI Harness 基础设施（Agent Runtime / Workflow / Tool / Memory / Evaluation），保证模块边界与架构正确性。
+
 ## 进行中
 
 - [ ] 架构 Review（等待评审反馈）
@@ -36,6 +40,14 @@ Phase 1 — Agent Runtime（进行中）
 - Wiki Engine：信息提取 / 实体识别 / 关系发现（当前仅 Schema）
 - Model Router：接入真实 Provider（OpenAI / DeepSeek / Qwen）
 - 运行记录持久化（落库，另开 ADR）
+
+## 暂不开发（明确禁止本阶段实现）
+
+- 实时行情系统
+- 券商交易接口
+- 自动交易 Agent
+- 复杂量化策略 / 高频策略
+- 回测系统
 
 ## 不变量（不允许破坏）
 

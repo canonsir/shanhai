@@ -1,5 +1,14 @@
 # ShanHai 文档
 
+## 项目上下文
+
+- [PRODUCT_VISION.md](PRODUCT_VISION.md)：产品定位、长期目标、与股票/量化软件的区别、演进路线
+- [ARCHITECTURE_CONTEXT.md](ARCHITECTURE_CONTEXT.md)：架构设计原则（模型解耦 / Knowledge First / Harness First / 模块独立）
+- [DEVELOPMENT_PRINCIPLES.md](DEVELOPMENT_PRINCIPLES.md)：AI Native 开发原则（Git 唯一事实来源、文档优先、ADR、不依赖聊天历史）
+- [PROJECT_STATE.md](PROJECT_STATE.md)：当前阶段、进度、不变量、暂不开发项
+
+## 架构决策记录
+
 - [架构决策记录（ADR）](架构决策记录/)
   - [0001 语言栈与运行时](架构决策记录/0001-语言栈与运行时.md)
   - [0002 包管理工具链](架构决策记录/0002-包管理工具链.md)
@@ -11,7 +20,6 @@
 ## AI 评审入口
 
 - [REVIEW.md](../REVIEW.md)：评审入口、读取顺序、仓库 Raw/Diff 兜底地址
-- [PROJECT_STATE.md](../PROJECT_STATE.md)：项目实时状态与不变量
 
 ## 模块边界速览
 

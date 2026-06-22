@@ -73,7 +73,7 @@ feature/*      功能开发分支，一功能一分支
 ### 5.2 AI 评审协作
 
 每次需要评审时，保持 Git 为最新，并提供：仓库链接 + commit SHA + 本次目标。
-评审入口与读取顺序见根目录 [REVIEW.md](REVIEW.md)；项目实时状态见 [PROJECT_STATE.md](PROJECT_STATE.md)。
+评审入口与读取顺序见根目录 [REVIEW.md](REVIEW.md)；项目实时状态见 [docs/PROJECT_STATE.md](docs/PROJECT_STATE.md)。
 
 ## 6. 架构变更规范（ADR）
 

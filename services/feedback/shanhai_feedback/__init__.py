@@ -16,6 +16,7 @@ feedback → evaluation + experience + agent-runtime（均只读/经抽象）。
 """
 
 from shanhai_feedback.engine import FeedbackEngine
+from shanhai_feedback.evolution_adapter import FeedbackProposalAdapter
 from shanhai_feedback.models import CandidateKind, ExperienceCandidate
 from shanhai_feedback.registry import CandidateRegistry
 from shanhai_feedback.rules import FailurePatternRule, FeedbackRule
@@ -27,4 +28,5 @@ __all__ = [
     "FailurePatternRule",
     "CandidateRegistry",
     "FeedbackEngine",
+    "FeedbackProposalAdapter",
 ]

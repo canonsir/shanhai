@@ -2,7 +2,9 @@
 
 本项目变更记录。格式参考 Keep a Changelog，遵循语义化版本。
 
-## [Unreleased] — Phase 1：Agent Runtime
+## [Unreleased]
+
+## [0.2.0] — 2026-06-23 · Phase 1：Agent Runtime（Experience Evolution Layer Stage 2-b）
 
 ### Added
 - `services/agent-runtime`：执行模型 think → act → observe（ADR 0006）。

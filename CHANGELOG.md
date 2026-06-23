@@ -48,6 +48,14 @@
   - `services/experience/store.py`：`ExperienceStore` 抽象（append-only，无 update/delete）+ `InMemoryExperienceStore`（沿用 RunStore 范式），支持 `append`/`get`/`list`（按 agent/type/entity_id/since/limit 过滤，occurred_at 倒序，无向量检索）。
   - 边界：模块零业务依赖（仅 `pydantic`），结构上无法访问 RunStore/Evaluation/Knowledge 类型，从设计上保证「引用而非复制」；不实现 Episode 投影 / SemanticExperience / Vector / Graph / DB / LLM（留待后续 Stage，待真实 Agent 运行数据验证）。
   - 接入根 `pyproject.toml` workspace（members + sources）。
+- Memory Runtime Access Layer（ADR 0012 Layer 1，记忆访问层落地；不含持久 Storage）。
+  - 新增 `services/memory`：`models.py`（`MemoryScope` RUNTIME/KNOWLEDGE/EXPERIENCE + `MemoryRecord` 归一返回 + `MemoryQuery` 归一请求）。
+  - `adapters.py`：`RuntimeMemoryAdapter`（薄包 agent-runtime `Memory`，进程内 scratchpad，可读写）+ `KnowledgeReadAdapter`（只读委派 `KnowledgeService`）+ `ExperienceReadAdapter`（只读委派 `ExperienceStore.get/list`，绝不 append）。
+  - `service.py`：`MemoryService` 按 scope 路由 read/search/write，KNOWLEDGE/EXPERIENCE 只读（write 抛 `PermissionError`），不调模型/不直连 DB/不复制事实。
+  - `tool.py`：单 `MemoryTool`（name="memory"）action 派发 read/search/write，作为 Agent 触达 Memory 的唯一通道，受 `AgentContext.use_tool` 授权约束；Agent 不持有 Service/Store 引用。
+  - `services/wiki-engine/service.py`：新增最小只读 `KnowledgeService`（进程内 Entity 索引 + `get_entity` + `search` by text/type，无向量），为 Knowledge Memory 提供只读检索入口；事实来源仍属 Knowledge Engine。
+  - 约束：不实现 vector / semantic memory / 自动总结 / 持久 `MemoryStore`；不修改 ADR 0014 EventStore（只读消费）。依赖单向 `memory → tools + agent-runtime + wiki-engine + experience`。
+  - 接入根 `pyproject.toml` workspace（members + sources）。
 - `tests/test_agent_runtime.py`：生命周期 / Agent→Tool / 未授权拒绝 / Workflow 兼容 / 多步循环 / max_steps 截断，已通过；Phase 0 冒烟测试不受影响。
 - `tests/test_wiki_extraction.py`：Extractor 实体/关系/别名/去噪单测 + WikiExtractionAgent 链路集成测，已通过。
 - `tests/test_run_store.py`：InMemoryRunStore 契约 + Runner 落库 + best-effort 失败容错，已通过。
@@ -55,6 +63,7 @@
 - `tests/test_evaluation.py`：RuntimeEvaluator 成功 / 失败 / 多 Step / 空 Run / 经 RunStore 取数，已通过。
 - `tests/test_deepseek_provider.py`：DeepSeekProvider 请求构造/响应解析/缺 Key 报错/异常响应 + 端到端 Agent→Router→DeepSeek（Fake Transport）+ Mock 仍默认，已通过。
 - `tests/test_experience.py`：ExperienceStore append/get/未命中/自动 event_id/list 过滤(agent/type/entity_id/since/limit)+倒序/append-only 拒绝覆盖且无 update-delete/refs 只引用不复制，已通过。
+- `tests/test_memory.py`：三 scope（runtime 读写 / knowledge 只读检索 / experience 只读检索）+ 只读 scope 拒写 + MemoryTool action 派发 + 经 AgentContext 授权访问与未授权拒绝，已通过。
 
 ### Docs
 - 新增项目上下文文档体系：`docs/PRODUCT_VISION.md`、`docs/ARCHITECTURE_CONTEXT.md`、`docs/DEVELOPMENT_PRINCIPLES.md`。

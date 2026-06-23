@@ -14,6 +14,7 @@ from shanhai_wiki_engine.schema import (
     Relation,
     RelationType,
 )
+from shanhai_wiki_engine.service import KnowledgeService
 from shanhai_wiki_engine.tool import WikiExtractTool
 
 __all__ = [
@@ -23,6 +24,7 @@ __all__ = [
     "Relation",
     "RelationType",
     "Extractor",
+    "KnowledgeService",
     "WikiExtractTool",
     "WikiExtractionAgent",
 ]

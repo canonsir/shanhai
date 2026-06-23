@@ -54,7 +54,9 @@ Phase 1 — Agent Runtime（进行中）
 
 > TODO（已登记，延后执行）：**ADR 0012 implementation alignment update** —— 待 Memory / Experience persistence 阶段统一回填（避免一次修改多个基础 ADR）。
 
-> 架构演进边界（ADR 0015 Decision F，仅声明不实现）：Experience 分三层 `ExperienceEvent（事实，已实现）→ ExperienceCandidate（候选规律，feedback 已实现）→ ExperienceArtifact（经验资产，延期）`；`ExperienceEvent ≠ 最终经验资产`、`lesson` 仅为事件层反馈。ExperienceArtifact 层与 Knowledge Projection（WeKnora / llm-wiki，属知识投影层）均延期、另启 ADR。当前阶段定位「事实采集 → 经验形成」。
+> 架构演进边界（ADR 0015 Decision F + ADR 0016 Proposed，仅声明不实现）：Experience 四层语义 `ExperienceEvent（事实，已实现）→ ExperienceCandidate（待验证假设，feedback 已实现）→ ExperienceArtifact（已验证可复用能力，延期）→ Knowledge Document（外部知识，另域）`；`ExperienceEvent ≠ 最终经验资产`、`lesson` 仅为事件层反馈、`ExperienceArtifact ≠ Knowledge Document`。Artifact 须为「能力单元」（identity/capability/context/evidence/applicability/evaluation/lineage/evolution history），非 title/content/embedding。WeKnora / llm-wiki 属 Artifact 下游 **Knowledge Projection Layer**（非 Experience 存储），与 Experience 解耦。Candidate 来源未来多元化（Feedback / Outcome / Discovery / Human），`CandidateRegistry` 将演进为独立 Experience Evolution Layer。完整模型见 **ADR 0016（Experience Evolution Layer，提案中）**。
+> 经验层阶段路线（逐阶段经 Review）：`Stage 2-a 事实链（已完成）→ Stage 2-b Candidate 生命周期 + 来源解耦 → Stage 3 ExperienceArtifact → Stage 4 Knowledge Projection（接 WeKnora/llm-wiki）→ Stage 5 Experience Evolution（EvoMap：mutation/evaluation/promotion）`。在 `ExperienceArtifact` 模型确定前暂缓：Vector Search / Graph Experience / WeKnora 接入 / llm-wiki 同步 / 自动 Experience Summary。
+> 跨阶段冻结不变量：ExperienceEvent append-only、outcome 不修改 decision、Artifact 不覆盖 Event、Agent 只读 Experience、Knowledge Projection 与 Experience 解耦。
 
 > 方针：**数据库作为增强能力，不作为开发前置环境**。开发/测试/单机默认 local-first（SQLite），并发/规模/共享场景再切 `SHANHAI_RUN_STORE=postgres`。
 

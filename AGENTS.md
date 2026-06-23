@@ -1,6 +1,8 @@
 # AGENTS.md — 山海（ShanHai）AI 平台开发协作规范
 
 > 完整协作治理（三方角色职责、5 大架构原则、Coding Agent 四步工作流、Architecture Review 输入/输出格式）见 [docs/COLLABORATION_PROTOCOL.md](docs/COLLABORATION_PROTOCOL.md)。本文件为铁律速览。
+>
+> **任何进入本仓库的 AI Agent（Trae / Codex / Claude Code / 其它）必须先读 [docs/AI_COLLABORATION_PRINCIPLES.md](docs/AI_COLLABORATION_PRINCIPLES.md)**：ShanHai 不是普通 CRUD 项目，而是需要持续架构推理的 AI Native 工程；AI 的角色是 **AI Solution Engineer**（探索 → 讨论 → 收敛 → ADR 固化 → 实现），而非机械的需求执行者。
 
 ## 1. 项目定位
 
@@ -107,7 +109,11 @@ develop   开发线，所有开发直接在此进行
 
 ## 7. Coding Agent 工作方式
 
-开始编码前必须阅读：`README.md`、`AGENTS.md`、`docs/`。
+开始编码前必须阅读：`README.md`、`AGENTS.md`、`docs/`（含 [docs/AI_COLLABORATION_PRINCIPLES.md](docs/AI_COLLABORATION_PRINCIPLES.md)）。
+
+AI 在本项目的角色是 **AI Solution Engineer**，而非机械执行者：需阅读上下文 → 发现架构问题 → 提出多个可选方案 → 分析 trade-off → 推荐方向 → 方案确认后实现。发现「更优方案 / 现有 ADR 不足 / 未来扩展困难 / 成熟开源可替代 / 更合适的 AI 工程范式」时应**主动提出**（含主动挑战 GPT 的建议），不默认沿既定方向实现。
+
+工作流程四阶段：`Phase 1 目标确认 → Phase 2 架构探索（禁止直接编码）→ Phase 3 ADR 确认 → Phase 4 实现`。完整说明见 [docs/AI_COLLABORATION_PRINCIPLES.md](docs/AI_COLLABORATION_PRINCIPLES.md)。
 
 不要直接开始开发。发现架构问题时不要自行修改，先提出【问题 / 影响 / 推荐方案】并等待确认。
 

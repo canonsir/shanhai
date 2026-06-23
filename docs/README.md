@@ -2,6 +2,7 @@
 
 ## 项目上下文
 
+- [AI_COLLABORATION_PRINCIPLES.md](AI_COLLABORATION_PRINCIPLES.md)：**AI 协作原则（任何 AI Agent 进入仓库须先读）**——AI Solution Engineer 角色、探索→讨论→收敛→ADR→实现、三方协作、核心架构边界
 - [COLLABORATION_PROTOCOL.md](COLLABORATION_PROTOCOL.md)：AI 协作开发协议（三方角色、5 大架构原则、Coding Agent 工作流、Review 流程）
 - [PRODUCT_VISION.md](PRODUCT_VISION.md)：产品定位、长期目标、与股票/量化软件的区别、演进路线
 - [ARCHITECTURE_CONTEXT.md](ARCHITECTURE_CONTEXT.md)：架构设计原则（模型解耦 / Knowledge First / Harness First / 模块独立）

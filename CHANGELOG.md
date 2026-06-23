@@ -53,6 +53,7 @@
 - 新增项目上下文文档体系：`docs/PRODUCT_VISION.md`、`docs/ARCHITECTURE_CONTEXT.md`、`docs/DEVELOPMENT_PRINCIPLES.md`。
 - `PROJECT_STATE.md` 迁移至 `docs/PROJECT_STATE.md`，并同步修正 README / AGENTS / REVIEW / docs 索引 / ADR 0005 中的引用路径。
 - `AGENTS.md` §4.1：新增「配置文件修改纪律」铁律（禁止 Write 覆盖已有配置；修改配置须 read → diff → append → verify）。
+- `docs/AI_COLLABORATION_PRINCIPLES.md`：新增 AI 协作原则（任何 AI Agent 进入仓库须先读）——AI Solution Engineer 角色定位、探索→讨论→收敛→ADR→实现 协作模式、三方职责（Human Owner / GPT 顾问 / AI 工程师）、四阶段工作流、核心架构边界；AGENTS.md 头部与 §7、docs 索引同步引用。
 
 ## [Phase 0] — Harness Foundation
 

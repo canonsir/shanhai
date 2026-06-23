@@ -8,6 +8,7 @@ dependencies = [
     "shanhai-agent-runtime",
     "shanhai-evaluation",
     "shanhai-experience",
+    "shanhai-experience-evolution",
 ]
 
 [build-system]

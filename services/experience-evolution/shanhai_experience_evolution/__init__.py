@@ -28,12 +28,25 @@ from shanhai_experience_evolution.models import (
     ValidationStats,
     ValidationVerdict,
 )
+from shanhai_experience_evolution.producers import CandidateProducer
+from shanhai_experience_evolution.promotion import (
+    NoopPromotionGate,
+    PromotionDecision,
+    PromotionGate,
+)
 from shanhai_experience_evolution.proposals import CandidateProposal
 from shanhai_experience_evolution.repository import (
     CandidateRepository,
     InMemoryCandidateRepository,
 )
 from shanhai_experience_evolution.service import CandidateService, TransitionError
+from shanhai_experience_evolution.validator import (
+    EvaluationReader,
+    ExperienceReader,
+    NoopValidator,
+    ValidationContext,
+    Validator,
+)
 
 __all__ = [
     "Actor",
@@ -51,6 +64,15 @@ __all__ = [
     "CandidateRepository",
     "InMemoryCandidateRepository",
     "CandidateProposal",
+    "CandidateProducer",
     "CandidateService",
     "TransitionError",
+    "Validator",
+    "NoopValidator",
+    "ValidationContext",
+    "ExperienceReader",
+    "EvaluationReader",
+    "PromotionGate",
+    "NoopPromotionGate",
+    "PromotionDecision",
 ]

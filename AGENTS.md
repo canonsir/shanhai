@@ -44,6 +44,20 @@
 应该：Agent → Tool → Service → Database
 ```
 
+### 4.1 配置文件修改纪律（铁律）
+
+```
+禁止 Write 覆盖已有配置文件
+
+修改配置必须：
+1. read    — 先读取现有内容，确认全部已有项
+2. diff    — 对照变更点，确认只增不误删
+3. append  — 增量追加 / 局部编辑，保留原有占位与配置
+4. verify  — 改后比对（git diff），确认无意外删除
+```
+
+背景：DeepSeek MVP（commit 249efc9）曾以 Write 覆盖 `.env.example`，误删原有 Postgres/Redis/API 占位（已由 83fa2c8 修复）。对**任何疑似已存在的文件**先 Read 再决定 Edit vs Write；配置类文件一律走上述四步，禁止覆盖式写入。
+
 ## 5. Git 开发规范
 
 流程：`开发 → 测试 → commit → push → review`

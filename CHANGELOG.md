@@ -43,12 +43,18 @@
 - ADR 0012：Agent Memory 架构（Memory 与 Knowledge Engine 正交分层 + Runtime/Knowledge/Experience 三层模型 + MemoryStore 抽象 + Agent 经 Tool/Service 访问，仅设计）。
 - ADR 0013：Agent Evaluation Feedback 架构（Evaluation→Feedback→Experience Memory 闭环 + 度量/归因/沉淀三段分层 + ExperienceCandidate 生成与晋升规则 + Feedback 独立组合层，仅设计）。
 - ADR 0014：Agent Experience Memory 架构（ADR 0012 扩展，Event Log Lite：ExperienceEvent append-only 事件 + Episode/SemanticExperience 投影 + refs 引用 run_id/evaluation/entity_ids + outcome 延迟回填；不引入 Vector/Graph/CQRS，仅设计）。
+- Experience Event Infrastructure（ADR 0014 Stage 1，事实基座落地）。
+  - 新增 `services/experience`：`models.py`（`ExperienceEventType` 枚举 decision/observation/evaluation/outcome/lesson + `ExperienceRefs` 引用 run_id/evaluation_ref/entity_ids/parent_event_id + `ExperienceEvent` 含 payload/occurred_at/recorded_at，event_id 自动生成）。
+  - `services/experience/store.py`：`ExperienceStore` 抽象（append-only，无 update/delete）+ `InMemoryExperienceStore`（沿用 RunStore 范式），支持 `append`/`get`/`list`（按 agent/type/entity_id/since/limit 过滤，occurred_at 倒序，无向量检索）。
+  - 边界：模块零业务依赖（仅 `pydantic`），结构上无法访问 RunStore/Evaluation/Knowledge 类型，从设计上保证「引用而非复制」；不实现 Episode 投影 / SemanticExperience / Vector / Graph / DB / LLM（留待后续 Stage，待真实 Agent 运行数据验证）。
+  - 接入根 `pyproject.toml` workspace（members + sources）。
 - `tests/test_agent_runtime.py`：生命周期 / Agent→Tool / 未授权拒绝 / Workflow 兼容 / 多步循环 / max_steps 截断，已通过；Phase 0 冒烟测试不受影响。
 - `tests/test_wiki_extraction.py`：Extractor 实体/关系/别名/去噪单测 + WikiExtractionAgent 链路集成测，已通过。
 - `tests/test_run_store.py`：InMemoryRunStore 契约 + Runner 落库 + best-effort 失败容错，已通过。
 - `tests/test_local_persistence.py`：SqliteRunStore 契约 + 落盘 + 跨连接持久化 + Runner 落库 + 工厂选后端，已通过。
 - `tests/test_evaluation.py`：RuntimeEvaluator 成功 / 失败 / 多 Step / 空 Run / 经 RunStore 取数，已通过。
 - `tests/test_deepseek_provider.py`：DeepSeekProvider 请求构造/响应解析/缺 Key 报错/异常响应 + 端到端 Agent→Router→DeepSeek（Fake Transport）+ Mock 仍默认，已通过。
+- `tests/test_experience.py`：ExperienceStore append/get/未命中/自动 event_id/list 过滤(agent/type/entity_id/since/limit)+倒序/append-only 拒绝覆盖且无 update-delete/refs 只引用不复制，已通过。
 
 ### Docs
 - 新增项目上下文文档体系：`docs/PRODUCT_VISION.md`、`docs/ARCHITECTURE_CONTEXT.md`、`docs/DEVELOPMENT_PRINCIPLES.md`。

@@ -13,6 +13,7 @@ members = [
     "services/wiki-engine",
     "services/data-pipeline",
     "services/evaluation",
+    "services/experience",
     "services/persistence",
     "packages/schemas",
     "packages/prompts",
@@ -30,6 +31,7 @@ shanhai-agent-runtime = { workspace = true }
 shanhai-wiki-engine = { workspace = true }
 shanhai-data-pipeline = { workspace = true }
 shanhai-evaluation = { workspace = true }
+shanhai-experience = { workspace = true }
 shanhai-persistence = { workspace = true }
 
 [tool.pytest.ini_options]

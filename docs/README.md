@@ -21,6 +21,7 @@
   - [0008 运行记录持久化](架构决策记录/0008-运行记录持久化.md)
   - [0009 Local-first 持久化](架构决策记录/0009-Local-first持久化.md)
   - [0010 Evaluation Loop 架构](架构决策记录/0010-Evaluation-Loop-Architecture.md)
+  - [0011 Model Provider 架构](架构决策记录/0011-Model-Provider-Architecture.md)
 
 ## AI 评审入口
 

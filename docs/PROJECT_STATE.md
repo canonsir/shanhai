@@ -42,7 +42,7 @@ Phase 1 — Agent Runtime（进行中）
 
 1. [x] 固化 Local-first 持久化（ADR 0009，已完成）
 2. [~] 建立 Evaluation Loop（ADR 0010 已采纳；**Layer 1 Runtime Evaluation 已实现**：`Metric` / `EvaluationResult` / `Evaluator` / `RuntimeEvaluator`，指标 success / step_count / tool_usage_count / error_type，只经 `RunStore`/`RunResult` 取数。Layer 2/3 预留）
-3. [ ] 再接真实 Model Provider（OpenAI / DeepSeek / Qwen；ADR 0011 待起草）
+3. [ ] 再接真实 Model Provider（ADR 0011 已采纳，待实现：真实 Provider 实现同一 `ModelProvider` 接口 + 按名注册 + SDK 惰性导入/可选依赖；Router 编排 retry/fallback/timeout；机密走环境变量，默认仍 Mock，无 Key 可跑全部测试）
 
 > 方针：**数据库作为增强能力，不作为开发前置环境**。开发/测试/单机默认 local-first（SQLite），并发/规模/共享场景再切 `SHANHAI_RUN_STORE=postgres`。
 

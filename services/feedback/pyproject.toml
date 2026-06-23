@@ -1,0 +1,18 @@
+[project]
+name = "shanhai-feedback"
+version = "0.1.0"
+description = "ShanHai Feedback — Evaluation → Experience 反馈闭环（ADR 0013 Stage 1：FailurePattern → Candidate → Lesson）"
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.6",
+    "shanhai-agent-runtime",
+    "shanhai-evaluation",
+    "shanhai-experience",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["shanhai_feedback"]

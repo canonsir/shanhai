@@ -56,6 +56,16 @@
   - `services/wiki-engine/service.py`：新增最小只读 `KnowledgeService`（进程内 Entity 索引 + `get_entity` + `search` by text/type，无向量），为 Knowledge Memory 提供只读检索入口；事实来源仍属 Knowledge Engine。
   - 约束：不实现 vector / semantic memory / 自动总结 / 持久 `MemoryStore`；不修改 ADR 0014 EventStore（只读消费）。依赖单向 `memory → tools + agent-runtime + wiki-engine + experience`。
   - 接入根 `pyproject.toml` workspace（members + sources）。
+- Evaluation Feedback 闭环 — Stage 1（ADR 0013，FailurePattern → Candidate → Lesson）。
+  - 新增 `services/feedback`：`models.py`（`ExperienceCandidate` 候选经验 + `CandidateKind` 枚举，只引用 run_id/evaluator、不内嵌原始 metrics）。
+  - `rules.py`：`FeedbackRule` 抽象 + `FailurePatternRule`（`passed==False` 按 `error_type` 产候选，`dedup_key=agent|failure|error_type`，确定性、不调用模型）。
+  - `registry.py`：`CandidateRegistry`（进程内同 `dedup_key` 合并计数 + 来源累加 + 阈值晋升判定，抗一次性噪声）。
+  - `engine.py`：`FeedbackEngine.process(EvaluationResult, RunRecord?)` 编排「规则 → 候选 → 去重 → 阈值晋升 → `ExperienceStore.append` 落 `type=lesson` 事件」，同模式不重复晋升。
+  - 写经验路径（决策①）：Feedback 为离线系统编排层（非 Agent），经 `ExperienceStore.append`（service→service）写经验，**不**给 `MemoryService` 增 EXPERIENCE 写能力；EXPERIENCE 对 Agent 保持只读，读侧反哺仍由 `MemoryTool` 承担。
+  - 引用而非复制：lesson 事件经 `refs.run_id`/`refs.evaluation_ref` 引用来源，`payload` 仅存提炼结论 + 精简 signals + source_run_ids，绝不内嵌 metrics。
+  - 约束：仅 `FailurePattern` 单规则；不实现 regression/effective_path、Episode/SemanticExperience 投影、模型在环归因、Vector/Graph/CQRS、新增 DB；不改 `AgentRunner` 与 `ExperienceStore` 契约（只 append）。依赖单向 `feedback → evaluation + experience + agent-runtime`。
+  - ADR 0013 增补 Addendum（Stage 1 实现决策）：写经验归口 ExperienceStore、晋升产物=lesson 事件、Stage 1 范围收敛。
+  - 接入根 `pyproject.toml` workspace（members + sources）。
 - `tests/test_agent_runtime.py`：生命周期 / Agent→Tool / 未授权拒绝 / Workflow 兼容 / 多步循环 / max_steps 截断，已通过；Phase 0 冒烟测试不受影响。
 - `tests/test_wiki_extraction.py`：Extractor 实体/关系/别名/去噪单测 + WikiExtractionAgent 链路集成测，已通过。
 - `tests/test_run_store.py`：InMemoryRunStore 契约 + Runner 落库 + best-effort 失败容错，已通过。
@@ -64,6 +74,7 @@
 - `tests/test_deepseek_provider.py`：DeepSeekProvider 请求构造/响应解析/缺 Key 报错/异常响应 + 端到端 Agent→Router→DeepSeek（Fake Transport）+ Mock 仍默认，已通过。
 - `tests/test_experience.py`：ExperienceStore append/get/未命中/自动 event_id/list 过滤(agent/type/entity_id/since/limit)+倒序/append-only 拒绝覆盖且无 update-delete/refs 只引用不复制，已通过。
 - `tests/test_memory.py`：三 scope（runtime 读写 / knowledge 只读检索 / experience 只读检索）+ 只读 scope 拒写 + MemoryTool action 派发 + 经 AgentContext 授权访问与未授权拒绝，已通过。
+- `tests/test_feedback.py`：FailurePatternRule 失败产候选/成功不产 + CandidateRegistry 合并计数与阈值晋升 + FeedbackEngine 阈值前不落/达阈值晋升一条/不重复晋升 + lesson 只引用不复制度量 + 端到端 Run→Eval→Feedback→Lesson 并经 MemoryTool 只读反哺，已通过。
 
 ### Docs
 - 新增项目上下文文档体系：`docs/PRODUCT_VISION.md`、`docs/ARCHITECTURE_CONTEXT.md`、`docs/DEVELOPMENT_PRINCIPLES.md`。

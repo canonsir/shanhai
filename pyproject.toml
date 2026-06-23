@@ -14,6 +14,7 @@ members = [
     "services/data-pipeline",
     "services/evaluation",
     "services/experience",
+    "services/feedback",
     "services/memory",
     "services/persistence",
     "packages/schemas",
@@ -33,6 +34,7 @@ shanhai-wiki-engine = { workspace = true }
 shanhai-data-pipeline = { workspace = true }
 shanhai-evaluation = { workspace = true }
 shanhai-experience = { workspace = true }
+shanhai-feedback = { workspace = true }
 shanhai-memory = { workspace = true }
 shanhai-persistence = { workspace = true }
 

@@ -171,3 +171,33 @@ feedback ──→ evaluation（只读消费 EvaluationResult / Evaluator 产物
 - **候选无阈值、即时晋升**：噪声经验（偶发失败）污染经验库，降低后续检索信噪比，不采纳；引入去重合并 + 晋升阈值。
 - **Feedback 直接调用模型做归因总结**：破坏「不直连模型」铁律且引入非确定性，不采纳；模型在环的归因经 Tool / 复盘 Agent 产出、Feedback 只消费结构化结果（留待 Layer 2/3）。
 - **引入常驻 Feedback 服务 / 事件队列实时触发**：超出当前需要、过早引入运维复杂度，不采纳；本阶段离线/按需，与 ADR 0010 一致。
+
+## 增补（Addendum，2026-06-23）：Stage 1 实现决策
+
+> 背景：本 ADR §6 成文于 ADR 0014 之前，当时把 Feedback 写经验路径描述为「经 `MemoryTool → MemoryService → MemoryStore`」。其后 ADR 0014（Event Log Lite）确立 `ExperienceStore.append` 为经验写原语，ADR 0012 Layer 1 落地时将 Memory 的 `EXPERIENCE` scope 设为**对 Agent 只读**（写抛 `PermissionError`）。二者与 §6 字面冲突。经 Phase 2 评审，Stage 1 按下述决策落地，§6 原文据此修正。
+
+### A. 写经验路径归口到 Experience 领域服务（决策①，已采纳）
+
+- **Feedback 写经验经 `ExperienceStore.append()`（service → service），不经 MemoryService/MemoryTool。** 不给 `MemoryService` 增加 `EXPERIENCE` 写能力。
+- 理由：「Agent 禁止直连存储」约束的主体是 **Agent**；Feedback 是离线/按需的**系统编排层（非 Agent）**，调用 Experience **领域服务**属合规的 Service → Service。
+- 由此守住两条不变量：① **Memory 始终是 Agent 的访问层，`EXPERIENCE` 对 Agent 只读**；② **`lesson` 经验只由确定性反馈回路赚取，Agent 不能自写经验**（防自证/噪声污染）。
+- 因此本 ADR §5 的依赖方向，在 Stage 1 实现中修正为：
+
+```
+feedback ──→ evaluation     （只读消费 EvaluationResult）
+        └──→ experience      （经 ExperienceStore.append 写 lesson 事件）
+        └──→ agent-runtime    （只读 RunRecord / RunResult 作为归因上下文）
+```
+
+  `feedback` **不依赖 `memory`**；读侧反哺仍由 ADR 0012 的 `MemoryTool`（`EXPERIENCE` scope，只读 `search/read`）承担，二者解耦。
+
+### B. 晋升产物 = `type=lesson` 的 `ExperienceEvent`（衔接 ADR 0014）
+
+- `ExperienceCandidate` 晋升后，以 `ExperienceEventType.LESSON` 事件 `append` 进 `ExperienceStore`（呼应 ADR 0014 §3/§4）。
+- 引用而非复制：`refs.run_id` 取促发 run；`refs.evaluation_ref = f"{run_id}:{evaluator}"`；原始 metrics 不内嵌，`payload` 仅存提炼结论与精简 `signals` + `source_run_ids`。
+
+### C. Stage 1 范围收敛（已采纳）
+
+- **仅实现 `FailurePattern → Candidate → Lesson` 闭环**：单规则 `FailurePatternRule`（`passed==False` 按 `error_type` 产候选）+ `CandidateRegistry`（进程内去重/合并/计数）+ 阈值晋升 + `ExperienceStore.append`。
+- **不在 Stage 1**：`regression` / `effective_path` 规则、`Episode` / `SemanticExperience` 投影（属 ADR 0014 Stage 2/3）、模型在环归因、Vector/Graph/CQRS、新增 DB；不修改 `AgentRunner` 与 `ExperienceStore` 契约（只 append）。
+- 模块落点不变：新增 `services/feedback`（`shanhai_feedback`），离线/按需运行。

@@ -46,6 +46,7 @@ Phase 1 — Agent Runtime（进行中）
 3. [~] 再接真实 Model Provider（ADR 0011 已采纳；**DeepSeekProvider MVP 已实现**：实现同一 `ModelProvider` 接口、按名注册、可注入 transport（默认 urllib，零新依赖），Fake Transport 单测无需真实 Key；机密走 `SHANHAI_DEEPSEEK_API_KEY`，`MockProvider` 仍为默认。Anthropic/GPT/Qwen、streaming、Router 编排 retry/fallback 待后续）
 4. [ ] Agent Harness 完善 — Agent Memory（ADR 0012 已采纳，**仅设计**）：Memory 与 Knowledge Engine 正交分层；三层模型 Runtime / Knowledge / Experience Memory；`MemoryStore` 抽象（沿用 RunStore 范式）；Agent 经 `MemoryTool → MemoryService` 访问，不直连 DB/存储。实现待 Review 批准后另启
 5. [ ] Agent Harness 完善 — Evaluation Feedback（ADR 0013 已采纳，**仅设计**）：闭环 `Evaluation → Feedback → Experience Memory`；度量/归因/沉淀三段分层；`ExperienceCandidate` 生成与去重/晋升规则；Feedback 独立组合层（依赖 evaluation+memory+agent-runtime，不破坏既有单向依赖）。实现依赖 ADR 0012 先落地，待 Review 批准后另启
+6. [ ] Agent Harness 完善 — Experience Memory（ADR 0014 已采纳，**仅设计**；ADR 0012 的扩展，非替代）：Experience 层走 **Event Log Lite**——`ExperienceEvent`（append-only 不可变事件）+ `Episode`（情景投影）+ `SemanticExperience`（语义经验投影）；经 `refs` 引用 `run_id`/`evaluation_ref`/`entity_ids`（不复制度量与知识）；`outcome` 事件支撑 A 股延迟结果回填；`ExperienceStore` 沿用 RunStore 范式。**不引入 Vector DB / Graph DB / CQRS**。实现待 Review 批准后另启
 
 > 方针：**数据库作为增强能力，不作为开发前置环境**。开发/测试/单机默认 local-first（SQLite），并发/规模/共享场景再切 `SHANHAI_RUN_STORE=postgres`。
 

@@ -25,6 +25,7 @@
   - [0011 Model Provider 架构](架构决策记录/0011-Model-Provider-Architecture.md)
   - [0012 Agent Memory 架构](架构决策记录/0012-Agent-Memory-Architecture.md)
   - [0013 Agent Evaluation Feedback 架构](架构决策记录/0013-Agent-Evaluation-Feedback-Architecture.md)
+  - [0014 Agent Experience Memory 架构（Event Log Lite，ADR 0012 扩展）](架构决策记录/0014-Agent-Experience-Memory-Architecture.md)
 
 ## AI 评审入口
 

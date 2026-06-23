@@ -42,6 +42,7 @@
 - ADR 0011：Model Provider 架构（真实 Provider 复用 ModelProvider 接口 + 机密走环境变量 + Mock 永久默认）。
 - ADR 0012：Agent Memory 架构（Memory 与 Knowledge Engine 正交分层 + Runtime/Knowledge/Experience 三层模型 + MemoryStore 抽象 + Agent 经 Tool/Service 访问，仅设计）。
 - ADR 0013：Agent Evaluation Feedback 架构（Evaluation→Feedback→Experience Memory 闭环 + 度量/归因/沉淀三段分层 + ExperienceCandidate 生成与晋升规则 + Feedback 独立组合层，仅设计）。
+- ADR 0014：Agent Experience Memory 架构（ADR 0012 扩展，Event Log Lite：ExperienceEvent append-only 事件 + Episode/SemanticExperience 投影 + refs 引用 run_id/evaluation/entity_ids + outcome 延迟回填；不引入 Vector/Graph/CQRS，仅设计）。
 - `tests/test_agent_runtime.py`：生命周期 / Agent→Tool / 未授权拒绝 / Workflow 兼容 / 多步循环 / max_steps 截断，已通过；Phase 0 冒烟测试不受影响。
 - `tests/test_wiki_extraction.py`：Extractor 实体/关系/别名/去噪单测 + WikiExtractionAgent 链路集成测，已通过。
 - `tests/test_run_store.py`：InMemoryRunStore 契约 + Runner 落库 + best-effort 失败容错，已通过。

@@ -160,3 +160,34 @@ Agent → context.use_tool("experience_*") → MemoryTool → MemoryService
 - **立即引入 Vector 检索做语义召回**：把检索实现误当记忆架构、过早引入重依赖，违反「Knowledge≠RAG+Vector」，不采纳；keyword/字段过滤起步，vector 远期另开 ADR。
 - **Episode 复制 RunStore 的 Step 明细**：双写、冗余、漂移，不采纳；Episode 经 `run_id` 引用 RunStore。
 - **经验事件可就地修改/删除以"更新"结论**：破坏可复盘/可审计、丢失「当时认知」，不采纳；一律以新事件（如 `outcome`/`lesson`）追加修正。
+
+## 增补（Addendum，2026-06-23）：Stage 2-a — Outcome Feedback Foundation
+
+> 背景：本 ADR §1 列出 `decision / observation / outcome` 等事件类型，但未规定其**生产者**，导致 Stage 1 落地后只有 `lesson`（由 ADR 0013 Feedback 写）有真实来源，其余事件类型为设计真空。同时 §6 建议接口 `get_episode` / `query` 与 Stage 1 实际实现（`append / get / list`）尚未对齐，`list` 缺 `episode_id` / `parent_event_id` 过滤，无法支撑「decision → outcome」关联与跨 run 情景聚合。经 Phase 2/3 评审，新增 **ADR 0015** 作为本 ADR 的 **Stage 2-a 实现决策**，本节登记其范围与对本 ADR 的影响，**不重新设计 Event Log**。
+
+### A. 事件生产者定义（引用 ADR 0015）
+
+`decision / observation / outcome` 的生产者由 ADR 0015 定义，均为 **service 层写入编排能力**，落于 `services/experience/shanhai_experience/ingest/`：
+
+| 事件类型 | 生产者 | 来源 |
+|---------|--------|------|
+| `decision` / `observation` | `ExperienceRecorder` | `RunRecord`（经 RunStore 抽象只读，不改 `AgentRunner`） |
+| `outcome` | `OutcomeIngestor` | 外部真实结果（调用方注入，Stage 2-a 不接真实数据源） |
+| `lesson` | `Feedback`（ADR 0013，已实现） | `EvaluationResult` |
+
+不变量不变：Agent 不直接写 Experience；`agent-runtime` 不依赖 `experience`；三类生产者互不依赖、均经 `ExperienceStore.append`（service → service）。详见 ADR 0015。
+
+### B. 查询能力要求（修正本 ADR §6 接口形态）
+
+`ExperienceStore` 读接口在 Stage 1 的 `list(agent / type / entity_id / since / limit)` 基础上**增加** `episode_id` 与 `parent_event_id` 过滤，落实本 ADR §6 提出的 `get_episode` / `query` 意图：
+
+- `list(parent_event_id=...)` → 支撑 `decision --parent_event_id--> outcome`（延迟结果回填的关联查询）。
+- `list(episode_id=...)` → 支撑 `episode → {decision, observation, outcome, lesson}`（跨 run 情景聚合）。
+
+仅扩展查询：**不修改 `ExperienceEvent` schema、不修改 `append` 契约**（守本 ADR 不可变铁律）。
+
+### C. episode 跨 run 语义（明确本 ADR §2）
+
+明确 `episode_id != run_id`：`episode` 是长期研究主题 / 认知任务，`run` 是一次执行实例，一个 episode 可串联多次 run（如「Tesla 2026 Q1 投资研究」串联 run-001 初次分析 / run-002 财报更新 / run-003 结果验证）。`episode_id` 缺省时回退 `run_id`（兼容 Stage 1），回退逻辑由 ADR 0015 的统一函数 `resolve_episode_id(explicit, run_id)` 收口。
+
+本节不引入 Vector / Graph / CQRS / Episode 物化投影（与本 ADR 既有约束一致）；Stage 2-a 只建「decision → outcome → lesson」事实链。

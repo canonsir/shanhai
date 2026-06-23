@@ -201,3 +201,41 @@ feedback ──→ evaluation     （只读消费 EvaluationResult）
 - **仅实现 `FailurePattern → Candidate → Lesson` 闭环**：单规则 `FailurePatternRule`（`passed==False` 按 `error_type` 产候选）+ `CandidateRegistry`（进程内去重/合并/计数）+ 阈值晋升 + `ExperienceStore.append`。
 - **不在 Stage 1**：`regression` / `effective_path` 规则、`Episode` / `SemanticExperience` 投影（属 ADR 0014 Stage 2/3）、模型在环归因、Vector/Graph/CQRS、新增 DB；不修改 `AgentRunner` 与 `ExperienceStore` 契约（只 append）。
 - 模块落点不变：新增 `services/feedback`（`shanhai_feedback`），离线/按需运行。
+
+## 增补（Addendum 2，2026-06-23）：Feedback / Candidate 语义对齐（ADR 0015 Decision F 衍生）
+
+> 背景：ADR 0015 Decision F 确立 Experience 三层演进边界（`ExperienceEvent → ExperienceCandidate → ExperienceArtifact`），并指出「`ExperienceEvent = Experience`」是长期风险假设。本增补据此补充 Feedback 的架构语义定位，**不改动 Stage 1 任何代码与行为**。
+
+### D. Feedback 的本质产物是 `ExperienceCandidate`，而非 `lesson` 事件
+
+- Feedback 归因/提炼的**本质产物是 `ExperienceCandidate`**（候选规律），与本 ADR §1/§4 一致。`lesson` 事件只是 Stage 1 候选晋升后的**落地形态之一**（写入事件层供即时反哺）。
+- 因此 Feedback 的架构语义修正为：
+
+```
+Evaluation
+   │
+Feedback
+   │
+ExperienceCandidate        ← Feedback 的本质产物（候选规律）
+
+Stage 1（已实现）：
+   Candidate → ExperienceEvent(type=lesson)     # 事件层即时反馈，不代表稳定知识
+
+Future（延期，另启 ADR）：
+   Candidate → ExperienceArtifact               # 经验证/晋升的可复用、可演化经验资产
+```
+
+### E. 语义边界声明（约束未来，不改当前实现）
+
+- **`lesson` 事件是事件层反馈，不等于稳定知识**：它属事实流（`ExperienceEvent`），是 Feedback 在事件层的即时归因产物，**不等同于** `ExperienceArtifact`。
+- **`ExperienceArtifact` 经 Candidate Promotion 生成**：未来由 `ExperienceCandidate` 经验证/晋升固化为经验资产，该层另启 ADR 设计，不在当前范围。
+- **当前实现保持不变**：Stage 1 的 `ExperienceCandidate` / `FailurePatternRule` / `CandidateRegistry` / `FeedbackEngine`（晋升落 `type=lesson` 事件）及其依赖方向、写经验路径（决策①）**全部不变**。本增补仅澄清架构语义层次，为未来 Artifact 化预留边界，避免届时重构。
+
+### F. `ExperienceCandidate` 属 Experience Evolution 概念，不长期绑定 Feedback（演进声明）
+
+> 非阻塞演进声明：`ExperienceCandidate` 本质属于 **Experience Evolution** 概念，而非 Feedback 私有产物。当前 Stage 1 由 Feedback 模块产生与管理，仅是起步形态。
+
+- **当前 Stage 1**：`ExperienceCandidate` 由 `Feedback` 模块产生和管理（`CandidateRegistry` 进程内去重/合并/晋升）。
+- **未来**：随着 `ExperienceArtifact` Promotion、Experience Mining、成功路径发现等能力增加，`CandidateRegistry` 可能演进为**独立的 Experience Evolution Layer**。
+- **原因**：未来 Candidate 来源不会只有 Feedback。例如**成功策略发现 / 高频有效路径挖掘 / Agent Skill Evolution** 都可能产生 Candidate。因此避免长期绑定 `Feedback → Candidate` 这一单一来源假设。
+- **本声明不改当前实现**：Stage 1 仍由 Feedback 承载 Candidate 生产与管理；演进至独立 Layer 时另启 ADR。

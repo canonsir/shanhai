@@ -20,6 +20,7 @@ from shanhai_experience import (
     ExperienceEventType,
     ExperienceRefs,
     ExperienceStore,
+    resolve_episode_id,
 )
 
 from shanhai_feedback.models import ExperienceCandidate
@@ -70,7 +71,7 @@ class FeedbackEngine:
             else None
         )
         event = ExperienceEvent(
-            episode_id=trigger_run or candidate.dedup_key,
+            episode_id=resolve_episode_id(None, trigger_run or candidate.dedup_key),
             agent=candidate.agent,
             type=ExperienceEventType.LESSON,
             payload={

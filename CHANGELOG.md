@@ -42,7 +42,9 @@
 - ADR 0011：Model Provider 架构（真实 Provider 复用 ModelProvider 接口 + 机密走环境变量 + Mock 永久默认）。
 - ADR 0012：Agent Memory 架构（Memory 与 Knowledge Engine 正交分层 + Runtime/Knowledge/Experience 三层模型 + MemoryStore 抽象 + Agent 经 Tool/Service 访问，仅设计）。
 - ADR 0013：Agent Evaluation Feedback 架构（Evaluation→Feedback→Experience Memory 闭环 + 度量/归因/沉淀三段分层 + ExperienceCandidate 生成与晋升规则 + Feedback 独立组合层，仅设计）。
-- ADR 0014：Agent Experience Memory 架构（ADR 0012 扩展，Event Log Lite：ExperienceEvent append-only 事件 + Episode/SemanticExperience 投影 + refs 引用 run_id/evaluation/entity_ids + outcome 延迟回填；不引入 Vector/Graph/CQRS，仅设计）。
+- ADR 0014：Agent Experience Memory 架构（ADR 0012 扩展，Event Log Lite：ExperienceEvent append-only 事件 + Episode/SemanticExperience 投影 + refs 引用 run_id/evaluation/entity_ids + outcome 延迟回填；不引入 Vector/Graph/CQRS，仅设计）。增补 Stage 2-a — Outcome Feedback Foundation（事件生产者定义引用 ADR 0015 + `list` 增 episode_id/parent_event_id 查询能力 + episode 跨 run 语义）。
+- ADR 0015：Agent Experience Outcome Feedback 架构（ADR 0014 Stage 2-a 实现决策）：定义 Experience Event Producer 体系（Feedback=lesson 已存在 + ExperienceRecorder=decision/observation + OutcomeIngestor=outcome）+ 延迟结果回填（occurred_at/recorded_at 分离 + parent_event_id 挂回 decision）+ episode 跨 run（`episode_id != run_id`，回退收口 `resolve_episode_id`）；生产者归 `services/experience/.../ingest`，不新增平级 service；不改 ExperienceEvent schema/append 契约，不改 AgentRunner/RunResult；明确延期 Semantic/Episode 投影/Vector/Graph/CQRS/EventBus/EvaluationStore/Memory 持久化/LLM 自动归因。**Decision F**：声明 Experience 三层演进边界 `ExperienceEvent（事实）→ ExperienceCandidate（候选规律）→ ExperienceArtifact（经验资产）`，明确 `ExperienceEvent ≠ 最终经验资产`、`lesson` 仅为事件层反馈不代表稳定知识；Artifact 层与 Knowledge Projection（WeKnora/llm-wiki）均延期、另启 ADR（仅声明边界，不改 Stage 2-a 代码）。
+- ADR 0013：增补 Addendum 2（Feedback/Candidate 语义对齐，衍生自 ADR 0015 Decision F）：明确 Feedback 本质产物是 `ExperienceCandidate`，`Stage 1: Candidate → lesson 事件`（事件层即时反馈）、`Future: Candidate → ExperienceArtifact`（经验资产化）；并声明 `ExperienceCandidate` 属 Experience Evolution 概念，未来来源不止 Feedback（成功策略发现 / 高频有效路径挖掘 / Agent Skill Evolution），`CandidateRegistry` 可能演进为独立 Experience Evolution Layer，避免长期绑定 `Feedback → Candidate`；仅澄清架构语义层次，Stage 1 代码与行为不变。
 - Experience Event Infrastructure（ADR 0014 Stage 1，事实基座落地）。
   - 新增 `services/experience`：`models.py`（`ExperienceEventType` 枚举 decision/observation/evaluation/outcome/lesson + `ExperienceRefs` 引用 run_id/evaluation_ref/entity_ids/parent_event_id + `ExperienceEvent` 含 payload/occurred_at/recorded_at，event_id 自动生成）。
   - `services/experience/store.py`：`ExperienceStore` 抽象（append-only，无 update/delete）+ `InMemoryExperienceStore`（沿用 RunStore 范式），支持 `append`/`get`/`list`（按 agent/type/entity_id/since/limit 过滤，occurred_at 倒序，无向量检索）。
@@ -66,6 +68,14 @@
   - 约束：仅 `FailurePattern` 单规则；不实现 regression/effective_path、Episode/SemanticExperience 投影、模型在环归因、Vector/Graph/CQRS、新增 DB；不改 `AgentRunner` 与 `ExperienceStore` 契约（只 append）。依赖单向 `feedback → evaluation + experience + agent-runtime`。
   - ADR 0013 增补 Addendum（Stage 1 实现决策）：写经验归口 ExperienceStore、晋升产物=lesson 事件、Stage 1 范围收敛。
   - 接入根 `pyproject.toml` workspace（members + sources）。
+- Experience Outcome 回填基座 — Stage 2-a（ADR 0015：decision → outcome → lesson 事实链）。
+  - `services/experience/store.py`：`ExperienceStore.list` 新增 `episode_id` / `parent_event_id` 过滤（仅扩展查询，不改 schema、不改 append 契约），支撑「decision --parent_event_id--> outcome」关联与跨 run episode 聚合。
+  - 新增 `services/experience/.../ingest/`：`episode.py`（`resolve_episode_id(explicit, run_id)` 统一回退收口）+ `recorder.py`（`ExperienceRecorder`：`RunRecord → decision`，可选 `observation`；从 RunStore 取稳定 run_id，不改 AgentRunner）+ `outcome.py`（`OutcomeIngestor.ingest(decision_event_id, outcome, occurred_at)`：外部结果 → `type=outcome` 事件，经 `parent_event_id` 挂回 decision，append-only 不回改 decision，occurred_at/recorded_at 分离）。
+  - `services/feedback/engine.py`：`_promote` 改用 `resolve_episode_id` 解析 episode_id（跨 run 语义，缺省回退 run，行为兼容 Stage 1）。
+  - episode 跨 run：`episode_id != run_id`，episode=研究主题/认知任务、run=执行实例，一 episode 串联多 run。Stage 2-a 不接真实数据源（调用方注入结构化结果），不做股票 API/数据同步/定时任务/市场 pipeline。
+  - 不变量保持：Agent 不直接写 Experience（EXPERIENCE 经 MemoryTool 只读）；agent-runtime 不依赖 experience；生产者均 service→service 经 `ExperienceStore.append`。依赖新增单向 `experience → agent-runtime`（只读 RunRecord）。
+  - 明确延期（不在 Stage 2-a）：SemanticExperience / Episode 物化投影 / Vector / Graph / CQRS / EventBus / EvaluationStore / Memory 持久化 / LLM 自动总结 lesson / 自动正确性归因。
+  - ADR 0014 增补 Stage 2-a 节、新增 ADR 0015；ADR 0012 正文同步登记后续 TODO（Memory/Experience 持久化阶段统一回填）。
 - `tests/test_agent_runtime.py`：生命周期 / Agent→Tool / 未授权拒绝 / Workflow 兼容 / 多步循环 / max_steps 截断，已通过；Phase 0 冒烟测试不受影响。
 - `tests/test_wiki_extraction.py`：Extractor 实体/关系/别名/去噪单测 + WikiExtractionAgent 链路集成测，已通过。
 - `tests/test_run_store.py`：InMemoryRunStore 契约 + Runner 落库 + best-effort 失败容错，已通过。
@@ -75,6 +85,7 @@
 - `tests/test_experience.py`：ExperienceStore append/get/未命中/自动 event_id/list 过滤(agent/type/entity_id/since/limit)+倒序/append-only 拒绝覆盖且无 update-delete/refs 只引用不复制，已通过。
 - `tests/test_memory.py`：三 scope（runtime 读写 / knowledge 只读检索 / experience 只读检索）+ 只读 scope 拒写 + MemoryTool action 派发 + 经 AgentContext 授权访问与未授权拒绝，已通过。
 - `tests/test_feedback.py`：FailurePatternRule 失败产候选/成功不产 + CandidateRegistry 合并计数与阈值晋升 + FeedbackEngine 阈值前不落/达阈值晋升一条/不重复晋升 + lesson 只引用不复制度量 + 端到端 Run→Eval→Feedback→Lesson 并经 MemoryTool 只读反哺，已通过。
+- `tests/test_experience_ingest.py`：resolve_episode_id 显式优先/回退/皆空报错 + Case1 RunRecord→decision（含 observation）+ Case2 decision→outcome 回填（parent 关联/append-only/双时间戳分离）+ Case3 跨 run episode 聚合查全量 + Case4 Agent 经 MemoryTool 只读 Experience、写入被拒，已通过。
 
 ### Docs
 - 新增项目上下文文档体系：`docs/PRODUCT_VISION.md`、`docs/ARCHITECTURE_CONTEXT.md`、`docs/DEVELOPMENT_PRINCIPLES.md`。

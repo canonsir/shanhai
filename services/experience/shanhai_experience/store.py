@@ -36,6 +36,8 @@ class ExperienceStore(ABC):
         entity_id: str | None = None,
         since: datetime | None = None,
         limit: int = 50,
+        episode_id: str | None = None,
+        parent_event_id: str | None = None,
     ) -> list[ExperienceEvent]:
         """按 occurred_at 倒序列出事件；字段过滤，无向量检索。
 
@@ -44,6 +46,8 @@ class ExperienceStore(ABC):
         - entity_id：命中 refs.entity_ids 的事件（关于某知识实体）
         - since：只取 occurred_at >= since 的事件
         - limit：返回上限
+        - episode_id：按情景聚合（跨 run 研究主题，ADR 0015）
+        - parent_event_id：命中 refs.parent_event_id 的事件（如某 decision 的 outcome 回填）
         """
         raise NotImplementedError
 
@@ -70,6 +74,8 @@ class InMemoryExperienceStore(ExperienceStore):
         entity_id: str | None = None,
         since: datetime | None = None,
         limit: int = 50,
+        episode_id: str | None = None,
+        parent_event_id: str | None = None,
     ) -> list[ExperienceEvent]:
         events = sorted(
             self._events.values(), key=lambda e: e.occurred_at, reverse=True
@@ -82,4 +88,8 @@ class InMemoryExperienceStore(ExperienceStore):
             events = [e for e in events if entity_id in e.refs.entity_ids]
         if since is not None:
             events = [e for e in events if e.occurred_at >= since]
+        if episode_id is not None:
+            events = [e for e in events if e.episode_id == episode_id]
+        if parent_event_id is not None:
+            events = [e for e in events if e.refs.parent_event_id == parent_event_id]
         return events[:limit]

@@ -1,10 +1,11 @@
 [project]
 name = "shanhai-experience"
 version = "0.1.0"
-description = "ShanHai Experience — Agent 经验事件基座（Event Log Lite，ADR 0014 Stage 1：Experience Event Infrastructure）"
+description = "ShanHai Experience — Agent 经验事件基座（Event Log Lite，ADR 0014 Stage 1；ADR 0015 Stage 2-a：Outcome 回填基座）"
 requires-python = ">=3.11"
 dependencies = [
     "pydantic>=2.6",
+    "shanhai-agent-runtime",
 ]
 
 [build-system]

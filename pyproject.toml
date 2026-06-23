@@ -1,6 +1,6 @@
 [project]
 name = "shanhai"
-version = "0.1.0"
+version = "0.2.0"
 description = "ShanHai (山海) — AI Native 中国资本市场认知与决策系统"
 requires-python = ">=3.11"
 readme = "README.md"

@@ -24,7 +24,7 @@ https://github.com/canonsir/shanhai
 
 ## 当前版本
 
-v0.1.0 · Phase 0 — Harness Foundation
+v0.2.0 · Phase 1 — Agent Runtime（Experience Evolution Layer Stage 2-b）
 
 ## 当前关注点
 

@@ -23,6 +23,7 @@
   - [0010 Evaluation Loop 架构](架构决策记录/0010-Evaluation-Loop-Architecture.md)
   - [0011 Model Provider 架构](架构决策记录/0011-Model-Provider-Architecture.md)
   - [0012 Agent Memory 架构](架构决策记录/0012-Agent-Memory-Architecture.md)
+  - [0013 Agent Evaluation Feedback 架构](架构决策记录/0013-Agent-Evaluation-Feedback-Architecture.md)
 
 ## AI 评审入口
 

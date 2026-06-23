@@ -26,11 +26,14 @@ from shanhai_experience_evolution.models import (
     Lineage,
     SourceRefs,
     ValidationStats,
+    ValidationVerdict,
 )
+from shanhai_experience_evolution.proposals import CandidateProposal
 from shanhai_experience_evolution.repository import (
     CandidateRepository,
     InMemoryCandidateRepository,
 )
+from shanhai_experience_evolution.service import CandidateService, TransitionError
 
 __all__ = [
     "Actor",
@@ -40,10 +43,14 @@ __all__ = [
     "SourceRefs",
     "EvidenceRefs",
     "ValidationStats",
+    "ValidationVerdict",
     "Lineage",
     "ExperienceCandidate",
     "ALLOWED_TRANSITIONS",
     "is_allowed_transition",
     "CandidateRepository",
     "InMemoryCandidateRepository",
+    "CandidateProposal",
+    "CandidateService",
+    "TransitionError",
 ]

@@ -118,3 +118,21 @@ class Lineage(BaseModel):
     parent_candidate_id: str | None = None
     derived_from_event_ids: list[str] = Field(default_factory=list)
     notes: str = ""
+
+
+class ValidationVerdict(BaseModel):
+    """验证裁决（ADR 0017 修正 4：validate(candidate_id) -> ValidationVerdict）。
+
+    由 Validator 产出、CandidateService.apply_validation 消费的纯数据对象：
+    - validated：True → 走向 Validated，False → 走向 Rejected。
+    - confidence / validation_stats：本次验证得出的置信与统计（非 occurrence 计数）。
+    - evidence_refs：「为什么相信」的证据引用（与 source_refs 区分）。
+    - reason：人/Agent 可读的裁决理由。
+    Service 据此驱动 Evaluating → Validated/Rejected，并回写证据与统计。
+    """
+
+    validated: bool
+    confidence: float = 0.0
+    validation_stats: ValidationStats = Field(default_factory=ValidationStats)
+    evidence_refs: EvidenceRefs = Field(default_factory=EvidenceRefs)
+    reason: str = ""

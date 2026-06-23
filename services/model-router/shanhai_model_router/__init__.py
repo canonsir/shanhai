@@ -11,6 +11,7 @@ from shanhai_model_router.providers.base import (
     CompletionResult,
     ModelProvider,
 )
+from shanhai_model_router.providers.deepseek import DeepSeekProvider
 from shanhai_model_router.providers.mock import MockProvider
 from shanhai_model_router.registry import ModelRegistry
 from shanhai_model_router.router import ModelRouter
@@ -19,6 +20,7 @@ __all__ = [
     "CompletionResult",
     "ModelProvider",
     "MockProvider",
+    "DeepSeekProvider",
     "ModelRegistry",
     "ModelRouter",
 ]

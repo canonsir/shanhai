@@ -28,16 +28,24 @@
   - `services/evaluation/models.py`：`Metric`（name/value/layer/unit）+ `EvaluationResult`（run_id/evaluator/metrics/passed/detail/created_at，含 `value(name)` 取值）。
   - `services/evaluation/evaluator.py`：`Evaluator` 抽象 + `RuntimeEvaluator`（指标 success / step_count / tool_usage_count / error_type），输入 `RunResult` 或 `RunStore` 读出的 `RunRecord`，输出 `EvaluationResult`。
   - 边界：只经 `RunStore`/`RunResult` 只读取数，不直连 DB、不调用模型、不修改 Agent Runtime / Tool Registry；依赖单向 `evaluation → agent-runtime`。Layer 2/3 预留。
+- 真实 Model Provider — DeepSeek 适配器（ADR 0011，Phase 2.5.1）。
+  - `services/model-router/.../providers/deepseek.py`：`DeepSeekProvider` 实现 `ModelProvider.complete(spec, messages) -> CompletionResult`；网络调用走可注入 transport，默认标准库 urllib（零新依赖），从 `spec.options` 取 `model`/`base_url`/`timeout`。
+  - 机密只从环境变量 `SHANHAI_DEEPSEEK_API_KEY` 读取，缺失明确报错；新增根目录 `.env.example`（`.env` 已 gitignore）。
+  - `models.yaml` 的 `deepseek` 增加 `options`（model id + base_url），不含任何密钥。
+  - `MockProvider` 仍为默认 Provider：未注册真实 Provider 时按既有机制回退 mock，无 API Key 可跑全部测试。
+  - 调用方与 Agent Runtime 零改动；Router 现有 `complete`/`select` 签名不变。
 - ADR 0006：Agent Runtime 执行模型。
 - ADR 0007：Wiki 信息提取流程（职责三层划分 + Agent→Tool→Service 调用链）。
 - ADR 0008：运行记录持久化（RunStore 抽象 + 依赖注入 + best-effort 落库）。
 - ADR 0009：Local-first 持久化（SQLite 默认后端 + 装配工厂，Postgres 降为增强）。
 - ADR 0010：Evaluation Loop 架构（反馈闭环定位 + 三层模型 + Evaluator/EvaluationResult/Metric 契约）。
+- ADR 0011：Model Provider 架构（真实 Provider 复用 ModelProvider 接口 + 机密走环境变量 + Mock 永久默认）。
 - `tests/test_agent_runtime.py`：生命周期 / Agent→Tool / 未授权拒绝 / Workflow 兼容 / 多步循环 / max_steps 截断，已通过；Phase 0 冒烟测试不受影响。
 - `tests/test_wiki_extraction.py`：Extractor 实体/关系/别名/去噪单测 + WikiExtractionAgent 链路集成测，已通过。
 - `tests/test_run_store.py`：InMemoryRunStore 契约 + Runner 落库 + best-effort 失败容错，已通过。
 - `tests/test_local_persistence.py`：SqliteRunStore 契约 + 落盘 + 跨连接持久化 + Runner 落库 + 工厂选后端，已通过。
 - `tests/test_evaluation.py`：RuntimeEvaluator 成功 / 失败 / 多 Step / 空 Run / 经 RunStore 取数，已通过。
+- `tests/test_deepseek_provider.py`：DeepSeekProvider 请求构造/响应解析/缺 Key 报错/异常响应 + 端到端 Agent→Router→DeepSeek（Fake Transport）+ Mock 仍默认，已通过。
 
 ### Docs
 - 新增项目上下文文档体系：`docs/PRODUCT_VISION.md`、`docs/ARCHITECTURE_CONTEXT.md`、`docs/DEVELOPMENT_PRINCIPLES.md`。

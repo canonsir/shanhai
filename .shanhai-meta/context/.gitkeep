@@ -1,7 +1,9 @@
-# Layer 3：Context Snapshot（派生物，由 builder 重建）
+# Layer 3：Context Snapshot（派生物，由 builder/renderer 重建）
 #
-# 派生。AI 不直接修改本目录（见 ADR 0000 §D9）。Commit 5 落地：
-#   current-state.md          AI 启动首读
-#   architecture-summary.md
-#   timeline.md
-# 要更新内容：改事实源 + 重跑 tools/context/build_context.py。
+# 派生。AI 不直接修改本目录（见 ADR 0000 §D9）。已落地：
+#   cognition.json            AI 启动认知枢纽（CognitionSnapshot，5A 确定性装配，机器读）
+#   current-state.md          上者的人读视图（5B renderer 渲染，纯函数）
+# 要更新内容：改事实源（project.yaml / decisions/registry.jsonl）
+#            → 重跑 tools/context/builder.py → 重跑 tools/context/renderer.py。
+#
+# 注：architecture-summary.md / timeline.md 暂不生成（YAGNI，需要时再加）。

@@ -161,7 +161,7 @@ def test_defaults_and_zero_dependency() -> None:
     with open(src, encoding="utf-8") as f:
         tree = ast.parse(f.read())
 
-    stdlib_roots = {"json", "dataclasses", "datetime", "enum", "typing", "__future__"}
+    stdlib_roots = {"json", "dataclasses", "datetime", "enum", "typing", "__future__", "hashlib"}
     imported_roots: set[str] = set()
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):

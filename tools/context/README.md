@@ -5,10 +5,13 @@
 
 | 脚本 | 作用 | 落地 |
 |---|---|---|
-| `schema.py` | Context Domain Model：ContextEvent / DecisionRecord / ContextSnapshot（可逆 JSON + 校验） | Commit 2 ✅ |
+| `schema.py` | Context Domain Model：ContextEvent / DecisionRecord / ContextSnapshot / CognitionSnapshot（可逆 JSON + 校验） | Commit 2 ✅（4 增补 DecisionRecord，5A 加 CognitionSnapshot） |
 | `import_chat.py` | Raw 导出 → ContextEvent 流（`actor=unknown`，`source.ref=raw#id` 幂等去重，provenance 保留） | Commit 3B ✅ |
-| `append_conversation.py` | 单条追加 ContextEvent（人 / 各 AI 决策的持续同步入口） | Commit 4 |
-| `build_context.py` | 事实源（raw/stream/decisions）→ `context/*.md` 派生（幂等可重跑） | Commit 5 |
+| `decisions.py` | Decision Registry：加载 `registry.jsonl`（唯一结构事实源，机器读）→ 打印瞬态人读视图（不落盘，无第二事实源） | Commit 4 ✅ |
+| `append_conversation.py` | 单条追加 ContextEvent（人 / 各 AI 决策的持续同步入口） | 推迟（先建认知层，不急着导更多事实） |
+| `builder.py` | Cognition Snapshot Builder：`project.yaml` + `registry.jsonl` → `context/cognition.json`（确定性装配，禁 LLM） | Commit 5A ✅ |
+| `renderer.py` | Cognition Snapshot Renderer：`context/cognition.json` → `context/current-state.md`（人读视图，纯函数，禁 LLM） | Commit 5B ✅ |
+| `health.py` | Context Health Check：Source（事实源存在）/ Integrity（决策回链命中 stream）/ Projection（派生物存在），输出 OK / FAILED（只读，禁 LLM） | Commit 5C ✅ |
 
 > Commit 3 拆为 **3A Raw Archive**（原始导出原封不动迁入 `conversations/raw/`，不解析/不转换/不修改）
 > 与 **3B Importer**（schema 稳定后再做 Raw → ContextEvent）。3A 先建立 Raw Source of Truth。
@@ -33,18 +36,23 @@
 ## 数据流（ADR 0000 §D4 / §D9）
 
 ```
-conversations/raw/  ──import──▶  events/stream.jsonl  ──build──▶  context/*.md
-   (事实源,不可变)               (事实源,append-only)            (派生,勿手改)
+conversations/raw/  ──import──▶  events/stream.jsonl
+   (事实源,不可变)               (事实源,append-only)
                                         ▲
                           append_conversation.py（单条追加）
-                                        │
-                                   decisions/（人工确认事实源）
+
+project.yaml + decisions/registry.jsonl  ──builder──▶  context/cognition.json  ──renderer──▶  context/current-state.md
+   (事实源,人工确认)                       (确定性装配)     (派生认知枢纽,机器读,勿手改)   (纯函数)      (人读视图,勿手改)
 ```
+
+> `cognition.json` 是唯一派生认知枢纽（Agent 直接加载）；`current-state.md` 只是它面向人的一个视图。
+> `AI_CONTEXT.md` 属 Governance / bootstrap manifest（手写），**不由 builder/renderer 生成**。
 
 ## 用法（落地后）
 
 ```bash
-python -m tools.context.import_chat --source .shanhai-meta/conversations/raw/<file>.json
-python -m tools.context.append_conversation --type decision --source trae --body "..."
-python -m tools.context.build_context
+python3 -m tools.context.import_chat --source .shanhai-meta/conversations/raw/<file>.json
+python3 -m tools.context.decisions          # 加载 registry.jsonl，打印瞬态人读视图（不落盘）
+python3 -m tools.context.builder            # project.yaml + registry.jsonl → context/cognition.json
+python3 -m tools.context.renderer           # context/cognition.json → context/current-state.md（人读视图）
 ```

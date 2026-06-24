@@ -3,9 +3,13 @@
 
 project: ShanHai
 description: AI Native 的中国资本市场认知与决策系统
+# mission：项目身份的一部分（来源：README / AI_CONTEXT / AGENTS.md 项目定位），非派生认知。
+mission: 构建能持续学习、理解和分析中国资本市场的 AI Native 认知与决策系统（数据→知识→认知→分析→策略→执行）
 
 version: v0.2.0
 phase: "ADR 0000 Project Context Layer（建设中）"
+# phase_status：当前阶段状态（building/stable/done…），与 phase 配对供 CognitionSnapshot.phase{name,status}。
+phase_status: building
 
 baseline:
   develop: a25d6a1

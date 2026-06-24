@@ -88,6 +88,8 @@ uv run python -m tests.smoke
 
 ## 文档
 
+- AI 协作入口（bootstrap manifest）：[AI_CONTEXT.md](AI_CONTEXT.md)
+- 项目元上下文层（Context Foundation，已封板）：[.shanhai-meta/](.shanhai-meta/README.md) · [ADR 0000](docs/架构决策记录/0000-项目元上下文架构.md)
 - 协作规范与 Agent 开发约束：[AGENTS.md](AGENTS.md)
 - 产品愿景：[docs/PRODUCT_VISION.md](docs/PRODUCT_VISION.md)
 - 架构上下文：[docs/ARCHITECTURE_CONTEXT.md](docs/ARCHITECTURE_CONTEXT.md)

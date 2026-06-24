@@ -4,4 +4,5 @@
 # 文件命名约定：YYYYMMDD-<source>-<title>.json|md
 # 例：20260624-chatgpt-山海架构.json
 #
-# Commit 3 (Raw Import) 会把 memory/raw.json 迁入此处。
+# Commit 3A (Raw Archive) 已将 memory/raw.json 原封不动迁入此处
+# （20260624-chatgpt-山海架构.json，MD5 不变，不解析/不转换/不修改）。

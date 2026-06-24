@@ -1,0 +1,28 @@
+# ShanHai 项目元信息（Project Context Layer）
+# 事实源之一，人工 + 脚本共维护。设计见 ADR 0000。
+
+project: ShanHai
+description: AI Native 的中国资本市场认知与决策系统
+
+version: v0.2.0
+phase: "ADR 0000 Project Context Layer（建设中）"
+
+baseline:
+  develop: a25d6a1
+  main: 3a96128
+  tag: v0.2.0
+
+# 参与方按「角色」建模，不绑定具体模型/厂商（未来 Claude/Gemini/Cursor/Codex 可承担同一角色）。
+# current 仅记录当前承担者，可随时变更，不影响角色契约。
+participants:
+  - { id: human-owner,        role: Product Owner,         current: Owner, note: 产品方向与最终决策 }
+  - { id: architecture-agent, role: Architecture Advisor,  current: GPT,   note: 架构方案与 Review }
+  - { id: coding-agent,       role: Coding Agent,          current: Trae,  note: 实现与工程落地 }
+
+# 冻结项：AI 不得擅自修改（详见各 ADR）
+frozen:
+  - Agent Runtime（services/agent-runtime）
+  - Agent Runtime Memory（services/memory，ADR 0012）
+  - ExperienceEvent schema / ExperienceStore.append 契约（ADR 0014）
+  - Experience Candidate 生命周期（ADR 0017）
+  - v0.2.0 baseline

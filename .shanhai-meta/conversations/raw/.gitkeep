@@ -1,0 +1,7 @@
+# Layer 1：原始对话归档（Raw Conversation Archive）
+#
+# 事实源。不可变：只增不改、不删、不总结替代。
+# 文件命名约定：YYYYMMDD-<source>-<title>.json|md
+# 例：20260624-chatgpt-山海架构.json
+#
+# Commit 3 (Raw Import) 会把 memory/raw.json 迁入此处。

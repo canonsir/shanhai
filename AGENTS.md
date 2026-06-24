@@ -3,6 +3,8 @@
 > 完整协作治理（三方角色职责、5 大架构原则、Coding Agent 四步工作流、Architecture Review 输入/输出格式）见 [docs/COLLABORATION_PROTOCOL.md](docs/COLLABORATION_PROTOCOL.md)。本文件为铁律速览。
 >
 > **任何进入本仓库的 AI Agent（Trae / Codex / Claude Code / 其它）必须先读 [docs/AI_COLLABORATION_PRINCIPLES.md](docs/AI_COLLABORATION_PRINCIPLES.md)**：ShanHai 不是普通 CRUD 项目，而是需要持续架构推理的 AI Native 工程；AI 的角色是 **AI Solution Engineer**（探索 → 讨论 → 收敛 → ADR 固化 → 实现），而非机械的需求执行者。
+>
+> **统一项目上下文入口：先读 [AI_CONTEXT.md](AI_CONTEXT.md)**（项目元上下文层 `.shanhai-meta/` 的入口，含 Read order 与冻结项；见 [ADR 0000](docs/架构决策记录/0000-项目元上下文架构.md)）。
 
 ## 1. 项目定位
 

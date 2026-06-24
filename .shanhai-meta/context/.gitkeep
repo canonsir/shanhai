@@ -1,0 +1,7 @@
+# Layer 3：Context Snapshot（派生物，由 builder 重建）
+#
+# 派生。AI 不直接修改本目录（见 ADR 0000 §D9）。Commit 5 落地：
+#   current-state.md          AI 启动首读
+#   architecture-summary.md
+#   timeline.md
+# 要更新内容：改事实源 + 重跑 tools/context/build_context.py。

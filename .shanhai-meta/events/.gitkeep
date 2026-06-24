@@ -1,0 +1,4 @@
+# ContextEvent 统一事实流（append-only engineering record）
+#
+# 事实源。stream.jsonl 在 Commit 2/3 落地。
+# 注意：ContextEvent ≠ Runtime Event，不参与 Agent 运行，区别于 ExperienceEvent。

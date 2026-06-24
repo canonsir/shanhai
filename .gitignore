@@ -28,6 +28,11 @@ dist/
 # ---- ShanHai local-first 落盘（见 ADR 0009）----
 .shanhai/
 
+# ---- ShanHai Project Context Layer（见 ADR 0000）----
+# .shanhai-meta/ 是版本化的元上下文层，纳入 git 跟踪（与上面可丢弃的 .shanhai/ 区分）。
+# 显式声明纳管，防未来误伤；.shanhai/ 不匹配 .shanhai-meta/，技术上无需取消忽略。
+!.shanhai-meta/
+
 # ---- OS / Editor ----
 .DS_Store
 .idea/

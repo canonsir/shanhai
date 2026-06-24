@@ -1,0 +1,5 @@
+# Layer 2：Decision Registry（决策注册表）
+#
+# 事实源。人工确认。Commit 4 落地：
+#   decision-log.md         已生效决策（背景/决定/原因/影响/关联ADR/状态/来源）
+#   rejected-decisions.md   被否决方案（避免重复犯错）

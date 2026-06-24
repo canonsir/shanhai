@@ -15,6 +15,7 @@ members = [
     "services/evaluation",
     "services/experience",
     "services/experience-evolution",
+    "services/experience-artifact",
     "services/feedback",
     "services/memory",
     "services/persistence",
@@ -36,6 +37,7 @@ shanhai-data-pipeline = { workspace = true }
 shanhai-evaluation = { workspace = true }
 shanhai-experience = { workspace = true }
 shanhai-experience-evolution = { workspace = true }
+shanhai-experience-artifact = { workspace = true }
 shanhai-feedback = { workspace = true }
 shanhai-memory = { workspace = true }
 shanhai-persistence = { workspace = true }

@@ -1,0 +1,15 @@
+[project]
+name = "shanhai-experience-artifact"
+version = "0.1.0"
+description = "ShanHai Experience Artifact — 候选经验晋升后的稳定资产承载层（ADR 0018 Stage 2-c MVP：Validated Experience → Stable Experience Artifact）"
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.6",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["shanhai_experience_artifact"]

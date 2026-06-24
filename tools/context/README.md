@@ -6,7 +6,7 @@
 | 脚本 | 作用 | 落地 |
 |---|---|---|
 | `schema.py` | Context Domain Model：ContextEvent / DecisionRecord / ContextSnapshot（可逆 JSON + 校验） | Commit 2 ✅ |
-| `import_chat.py` | Raw 导出 → ContextEvent 流（`actor=unknown`，`raw#id` 幂等去重） | Commit 3B |
+| `import_chat.py` | Raw 导出 → ContextEvent 流（`actor=unknown`，`source.ref=raw#id` 幂等去重，provenance 保留） | Commit 3B ✅ |
 | `append_conversation.py` | 单条追加 ContextEvent（人 / 各 AI 决策的持续同步入口） | Commit 4 |
 | `build_context.py` | 事实源（raw/stream/decisions）→ `context/*.md` 派生（幂等可重跑） | Commit 5 |
 

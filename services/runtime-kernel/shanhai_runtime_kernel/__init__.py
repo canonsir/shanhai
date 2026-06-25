@@ -23,14 +23,34 @@ PR-1 范围（v0.7 §0.C / E.1 DoD，冻结）：
 注：契约分 Commit 逐步加入（Q2.4 冻结的 5-commit 顺序），导出列表随之增长。
 """
 
+from shanhai_runtime_kernel.context import (
+    ConstraintContext,
+    EnvironmentContext,
+    ExperienceContext,
+    IdentityContext,
+    MetadataContext,
+    PolicyContext,
+    RuntimeContext,
+    TaskContext,
+)
 from shanhai_runtime_kernel.lifecycle import (
     RuntimeState,
     assert_transition,
     can_transition,
 )
+from shanhai_runtime_kernel.types import RuntimeHandle
 
 __all__ = [
+    "RuntimeContext",
+    "IdentityContext",
+    "TaskContext",
+    "ExperienceContext",
+    "PolicyContext",
+    "EnvironmentContext",
+    "ConstraintContext",
+    "MetadataContext",
     "RuntimeState",
     "can_transition",
     "assert_transition",
+    "RuntimeHandle",
 ]

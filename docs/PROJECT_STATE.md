@@ -51,7 +51,7 @@ Phase 1
 
 ## 进行中
 
-- [ ] 架构 Review（等待评审反馈）
+- [ ] RuntimeContext Contract Implementation Review（PR-2 Gate）：PR-1 Runtime Kernel Skeleton 已 Approved；下一步先 Review RuntimeContext v1 contract（`extra="forbid"` / R7 防漂移 / event 与 lifecycle 是否扩展 / package naming），**不直接写 PR-2 实现**。
 
 ## 下一步（已确定路线）
 

@@ -17,7 +17,8 @@ decisions/
     ├── DEC-0001-meta-context-layer.md
     ├── DEC-0002-runtime-meta-boundary.md
     ├── DEC-0003-context-first-then-platform.md
-    └── DEC-0004-future-market-cognition.md
+    ├── DEC-0004-future-market-cognition.md
+    └── DEC-0005-context-identity-principle.md
 ```
 
 ## 两层分工（不维护重复事实，ADR 0000 §D9）
@@ -54,3 +55,4 @@ decisions/
 | DEC-0002 | Runtime Memory 与 Meta Context 分离 | architecture | accepted |
 | DEC-0003 | 先完成上下文统一，再进入平台能力建设（Context before Capability） | strategy | accepted |
 | DEC-0004 | 未来方向：资本市场短线认知能力（future_direction，不开发） | strategy | proposed |
+| DEC-0005 | Context Identity Principle（稳定身份归标识符，可变属性归元数据） | architecture | accepted |

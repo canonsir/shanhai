@@ -32,6 +32,10 @@ dist/
 # .shanhai-meta/ 是版本化的元上下文层，纳入 git 跟踪（与上面可丢弃的 .shanhai/ 区分）。
 # 显式声明纳管，防未来误伤；.shanhai/ 不匹配 .shanhai-meta/，技术上无需取消忽略。
 !.shanhai-meta/
+# Conversation Ingestion（Commit 5D）：inbox 是临时用户输入区，不纳管原始 dump；
+# 仅保留 .gitkeep 占位。raw/ 与 index.jsonl 正式归档，进 git。
+.shanhai-meta/conversations/inbox/*
+!.shanhai-meta/conversations/inbox/.gitkeep
 
 # ---- OS / Editor ----
 .DS_Store

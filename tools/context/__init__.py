@@ -10,6 +10,7 @@
 - builder.py            Cognition Snapshot Builder：project.yaml + registry.jsonl → context/cognition.json（确定性装配，禁 LLM）
 - renderer.py           Cognition Snapshot Renderer：context/cognition.json → context/current-state.md（人读视图，纯函数，禁 LLM）
 - health.py             Context Health Check：Source/Integrity/Projection 体检（OK / FAILED，只读，禁 LLM）
+- conversation_ingest.py Human-AI 会话增量纳管：inbox dump → conversations/raw 快照 + index.jsonl catalog（不进 stream.jsonl，禁 LLM）
 
 注意：本目录是工程元工具，不属于 services/，不参与 Agent 运行。
 """

@@ -24,7 +24,9 @@
 需要追溯原始讨论时，再查：
 
 - `.shanhai-meta/events/stream.jsonl` —— ContextEvent 统一事实流（append-only）
-- `.shanhai-meta/conversations/raw/` —— 原始对话导出（不可变）
+- `.shanhai-meta/conversations/raw/` —— 原始对话导出（不可变）；Human-AI **reasoning trace，非事实源**：
+  对话是推理轨迹，不自动进 `events/stream.jsonl`、不自动抽 Decision（见 ADR 0000 Conversation Ingestion）。
+  仅在需要回看历史推理过程时加载，`conversations/index.jsonl` 是已纳管会话目录（catalog）。
 
 ## 规则
 

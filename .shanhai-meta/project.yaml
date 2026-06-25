@@ -29,4 +29,7 @@ frozen:
   - Agent Runtime Memory（services/memory，ADR 0012）
   - ExperienceEvent schema / ExperienceStore.append 契约（ADR 0014）
   - Experience Candidate 生命周期（ADR 0017）
+  - ContextEvent schema 语义（Context Foundation，ADR 0000，变更需 ADR）
+  - DecisionRecord schema 语义（Context Foundation，ADR 0000，变更需 ADR）
+  - CognitionSnapshot schema 语义（Context Foundation，ADR 0000，变更需 ADR）
   - v0.2.0 baseline

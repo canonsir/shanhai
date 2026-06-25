@@ -1,7 +1,7 @@
 {
   "_metadata": {
-    "cognition_id": "sha256:d796074cf56d4f659d1bb365843c2af1a6613a4c7c46d5617d6dffbbd4181d08",
-    "generated_at": "2026-06-24T12:02:57+00:00",
+    "cognition_id": "sha256:88b592b041ed7653d81a2dbecba8c4102bf370d988010219b580f29e78b48e8e",
+    "generated_at": "2026-06-25T05:18:01+00:00",
     "generated_by": "tools/context/builder.py",
     "inputs": [
       "project.yaml",
@@ -27,6 +27,18 @@
     },
     {
       "type": "frozen",
+      "value": "ContextEvent schema 语义（Context Foundation，ADR 0000，变更需 ADR）"
+    },
+    {
+      "type": "frozen",
+      "value": "DecisionRecord schema 语义（Context Foundation，ADR 0000，变更需 ADR）"
+    },
+    {
+      "type": "frozen",
+      "value": "CognitionSnapshot schema 语义（Context Foundation，ADR 0000，变更需 ADR）"
+    },
+    {
+      "type": "frozen",
       "value": "v0.2.0 baseline"
     }
   ],
@@ -48,6 +60,12 @@
       "source": "registry.jsonl",
       "title": "先完成上下文统一，再进入平台能力建设（Context before Capability）",
       "type": "strategy"
+    },
+    {
+      "id": "DEC-0005",
+      "source": "registry.jsonl",
+      "title": "Context Identity Principle（稳定身份归标识符，可变属性归元数据）",
+      "type": "architecture"
     }
   ],
   "future_directions": [

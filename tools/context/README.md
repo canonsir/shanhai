@@ -12,6 +12,7 @@
 | `builder.py` | Cognition Snapshot Builder：`project.yaml` + `registry.jsonl` → `context/cognition.json`（确定性装配，禁 LLM） | Commit 5A ✅ |
 | `renderer.py` | Cognition Snapshot Renderer：`context/cognition.json` → `context/current-state.md`（人读视图，纯函数，禁 LLM） | Commit 5B ✅ |
 | `health.py` | Context Health Check：Source（事实源存在）/ Integrity（决策回链命中 stream）/ Projection（派生物存在），输出 OK / FAILED（只读，禁 LLM） | Commit 5C ✅ |
+| `conversation_ingest.py` | Conversation Ingestion：`conversations/inbox/` dump → `conversations/raw/` 快照 + `index.jsonl` catalog（增量纳管，identity 比对，失败入 quarantine，**不进 stream.jsonl**，禁 LLM） | Commit 5D ✅ |
 
 > Commit 3 拆为 **3A Raw Archive**（原始导出原封不动迁入 `conversations/raw/`，不解析/不转换/不修改）
 > 与 **3B Importer**（schema 稳定后再做 Raw → ContextEvent）。3A 先建立 Raw Source of Truth。
@@ -48,6 +49,20 @@ project.yaml + decisions/registry.jsonl  ──builder──▶  context/cogniti
 > `cognition.json` 是唯一派生认知枢纽（Agent 直接加载）；`current-state.md` 只是它面向人的一个视图。
 > `AI_CONTEXT.md` 属 Governance / bootstrap manifest（手写），**不由 builder/renderer 生成**。
 
+### Conversation Ingestion 数据流（Commit 5D，独立线，不汇入 stream.jsonl）
+
+```
+conversations/inbox/*.json  ──conversation_ingest──┬──▶  conversations/raw/<file>.json   (最新全量快照,事实源)
+   (用户投放,临时,gitignore)                        ├──▶  conversations/index.jsonl       (catalog,已纳管会话目录)
+                                                    └──▶  conversations/quarantine/<file> (解析失败隔离,不丢弃)
+                                                              ✗
+                                                    （刻意不连 events/stream.jsonl）
+```
+
+> conversation 是 **reasoning trace，不是 ContextEvent 事实源**：增量纳管只更新 raw 快照与 catalog，
+> **不进入** `events/stream.jsonl`、不自动抽 Decision。同一 `conversation_id` 再导出时比对
+> `message_count` / `update_time`：无变化 skip，有变化原地更新（保 `first_seen_at`）。
+
 ## 用法（落地后）
 
 ```bash
@@ -55,4 +70,6 @@ python3 -m tools.context.import_chat --source .shanhai-meta/conversations/raw/<f
 python3 -m tools.context.decisions          # 加载 registry.jsonl，打印瞬态人读视图（不落盘）
 python3 -m tools.context.builder            # project.yaml + registry.jsonl → context/cognition.json
 python3 -m tools.context.renderer           # context/cognition.json → context/current-state.md（人读视图）
+python3 -m tools.context.conversation_ingest            # inbox/*.json → raw/ 快照 + index.jsonl catalog
+python3 -m tools.context.conversation_ingest --backfill # 把 raw/ 内未登记的历史会话补登记进 catalog
 ```

@@ -33,6 +33,8 @@ from shanhai_runtime_kernel.context import (
     RuntimeContext,
     TaskContext,
 )
+from shanhai_runtime_kernel.events import RuntimeEvent, RuntimeEventType
+from shanhai_runtime_kernel.kernel import RuntimeKernel
 from shanhai_runtime_kernel.lifecycle import (
     RuntimeState,
     assert_transition,
@@ -41,6 +43,7 @@ from shanhai_runtime_kernel.lifecycle import (
 from shanhai_runtime_kernel.types import RuntimeHandle
 
 __all__ = [
+    "RuntimeKernel",
     "RuntimeContext",
     "IdentityContext",
     "TaskContext",
@@ -49,6 +52,8 @@ __all__ = [
     "EnvironmentContext",
     "ConstraintContext",
     "MetadataContext",
+    "RuntimeEvent",
+    "RuntimeEventType",
     "RuntimeState",
     "can_transition",
     "assert_transition",

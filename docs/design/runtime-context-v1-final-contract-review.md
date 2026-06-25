@@ -1,6 +1,6 @@
 # RuntimeContext v1 Final Contract Review（PR-2 Design Gate）
 
-> 状态：**✅ Final Contract 可批准（附 3 个冻结条件）— Design Review Only，不写代码**。
+> 状态：**✅ Final Contract Approved → PR-2 Implementation Completed（纯契约实现，零执行集成）**。
 > 前置：PR-1 Runtime Kernel Skeleton + Contract Layer 已 Approved。
 > 目标：冻结 RuntimeContext v1 的最终定位、schema、immutability、AgentContext 边界与 PR-2 implementation scope。
 
@@ -761,3 +761,37 @@ PR-2 结束条件：
 - 不接 Experience Runtime / Memory / Domain Provider / ArtifactReader。
 
 > 当前停在 **RuntimeContext v1 Final Contract Review Gate**。未开始 PR-2 代码实现。
+
+---
+
+## 9. PR-2 Implementation Result
+
+PR-2 已按本 Review 的冻结条件完成纯契约实现。
+
+已实现：
+
+- `metadata_context → intent_context`。
+- 七个 context v1 schema：`identity_context` / `task_context` / `intent_context` / `experience_context` / `policy_context` / `constraint_context` / `environment_context`。
+- `ConfigDict(frozen=True, extra="forbid")` 应用于 RuntimeContext 与所有子 context。
+- `schema_version: Literal["1.0"]`。
+- `SelectedExperienceRef`：仅承载 `artifact_id` / `relevance` / `reason`。
+- contract tests：
+  - deep immutable
+  - unknown field rejected
+  - execution/storage fields rejected
+  - field-level contract table
+  - schema evolution v1.0 forbid unknown field
+
+未触碰：
+
+- `kernel.py`
+- `events.py`
+- `lifecycle.py`
+- `agent-runtime`
+- RunStore
+- Experience Runtime
+- Memory
+- ArtifactReader
+- E2E integration
+
+> PR-2 完成后停在 **PR-3 RunStore identity migration Review Gate**。

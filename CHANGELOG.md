@@ -16,6 +16,16 @@
   - 接入根 `pyproject.toml` workspace（members + sources）；依赖方向 `runtime-kernel → agent-runtime public interface`（调用非包含），仅依赖 pydantic。
   - 边界（PR-1 范围外，明确禁止）：no AgentRunner integration / no RunStore change / no Experience Runtime / no Memory / no Domain Provider / no ArtifactReader；ADR 0018 维持 MVP Contract Established 不 Finalize。
 
+### Changed
+- Runtime Kernel PR-2 — RuntimeContext v1 Contract Implementation（纯契约实现，零执行集成）。
+  - `RuntimeContext` 定位冻结为 **Execution Initialization Snapshot**，只描述本次 Run 为什么 / 如何被语境化，不承载 Agent state / Memory / Conversation state / Experience storage。
+  - `metadata_context → intent_context`：移除自由形态 `MetadataContext`，新增 `IntentContext`（objective / user_intent / decision_intent），避免 metadata 垃圾抽屉。
+  - 七个 context v1 schema 冻结：`identity_context`（run_id / trace_id / schema_version）、`task_context`（task_type / goal / input）、`intent_context`、`experience_context`、`policy_context`、`constraint_context`、`environment_context`。
+  - deep immutable by schema：所有 context model 使用 `ConfigDict(frozen=True, extra="forbid")`；集合字段用 tuple；`schema_version` 固定为 `Literal["1.0"]`。
+  - `experience_context` 只承载 `SelectedExperienceRef` 引用与选择理由/分数，不承载 Artifact content / Memory / embedding / raw document。
+  - 增补 `tests/runtime_kernel/test_context_v1_contract.py`，并强化 `test_context_contract.py`：unknown field reject、execution/storage 字段 reject、schema evolution v1.0 forbid、deep immutable。
+  - 明确未触碰：`kernel.py` / `events.py` / `lifecycle.py` / `agent-runtime` / RunStore / Experience Runtime / Memory / ArtifactReader / E2E。
+
 ## [0.2.0] — 2026-06-23 · Phase 1：Agent Runtime（Experience Evolution Layer Stage 2-b）
 
 ### Added

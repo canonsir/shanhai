@@ -10,6 +10,7 @@ members = [
     "services/harness-core",
     "services/model-router",
     "services/agent-runtime",
+    "services/runtime-kernel",
     "services/wiki-engine",
     "services/data-pipeline",
     "services/evaluation",
@@ -32,6 +33,7 @@ shanhai-tools = { workspace = true }
 shanhai-harness-core = { workspace = true }
 shanhai-model-router = { workspace = true }
 shanhai-agent-runtime = { workspace = true }
+shanhai-runtime-kernel = { workspace = true }
 shanhai-wiki-engine = { workspace = true }
 shanhai-data-pipeline = { workspace = true }
 shanhai-evaluation = { workspace = true }

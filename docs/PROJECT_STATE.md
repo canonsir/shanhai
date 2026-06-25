@@ -52,7 +52,7 @@ Phase 1
 
 ## 进行中
 
-- [ ] PR-3 RunStore Identity Migration Review Gate：PR-2 RuntimeContext v1 Implementation 已 Approved；`docs/design/runstore-identity-migration-review-v0.1.md` 已补充 identity ownership 约束（run_id 格式不绑定 RunStore、RunStore 降级为 execution trace persistence、`run_id=None` 三阶段 migration window、AgentRunner 禁改），下一步等待批准后才进入 PR-3 实现，**当前仍不写实现、不改 RunStore/AgentRunner**。
+- [ ] PR-3 RunStore Identity Migration Implementation Approval Gate：PR-2 RuntimeContext v1 Implementation 已 Approved；`docs/design/runstore-identity-migration-review-v0.1.md` 已完成约束冻结（run_id 格式不绑定 RunStore、RunStore 降级为 execution trace persistence、`run_id=None` 三阶段 migration window、AgentRunner 禁改），当前状态为 **Design Constraints Frozen / Waiting Implementation Approval**，**仍不写实现、不改 RunStore/AgentRunner**。
 
 ## 下一步（已确定路线）
 

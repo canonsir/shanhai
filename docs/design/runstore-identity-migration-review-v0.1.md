@@ -1,6 +1,6 @@
 # RunStore Identity Migration Review v0.1（PR-3 Design Gate）
 
-> 状态：**Review Gate — Design Only，不写代码**。
+> 状态：**✅ Design Constraints Frozen — 等待 PR-3 Implementation Approval；Design Only，不写代码**。
 > 前置：PR-2 RuntimeContext v1 Implementation 已 Approved。
 > 目标：在进入 PR-3 实现前，冻结 RunStore identity migration 的 contract、兼容窗口与禁止项。
 
@@ -28,9 +28,10 @@ PR-2 已完成并通过 Review：
 - `frozen=True + extra="forbid"` 用于 contract immutability；冻结的是 schema / meaning / ownership，而不是把所有未来 Provider 内部对象永久锁死。
 - PR-2 未触碰 `kernel.py` / `events.py` / `lifecycle.py` / AgentRunner / RunStore / Experience Runtime / Memory / ArtifactReader / E2E。
 
-当前停留：
+当前状态：
 
-> ⏸️ PR-3 RunStore Identity Migration Review Gate
+> ✅ PR-3 RunStore Identity Migration Review v0.1 — Design Constraints Frozen
+> ⏳ Waiting Implementation Approval
 
 ---
 
@@ -78,7 +79,7 @@ Runtime owns identity
 
 ### 1.1 PR-3 补充冻结项
 
-进入实现前，本 Gate 额外冻结 4 个约束：
+本 Gate 冻结 4 个约束：
 
 | ID | 约束 | 结论 |
 |---|---|---|
@@ -524,9 +525,10 @@ services/evaluation/
 
 ## 7. Review Gate 结论
 
-当前建议：
+当前结论：
 
-> PR-3 可以进入 RunStore Identity Migration implementation，但必须先批准本 Gate。
+> ✅ PR-3 identity migration constraints frozen。
+> ⏳ 等待 PR-3 Implementation Approval。
 
 批准条件：
 
@@ -539,4 +541,4 @@ services/evaluation/
 - 不改 RuntimeKernel / RuntimeEvent / RuntimeContext。
 - 不做 E2E。
 
-> 当前停在 **PR-3 RunStore Identity Migration Review Gate**。未开始 PR-3 代码实现。
+> 当前停在 **PR-3 RunStore Identity Migration Implementation Approval Gate**。未开始 PR-3 代码实现。

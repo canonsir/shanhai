@@ -51,7 +51,7 @@ Phase 1
 
 ## 进行中
 
-- [ ] RuntimeContext v1 Final Contract Review（PR-2 Gate）：PR-1 Runtime Kernel Skeleton 已 Approved；已生成 `docs/design/runtime-context-v1-final-contract-review.md`，下一步先确认 RuntimeContext 定位（Execution Initialization Snapshot）、七个 `*_context` schema、deep immutable、RuntimeContext→AgentContext 边界与 PR-2 scope，**不直接写 PR-2 实现**。
+- [ ] RuntimeContext v1 Final Contract Review（PR-2 Gate）：PR-1 Runtime Kernel Skeleton 已 Approved；`docs/design/runtime-context-v1-final-contract-review.md` 已折入 3 个冻结条件（`metadata_context → intent_context`、七个 `*_context` 字段级 contract table、Schema Evolution Strategy），下一步等待批准后才进入 PR-2 纯契约实现；**当前仍不写实现、不改 AgentRunner/RunStore**。
 
 ## 下一步（已确定路线）
 

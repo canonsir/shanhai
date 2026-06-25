@@ -1,12 +1,12 @@
 # RuntimeContext v1 Final Contract Review（PR-2 Design Gate）
 
-> 状态：**Design Review — 待批准，不写代码**。
+> 状态：**✅ Final Contract 可批准（附 3 个冻结条件）— Design Review Only，不写代码**。
 > 前置：PR-1 Runtime Kernel Skeleton + Contract Layer 已 Approved。
 > 目标：冻结 RuntimeContext v1 的最终定位、schema、immutability、AgentContext 边界与 PR-2 implementation scope。
 
 ---
 
-## 0. Review 结论草案
+## 0. Review 结论（附 3 个冻结条件）
 
 RuntimeContext v1 应定义为：
 
@@ -47,6 +47,16 @@ AgentRunner  → RuntimeContext mutation
 - RuntimeContext 只描述「本次执行为什么 / 如何被语境化」。
 - AgentContext 承载「本次执行如何进行」。
 - RuntimeContext 是 immutable snapshot；AgentContext 是 mutable execution state。
+
+PR-2 Final Contract 可以批准，但附带 3 个冻结条件：
+
+| Condition | 冻结项 | 结论 |
+|---|---|---|
+| C1 | `metadata_context → intent_context` | 接受，作为 RuntimeContext v1 schema 调整；`metadata_context` 不进入 v1，避免垃圾抽屉 / God Context。 |
+| C2 | 字段级 contract table | 必须冻结七个 context 的 allowed fields / forbidden fields / future extension point，防止后续随意塞字段。 |
+| C3 | Schema Evolution Strategy | 必须冻结 `schema_version` 升级规则；`extra="forbid"` 下新增字段必须走 schema version，而不是静默接受 unknown field。 |
+
+> 这三项已折入 Q2 / Q6 / Q7；PR-2 实现前不再追加新的架构议题。
 
 ---
 
@@ -123,6 +133,24 @@ schema_version
 - 若确实需要元信息，应优先通过受控字段或未来 typed extension，而不是 v1 放自由 dict。
 
 > 这是 PR-2 需要批准的 schema 调整点。未批准前不得改代码。
+
+### Q2.0.A 字段级 Contract Table（Condition 2，冻结）
+
+| Context | 允许字段 | 禁止字段 / 语义 | Future extension point |
+|---|---|---|---|
+| `identity_context` | `run_id`, `trace_id`, `schema_version` | user identity：`user_profile` / `memory_id` / `conversation_id` / `account_id` / `portfolio_id` | `parent_run_id`（run fork / retry 另开 Gate） |
+| `task_context` | `task_type`, `goal`, `input` | execution selector：`tool` / `tools` / `agent` / `model` / `router` / `prompt` / `system_prompt` | `task_ref`, `deadline`, `priority`（需判断归 task 还是 policy） |
+| `intent_context` | `user_intent`, `decision_intent`, `objective` | reasoning trace：`chain_of_thought` / `reasoning` / `analysis` / `scratchpad` / `hidden_state` | `intent_source`, `confidence`（仅 intent parsing 置信度） |
+| `experience_context` | `selected_experiences: tuple[SelectedExperienceRef, ...]` | Artifact / Memory 内容：`artifact` / `artifact_full_content` / `memory` / `memory_records` / `embedding` / `vector` / `graph` | `projection_ref`, `selection_snapshot_id` |
+| `policy_context` | `risk_limits`, `execution_policies`, `safety_policies` | prompt / model strategy：`gpt_prompt` / `system_prompt` / `agent_instruction` / `model_selection_strategy` / `temperature` / `top_p` | `policy_refs`, `policy_version` |
+| `constraint_context` | `constraints`, `time_budget_ms`, `max_steps` | runtime state / resource handle：`tool_timeout_config` / `retry_policy_object` / `database_session` / `http_client` | `resource_budget`, `compliance_constraints` |
+| `environment_context` | `domain`, `environment_labels`, `market_state` | domain database / raw market data：`stock_price` / `fundamental_data` / `quote_snapshot` / `financial_statement` / `broker_account` | `domain_context_ref`, `market_regime_ref` |
+
+治理规则：
+
+- 表内 allowed fields 是 v1 的最大字段面；PR-2 不得超出。
+- forbidden fields 是架构红线；即使类型能表达，也不得加入 RuntimeContext。
+- future extension point 不是 PR-2 范围，只是未来 schema evolution 的候选入口。
 
 ### Q2.1 `identity_context`
 
@@ -565,7 +593,85 @@ PR-2 禁止修改行为：
 
 ---
 
-## 6. Open Decisions（需 Review 批准）
+## Q6. Schema Evolution Strategy（Condition 3，冻结）
+
+### Q6.1 为什么必须现在冻结
+
+RuntimeContext v1 已包含：
+
+```python
+schema_version = "1.0"
+```
+
+一旦采用 `extra="forbid"`，unknown field 将被拒绝。这是正确方向，但也意味着未来新增字段必须走显式 schema evolution，而不能通过「偷偷塞字段」绕过 contract。
+
+### Q6.2 升级规则
+
+```text
+Patch version（1.0.x）
+    字段语义不变；只允许文档澄清、测试补强、非 schema 行为修复。
+
+Minor version（1.1）
+    additive context field；新增字段必须有明确 owner、allowed/forbidden 边界、默认值和 replay 解释。
+
+Major version（2.0）
+    breaking contract；修改 identity model、删除/重命名字段、改变字段语义、改变 context 归属。
+```
+
+示例：
+
+```text
+1.0 → 1.0.1
+    补充 contract test / doc，不改变字段。
+
+1.0 → 1.1
+    新增 market_context 或新增 domain_context_ref（additive，需 Review Gate）。
+
+1.x → 2.0
+    修改 identity_context 结构或重命名 task_context.goal（breaking，需 ADR / migration plan）。
+```
+
+### Q6.3 新增字段规则
+
+任何新增字段必须同时提供：
+
+- 字段归属：属于哪一个 `*_context`。
+- allowed / forbidden 语义。
+- 默认值：旧 snapshot 反序列化时如何解释。
+- replay 规则：历史 `schema_version` 如何读取。
+- R7 判据：是否描述 contextualized，而非 executes。
+- contract tests：unknown field reject / new field accepted / forbidden semantic still rejected。
+
+### Q6.4 禁止策略
+
+禁止通过以下方式规避 schema evolution：
+
+```json
+{
+  "unknown_field": "...",
+  "metadata": {
+    "new_semantic": "..."
+  }
+}
+```
+
+禁止把新增语义塞进自由 dict、payload、metadata、labels 中逃避 Review。
+
+### Q6.5 PR-2 落地要求
+
+PR-2 只落地 v1.0：
+
+- `schema_version="1.0"`
+- `extra="forbid"`
+- 不接受 unknown field
+- 不实现 migration loader
+- 不实现 multi-version parser
+
+未来升级到 1.1 / 2.0 时，必须另开 Design Gate。
+
+---
+
+## 7. Open Decisions（需 Review 批准）
 
 ### D1. 是否以 `intent_context` 替代 `metadata_context`？
 
@@ -625,13 +731,23 @@ PR-2 禁止修改行为：
 - `runtime-core` 容易被误解为执行核心。
 - `runtime-orchestrator` 过窄，弱化 Kernel 对 lifecycle/context/event 的契约守护职责。
 
+### D6. schema evolution 是否按 Q6 冻结？
+
+推荐：**是**。
+
+理由：
+
+- `extra="forbid"` 与 schema evolution 是一组约束；只 forbid unknown field，而不定义升级路径，会导致未来无法扩展。
+- RuntimeContext 是执行快照，未来 replay / evaluation / evolution 都依赖版本语义稳定。
+- 新增字段必须走 version + Review Gate，不能通过 metadata / labels 偷渡。
+
 ---
 
-## 7. Review Gate 结论
+## 8. Review Gate 结论
 
 当前建议：
 
-> 批准进入 PR-2 的前提，是先批准本 RuntimeContext v1 Final Contract。
+> PR-2 Final Contract 可以批准，但附带 3 个冻结条件：`metadata_context → intent_context`、字段级 contract table、Schema Evolution Strategy。
 
 若批准，PR-2 只做 RuntimeContext v1 contract implementation，不做执行集成。
 

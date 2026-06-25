@@ -4,6 +4,18 @@
 
 ## [Unreleased]
 
+### Added
+- Runtime Kernel v0.7 Phase 1 / PR-1 — Runtime Kernel Skeleton（纯结构骨架，建立 ownership boundary，零行为变更）。
+  - 新增 `services/runtime-kernel`（orchestrator，非 executor）：`shanhai_runtime_kernel/{kernel,context,lifecycle,events,types}.py`。
+    - `lifecycle.py`：`RuntimeState` 命名态状态机 `CREATED→ASSEMBLING→READY→RUNNING→COMPLETED→CLOSED`（不可逆）+ `can_transition`/`assert_transition` 迁移校验（非法迁移如 `RUNNING→READY` 抛 `ValueError`）。
+    - `context.py`：`RuntimeContext` 不可变容器（Pydantic `frozen`）= 7 个 `*_context` 子契约（identity/task/experience/policy/environment/constraint/metadata）+ `schema_version="1.0"`；run_id 仅在 `identity_context`（单点承载）；不持执行能力（R7 Context Ownership Drift 治理）。
+    - `events.py`：`RuntimeEvent` identity envelope `{event_id, run_id, event_type, timestamp, payload}` + `RuntimeEventType`；payload 透传既有产物，不新造 schema、不建 EventStore。
+    - `kernel.py`：`RuntimeKernel` 4 个公开方法 `create/assemble/execute/close` 占位（`NotImplementedError`）；纯结构，禁实例化 `AgentRunner`/`RunStore`/`ExperienceCandidateProvider`（G1）。
+    - `types.py`：`RuntimeHandle`（run_id + state 不可变快照）。
+  - Contract Test Layer（`tests/runtime_kernel/`，测不可违反的边界而非实现）：`test_context_contract`（immutability/schema_version/run_id 单点/R7 字段集合冻结）、`test_lifecycle_contract`（合法链 + 非法迁移抛错）、`test_event_contract`（envelope schema）、`test_dependency_boundary`（AST 检查：不依赖 experience-artifact/agent-runtime internals + G1 纯结构）。
+  - 接入根 `pyproject.toml` workspace（members + sources）；依赖方向 `runtime-kernel → agent-runtime public interface`（调用非包含），仅依赖 pydantic。
+  - 边界（PR-1 范围外，明确禁止）：no AgentRunner integration / no RunStore change / no Experience Runtime / no Memory / no Domain Provider / no ArtifactReader；ADR 0018 维持 MVP Contract Established 不 Finalize。
+
 ## [0.2.0] — 2026-06-23 · Phase 1：Agent Runtime（Experience Evolution Layer Stage 2-b）
 
 ### Added

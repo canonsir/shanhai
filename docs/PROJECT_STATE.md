@@ -53,7 +53,7 @@ Phase 1
 
 ## 进行中
 
-- [ ] PR-4 Experience Runtime Review Gate：PR-3 RunStore Identity Migration Implementation + Closure Review 已完成；`docs/design/experience-runtime-review-v0.1.md` 已补充 ExperienceSelection contract、Selector/Evolution boundary（Selector 不学习，Evolution 学习）、Projection allowed/forbidden、dependency DAG、MVP scope 与 PR-4.1~PR-4.5 分阶段路线；**当前不写 PR-4 实现、不接 Experience Runtime / Memory / ArtifactReader / E2E**。
+- [ ] PR-4.1 Experience Runtime Contract Implementation Review Gate：PR-4 总 Review Gate 已完成第一轮 contract 收敛；已新增 `docs/design/experience-runtime-contract-implementation-review-pr4.1.md`，只冻结 package boundary、interfaces/contracts/types/tests、dependency boundary 与 PR-4.1 DoD；**当前不写 PR-4.1 实现，不实现 selector/provider 逻辑，不接 RuntimeContext execution flow / AgentRuntime / Memory / Artifact persistence / Evaluation / E2E**。
 
 ## 下一步（已确定路线）
 

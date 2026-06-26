@@ -5,6 +5,13 @@
 ## [Unreleased]
 
 ### Added
+- Experience Runtime PR-4.1 — Contract Layer（纯契约层，零运行集成）。
+  - 新增 `services/experience-runtime`：`shanhai_experience_runtime/{types,candidate_provider,selector,projection}.py`。
+  - Public interfaces：`ExperienceCandidateProvider` / `ExperienceSelector` / `ExperienceProjection`，均为 Protocol interface；不实现真实 provider、selector algorithm、projection runtime。
+  - Type contracts：`ExperienceQuery` / `ExperienceCandidateView` / `ExperienceSelection` / `ExperienceProjectionResult`，以及 `ArtifactRef` / `Metadata` / `Summary` / `DecisionHint`。Pydantic `frozen=True + extra="forbid"`，禁止 Artifact dump / Memory state / learning weight / feedback score。
+  - 新增 `tests/experience_runtime/` contract tests：candidate provider contract、selector contract、projection contract、dependency boundary。
+  - 接入根 `pyproject.toml` workspace（members + sources）；本地 editable `.pth` 指向 `services/experience-runtime`。
+  - 边界（PR-4.1 范围外，明确禁止）：no RuntimeContext integration / no RuntimeKernel execution path / no AgentRunner / no ArtifactReader / no Memory / no Evaluation / no Evolution / no E2E。
 - Runtime Kernel v0.7 Phase 1 / PR-1 — Runtime Kernel Skeleton（纯结构骨架，建立 ownership boundary，零行为变更）。
   - 新增 `services/runtime-kernel`（orchestrator，非 executor）：`shanhai_runtime_kernel/{kernel,context,lifecycle,events,types}.py`。
     - `lifecycle.py`：`RuntimeState` 命名态状态机 `CREATED→ASSEMBLING→READY→RUNNING→COMPLETED→CLOSED`（不可逆）+ `can_transition`/`assert_transition` 迁移校验（非法迁移如 `RUNNING→READY` 抛 `ValueError`）。

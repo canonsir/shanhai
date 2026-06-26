@@ -1,6 +1,6 @@
 # Experience Runtime Contract Implementation Review（PR-4.1 Gate）
 
-> 状态：**Design Review Gate — 不写代码**。
+> 状态：**✅ Implementation Completed — 等待 PR-4.1 Closure Review**。
 > 上游：`docs/design/experience-runtime-review-v0.1.md` 已冻结 PR-4 总边界。
 > 目标：在进入 PR-4.1 实现前，冻结 Experience Runtime contract package boundary；只允许 interfaces / contracts / types / tests，不实现 selector/provider 逻辑，不接 RuntimeContext execution flow。
 
@@ -452,4 +452,71 @@ decision optimization
 - behavior later
 - integration last
 
-> 当前停在 **PR-4.1 Experience Runtime Contract Implementation Review Gate**。未开始代码实现。
+---
+
+## 9. Implementation Result
+
+PR-4.1 已按本 Gate 的冻结条件完成 implementation。
+
+已新增：
+
+```text
+services/experience-runtime/
+    pyproject.toml
+    shanhai_experience_runtime/
+        __init__.py
+        candidate_provider.py
+        selector.py
+        projection.py
+        types.py
+
+tests/experience_runtime/
+    __init__.py
+    test_candidate_provider_contract.py
+    test_selector_contract.py
+    test_projection_contract.py
+    test_dependency_boundary.py
+```
+
+已实现 public contracts：
+
+```text
+ExperienceCandidateProvider
+ExperienceSelector
+ExperienceProjection
+```
+
+已实现 type contracts：
+
+```text
+ArtifactRef
+Metadata
+Summary
+DecisionHint
+ExperienceQuery
+ExperienceCandidateView
+ExperienceSelection
+ExperienceProjectionResult
+```
+
+已验证：
+
+- package import 正常。
+- interfaces 存在。
+- schema 拒绝 Artifact dump / Memory state / learning weight / feedback score。
+- projection result 可映射到 RuntimeContext v1 `experience_context`。
+- dependency boundary tests 通过。
+
+未触碰：
+
+- RuntimeContext schema / execution flow
+- RuntimeKernel
+- AgentRunner
+- RunStore
+- ArtifactReader / Artifact persistence
+- Memory
+- Evaluation
+- Evolution / Learning
+- E2E
+
+> 当前停在 **PR-4.1 Closure Review Gate**。不要进入 PR-4.2。

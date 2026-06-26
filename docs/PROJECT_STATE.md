@@ -54,7 +54,7 @@ Phase 1
 
 ## 进行中
 
-- [ ] PR-4.2 Candidate Provider Adapter Review Gate：PR-4.1 Experience Runtime Contract Layer Implementation + Closure Review 已完成；下一步如需进入 PR-4.2，必须先 review Candidate Provider Adapter 边界，**当前不写 PR-4.2 实现、不接 RuntimeContext execution flow / AgentRuntime / Memory / Artifact persistence / Evaluation / E2E**。
+- [ ] PR-4.2 Candidate Provider Adapter Review Gate：PR-4.1 Experience Runtime Contract Layer Implementation + Closure Review 已完成；已新增 `docs/design/experience-runtime-candidate-provider-adapter-review-pr4.2.md`，冻结 ArtifactReader/read-side port、CandidateProvider I/O、experience-artifact 依赖方向、Selector stateless 边界、candidate ingestion vs RuntimeContext projection 边界，以及 PR-4.2 implementation/forbidden scope。**当前不写 PR-4.2 实现、不接 RuntimeContext execution flow / AgentRuntime / Memory / Artifact persistence / Evaluation / E2E**。
 
 ## 下一步（已确定路线）
 

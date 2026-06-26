@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 import sqlite3
 import uuid
+import warnings
 from pathlib import Path
 from typing import Any
 
@@ -69,8 +70,14 @@ class SqliteRunStore(RunStore):
         with self._connect() as conn:
             conn.executescript(SCHEMA_SQL)
 
-    def save_run(self, run: RunResult) -> str:
-        run_id = uuid.uuid4().hex
+    def save_run(self, run: RunResult, run_id: str | None = None) -> str:
+        if run_id is None:
+            warnings.warn(
+                "RunStore.save_run(run) is deprecated; pass external run_id from Runtime identity",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            run_id = uuid.uuid4().hex
         with self._connect() as conn:
             conn.execute(
                 "INSERT INTO agent_runs (id, agent, status, output, error) "

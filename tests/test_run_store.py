@@ -77,7 +77,7 @@ def test_no_store_no_persistence() -> None:
 
 
 class _BoomStore(RunStore):
-    def save_run(self, run: RunResult) -> str:
+    def save_run(self, run: RunResult, run_id: str | None = None) -> str:
         raise RuntimeError("db down")
 
     def get_run(self, run_id: str):

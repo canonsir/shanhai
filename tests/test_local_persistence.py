@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import os
 import tempfile
+import warnings
 from pathlib import Path
 
 from shanhai_agent_runtime import (
@@ -59,6 +60,33 @@ def test_sqlite_store_contract() -> None:
         assert {r.result.agent for r in only_alpha} == {"alpha"} and len(only_alpha) == 2
         assert len(store.list_runs(limit=1)) == 1
     print("[OK] SqliteRunStore save/get/list 契约 + 落盘通过")
+
+
+def test_sqlite_store_external_run_id() -> None:
+    with tempfile.TemporaryDirectory() as d:
+        db = os.path.join(d, "runs.db")
+        store = SqliteRunStore(db)
+
+        returned = store.save_run(_result("external"), run_id="run_sqlite_external_001")
+        rec = store.get_run("run_sqlite_external_001")
+
+        assert returned == "run_sqlite_external_001"
+        assert rec is not None and rec.run_id == "run_sqlite_external_001"
+        assert rec.result.agent == "external"
+    print("[OK] SqliteRunStore external run_id 持久化通过")
+
+
+def test_sqlite_store_none_run_id_warns() -> None:
+    with tempfile.TemporaryDirectory() as d:
+        store = SqliteRunStore(os.path.join(d, "runs.db"))
+
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always", DeprecationWarning)
+            run_id = store.save_run(_result("legacy"))
+
+        assert store.get_run(run_id) is not None
+        assert any(item.category is DeprecationWarning for item in caught)
+    print("[OK] SqliteRunStore run_id=None migration fallback 发出 warning")
 
 
 def test_sqlite_persists_across_connections() -> None:
@@ -129,6 +157,8 @@ def _expect_value_error(fn, msg: str) -> None:
 
 def main() -> None:
     test_sqlite_store_contract()
+    test_sqlite_store_external_run_id()
+    test_sqlite_store_none_run_id_warns()
     test_sqlite_persists_across_connections()
     test_runner_persists_to_sqlite()
     test_factory_backends()

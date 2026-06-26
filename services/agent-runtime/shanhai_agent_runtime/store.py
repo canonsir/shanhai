@@ -8,6 +8,7 @@ agent-runtime 只依赖此抽象，不依赖任何数据库驱动，保持模块
 from __future__ import annotations
 
 import uuid
+import warnings
 from abc import ABC, abstractmethod
 from datetime import datetime
 
@@ -25,11 +26,17 @@ class RunRecord(BaseModel):
 
 
 class RunStore(ABC):
-    """运行记录存储接口。"""
+    """运行记录存储接口。
+
+    PR-3 migration window:
+    - 新 Runtime 路径应传入外部 run_id（Runtime owns identity）。
+    - ``run_id=None`` 仅保留为旧路径兼容分支，并发出 DeprecationWarning。
+    - 关闭 fallback 需要后续 Migration Closure Gate。
+    """
 
     @abstractmethod
-    def save_run(self, run: RunResult) -> str:
-        """持久化一次运行，返回 run_id。"""
+    def save_run(self, run: RunResult, run_id: str | None = None) -> str:
+        """持久化一次运行，返回实际写入的 run_id。"""
         raise NotImplementedError
 
     @abstractmethod
@@ -49,8 +56,14 @@ class InMemoryRunStore(RunStore):
     def __init__(self) -> None:
         self._records: dict[str, RunRecord] = {}
 
-    def save_run(self, run: RunResult) -> str:
-        run_id = uuid.uuid4().hex
+    def save_run(self, run: RunResult, run_id: str | None = None) -> str:
+        if run_id is None:
+            warnings.warn(
+                "RunStore.save_run(run) is deprecated; pass external run_id from Runtime identity",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            run_id = uuid.uuid4().hex
         self._records[run_id] = RunRecord(run_id=run_id, result=run)
         return run_id
 

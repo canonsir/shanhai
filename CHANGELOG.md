@@ -25,6 +25,12 @@
   - `experience_context` 只承载 `SelectedExperienceRef` 引用与选择理由/分数，不承载 Artifact content / Memory / embedding / raw document。
   - 增补 `tests/runtime_kernel/test_context_v1_contract.py`，并强化 `test_context_contract.py`：unknown field reject、execution/storage 字段 reject、schema evolution v1.0 forbid、deep immutable。
   - 明确未触碰：`kernel.py` / `events.py` / `lifecycle.py` / `agent-runtime` / RunStore / Experience Runtime / Memory / ArtifactReader / E2E。
+- Runtime Kernel PR-3 — RunStore Identity Migration（identity ownership migration only）。
+  - `RunStore.save_run` contract 扩展为 `save_run(run, run_id: str | None = None) -> str`：external `run_id` 为新 Runtime identity 主路径；`run_id=None` 仅作为 migration window fallback。
+  - `InMemoryRunStore` / `SqliteRunStore` / `PostgresRunStore` 同步支持 external `run_id`，并在 fallback 分支发出 `DeprecationWarning`；不暴露 `generate_run_id()`。
+  - 新增 `tests/test_run_store_identity.py` 与 `tests/runtime_kernel/test_run_identity_contract.py`，覆盖 external run_id 持久化、fallback warning、RunStore 不拥有 identity、`RuntimeContext.run_id = RuntimeEvent.run_id = RunRecord.run_id`。
+  - 强化 `tests/test_local_persistence.py`，覆盖 SQLite external identity 与 fallback warning。
+  - 明确未触碰：RuntimeKernel execution path / `kernel.py` / `events.py` / `lifecycle.py` / RuntimeContext contract / AgentRunner / Experience Runtime / Memory / Artifact Layer / Evaluation / E2E。
 
 ## [0.2.0] — 2026-06-23 · Phase 1：Agent Runtime（Experience Evolution Layer Stage 2-b）
 

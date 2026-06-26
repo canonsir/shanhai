@@ -1,6 +1,6 @@
 # RunStore Identity Migration Review v0.1（PR-3 Design Gate）
 
-> 状态：**✅ Design Constraints Frozen — 等待 PR-3 Implementation Approval；Design Only，不写代码**。
+> 状态：**✅ PR-3 Implementation Completed — identity ownership migration only**。
 > 前置：PR-2 RuntimeContext v1 Implementation 已 Approved。
 > 目标：在进入 PR-3 实现前，冻结 RunStore identity migration 的 contract、兼容窗口与禁止项。
 
@@ -30,8 +30,8 @@ PR-2 已完成并通过 Review：
 
 当前状态：
 
-> ✅ PR-3 RunStore Identity Migration Review v0.1 — Design Constraints Frozen
-> ⏳ Waiting Implementation Approval
+> ✅ PR-3 RunStore Identity Migration — Implementation Completed
+> ⏸️ Next Gate: PR-4 Experience Runtime Review
 
 ---
 
@@ -541,4 +541,49 @@ services/evaluation/
 - 不改 RuntimeKernel / RuntimeEvent / RuntimeContext。
 - 不做 E2E。
 
-> 当前停在 **PR-3 RunStore Identity Migration Implementation Approval Gate**。未开始 PR-3 代码实现。
+---
+
+## 8. PR-3 Implementation Result
+
+PR-3 已按本 Gate 的冻结条件完成 implementation。
+
+已实现：
+
+- `RunStore.save_run(run, run_id: str | None = None) -> str`
+- `InMemoryRunStore` external run_id persistence
+- `SqliteRunStore` external run_id persistence
+- `PostgresRunStore` signature compatibility
+- `run_id=None` fallback emits `DeprecationWarning`
+- RunStore 不暴露 `generate_run_id()`
+- trace identity contract test：
+
+```text
+RuntimeContext.run_id
+        =
+RuntimeEvent.run_id
+        =
+RunRecord.run_id
+```
+
+新增 / 更新测试：
+
+- `tests/test_run_store_identity.py`
+- `tests/runtime_kernel/test_run_identity_contract.py`
+- `tests/test_run_store.py`
+- `tests/test_local_persistence.py`
+
+未触碰：
+
+- RuntimeKernel execution path
+- `kernel.py`
+- `events.py`
+- `lifecycle.py`
+- RuntimeContext contract
+- AgentRunner
+- Experience Runtime
+- Memory
+- Artifact Layer
+- Evaluation
+- E2E execution flow
+
+> PR-3 完成后停在 **PR-4 Experience Runtime Review Gate**。

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import uuid
+import warnings
 from typing import Any
 
 from shanhai_agent_runtime import RunRecord, RunResult, RunStore
@@ -66,8 +67,14 @@ class PostgresRunStore(RunStore):
             cur.execute(SCHEMA_SQL)
             conn.commit()
 
-    def save_run(self, run: RunResult) -> str:
-        run_id = uuid.uuid4().hex
+    def save_run(self, run: RunResult, run_id: str | None = None) -> str:
+        if run_id is None:
+            warnings.warn(
+                "RunStore.save_run(run) is deprecated; pass external run_id from Runtime identity",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            run_id = uuid.uuid4().hex
         with self._connect() as conn, conn.cursor() as cur:
             cur.execute(
                 "INSERT INTO agent_runs (id, agent, status, output, error) "

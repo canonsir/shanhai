@@ -180,9 +180,94 @@ MemoryRecord
 RuntimeEvent
 ```
 
+### Q2.3.A Selector / Evolution Boundary（冻结）
+
+Selector 的性质：
+
+```text
+stateless
+deterministic
+per-run
+read-only
+```
+
+Evolution 的性质：
+
+```text
+learning
+feedback
+optimization
+promotion
+artifact production trigger
+```
+
+边界规则：
+
+| Capability | Selector | Evolution |
+|---|---|---|
+| per-run candidate ranking | ✅ | 可消费结果 |
+| learning weights | ❌ | ✅ |
+| feedback ingestion | ❌ | ✅ |
+| promotion decision | ❌ | ✅ |
+| artifact mutation / production | ❌ | ✅（经既有 Promotion → Artifact Bridge） |
+| memory access | ❌ | ❌（不在 PR-4） |
+
+> 核心冻结：**Selector 不学习，Evolution 学习**。PR-4 不引入任何 `learning_weight` / `feedback_score` / `adaptive_ranker`。
+
+### Q2.3.B ExperienceSelection Contract（冻结）
+
+`ExperienceSelection` 是 Selector 的输出，表示一次 Run 的经验选择结果。
+
+允许字段：
+
+```python
+ExperienceSelection:
+    candidate_id
+    artifact_ref
+    relevance_score
+    selection_reason
+```
+
+可选扩展字段（仅作为未来候选，不进 PR-4.1 默认面）：
+
+```python
+rank
+provider_ref
+selection_policy_ref
+```
+
+禁止字段：
+
+```python
+artifact_content
+embedding
+memory_state
+learning_weight
+feedback_score
+model_prompt
+agent_instruction
+```
+
+语义约束：
+
+- `candidate_id` 标识候选视图，不等同于 Artifact 主键。
+- `artifact_ref` 是引用，不是 Artifact 实体。
+- `relevance_score` 是 per-run selection 分数，不是可学习权重。
+- `selection_reason` 是选择解释，不是 chain-of-thought。
+- `ExperienceSelection` 不可回写 Artifact / Candidate / Memory。
+
 ### Q2.4 Projection 只裁剪运行视图
 
 Projection 负责把 `ExperienceSelection` 转成 RuntimeContext 可承载的只读引用 / 视图。
+
+Projection 可以输出：
+
+```text
+ArtifactRef
+Metadata
+Summary
+Decision Hint
+```
 
 Projection 禁止：
 
@@ -190,6 +275,17 @@ Projection 禁止：
 - 缓存跨 run 共享状态。
 - 扩展 RuntimeContext schema。
 - 复制 Artifact full content 到 RuntimeContext。
+- 持久化 Experience。
+- 更新 Memory。
+- 修改 Candidate lifecycle。
+
+Projection 输出必须适配 RuntimeContext v1 已冻结的字段：
+
+```text
+RuntimeContext.experience_context.experience_refs
+RuntimeContext.experience_context.selection_reason
+RuntimeContext.experience_context.selection_score
+```
 
 ---
 
@@ -381,6 +477,36 @@ PR-4 若获准进入 implementation，DoD 应为：
 - 不修改 AgentRunner。
 - 不接 Memory / Evaluation / Evolution / E2E。
 
+### Q5.4 PR-4 分阶段实现路线（冻结建议）
+
+PR-4 不应一次性完成 Experience Runtime 全链路。建议拆为：
+
+```text
+PR-4.1 Experience Runtime Contract
+        CandidateProvider / Selector / Projection / Selection contracts
+        contract tests
+        no real strategy
+
+PR-4.2 Candidate Provider Adapter
+        first local provider adapter
+        no selector learning
+        no Memory
+
+PR-4.3 Selector MVP
+        deterministic stateless selector
+        no learning / feedback loop
+
+PR-4.4 Projection
+        ExperienceSelection → RuntimeContext.experience_context compatible refs
+        no RuntimeContext schema change
+
+PR-4.5 RuntimeContext Integration
+        assemble-time wiring only after review
+        no AgentRunner execute refactor
+```
+
+当前 Review Gate 仅冻结 PR-4 总边界；若进入实现，推荐首先批准 **PR-4.1 Experience Runtime Contract**，不要直接进入 PR-4.2+。
+
 ---
 
 ## Q6. Open Decisions
@@ -420,6 +546,16 @@ PR-4 若获准进入 implementation，DoD 应为：
 
 - Memory Access Interface 是 AgentRuntime / MemoryTool 路径。
 - Experience Runtime 接 Memory 会形成横向依赖并绕过既有边界。
+
+### D5. PR-4 是否一次完成 CandidateProvider → Projection → RuntimeContext integration？
+
+推荐：**否**。
+
+理由：
+
+- Experience Runtime 是新的 runtime 读侧能力，应先 contract 再 adapter，再 selector，再 projection，再 integration。
+- 一次性接入会把 selection contract、artifact adapter、projection semantics 与 runtime assemble wiring 混在一起。
+- PR-4.1 应只建立 ownership boundary 与 contract tests。
 
 ---
 

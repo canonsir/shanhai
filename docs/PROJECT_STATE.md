@@ -9,16 +9,24 @@ v0.2.0
 
 ## 当前阶段
 
-Foundation Phase — Runtime / Experience Contract Foundation（✅ Completed）
+Milestone 2.2 — Market Data Runtime MVP（✅ Implementation Completed）
 
 ```
-Foundation Phase
+Foundation Phase ✅ Completed
  |
  +-- PR-1 Runtime Kernel Skeleton ✅ Closed
  +-- PR-2 RuntimeContext v1 ✅ Closed
  +-- PR-3 RunStore Identity Migration ✅ Closed
  +-- PR-4.1 Experience Runtime Contract Layer ✅ Closed
  +-- PR-4.2 Candidate Provider Adapter ⏸️ Design Gate only / Implementation stopped
+
+Milestone 2
+ |
+ +-- Data Foundation MVP ✅ Implementation Completed
+ +-- market-data service / Tushare Provider / Entity Schema MVP / Knowledge Store / Company Intelligence API
+ +-- Market Data Runtime MVP ✅ Scheduled ingestion / PostgreSQL Store / Resolver / API / Console
+ +-- PR-4.2 Candidate Provider Adapter ⛔ Implementation stopped
+ +-- Runtime / Memory / Evolution / Trading ⛔ Not in scope
 ```
 
 ## 最新提交
@@ -49,6 +57,8 @@ Foundation Phase
 - [x] Runtime Kernel — PR-3 RunStore Identity Migration（identity ownership migration only，✅ Implementation Completed，✅ Closure Review Completed）：`RunStore.save_run` contract 扩展为 `save_run(run, run_id: str | None = None) -> str`；external `run_id` 为 Runtime-owned identity 主路径，`run_id=None` 仅作为 migration window fallback 并发出 `DeprecationWarning`；`InMemoryRunStore` / `SqliteRunStore` / `PostgresRunStore` 同步签名，不暴露 `generate_run_id()`；新增 run identity / trace identity contract tests，验证 `RuntimeContext.run_id = RuntimeEvent.run_id = RunRecord.run_id`。Closure Review 见 `docs/design/runstore-identity-migration-closure-review.md`：确认满足冻结约束、migration window 处于 Phase 1、无 forbidden boundary violation。未触碰 RuntimeKernel execution path / `kernel.py` / `events.py` / `lifecycle.py` / RuntimeContext contract / AgentRunner / Experience Runtime / Memory / Artifact Layer / Evaluation / E2E。**完成后停在 PR-4 Experience Runtime Review Gate。**
 - [x] Experience Runtime — PR-4.1 Contract Layer（纯契约层，✅ Implementation Completed，✅ Closure Review Completed）：新增 `services/experience-runtime`，只包含 `ExperienceCandidateProvider` / `ExperienceSelector` / `ExperienceProjection` Protocol interfaces 与 `ExperienceQuery` / `ExperienceCandidateView` / `ExperienceSelection` / `ExperienceProjectionResult` 类型契约；`ExperienceSelection` 仅允许 candidate_id / artifact_ref / relevance_score / selection_reason；Projection 只输出 ArtifactRef / Metadata / Summary / DecisionHint 形态；新增 `tests/experience_runtime/` contract + dependency boundary tests。Closure Review 见 `docs/design/experience-runtime-contract-closure-review-pr4.1.md`：确认 contract completeness / schema stability / dependency boundary / frozen constraints consistency 均通过。未触碰 RuntimeContext execution flow / RuntimeKernel / AgentRunner / ArtifactReader / Memory / Evaluation / Evolution / E2E。**完成后停在 PR-4.2 Candidate Provider Adapter Review Gate。**
 - [x] Foundation Phase Closure（Runtime / Experience Contract Foundation，✅ Completed）：PR-1 Runtime Kernel、PR-2 RuntimeContext v1、PR-3 RunStore Identity Migration、PR-4.1 Experience Runtime Contract Layer 均完成 implementation + closure；PR-4.2 仅完成 Candidate Provider Adapter Design Gate，明确停止 implementation。Closure Review 见 `docs/design/foundation-phase-closure-review.md`。当前分支完成 Foundation 文档整理，下一阶段需重新进入 Review Gate 后再开工。
+- [x] Milestone 2 — Data Foundation MVP Phase 1（真实 A 股数据闭环，✅ Implementation Completed）：新增 `services/market-data`，包含 `TushareProvider`（标准库 HTTP + fake transport 测试，token 走 `SHANHAI_TUSHARE_TOKEN`）、Market Entity Schema MVP（Company / ListedEntity / Security / Listing / Industry / QuoteSnapshot / MarketFact）、`AShareCompanySyncService`（默认贵州茅台/宁德时代等 10 家 A 股公司）、`InMemoryMarketKnowledgeStore`、`CompanyIntelligenceAPI`；新增 `tests/market_data/` 覆盖 Provider、10 公司同步、API、身份不塌缩、依赖边界与无交易 surface。未修改 RuntimeKernel / Experience Runtime / RuntimeContext，未实现 PR-4.2 Adapter / Memory Evolution / 交易策略。
+- [x] Milestone 2.2 — Market Data Runtime MVP（每天自动获得真实 A 股数据，✅ Implementation Completed）：新增 `EntityResolver` v0.1、`PostgresMarketKnowledgeStore`（`SHANHAI_MARKET_PG_DSN` + lazy psycopg）、`TushareScheduledIngestion`（run_once + daily loop）、Company Intelligence API routes（`/companies` / `/companies/search` / `/companies/{ts_code}` / `/market/ingestion/tushare/run`）与 Company Console Alpha（`/console/companies`）。`.env.example` 仅新增 Tushare / market store 占位，真实 token 不入库。未修改 RuntimeKernel / Experience Runtime / RuntimeContext / AgentRunner / Memory，未做 Trading Strategy。
 - [x] Agent Runtime 单元测试（通过）
 
 ## 当前目标
@@ -57,6 +67,7 @@ Foundation Phase
 
 ## 当前 Gate / 暂停点
 
+- [ ] Milestone 2.2 Market Data Runtime MVP Closure Review：**Implementation Completed，待 Closure Review**。`services/market-data` 已实现 scheduled Tushare ingestion、PostgreSQL Knowledge Store、Entity Resolver v0.1、Company Intelligence API、Company Console Alpha。**当前结束 Runtime contract 继续扩展，不继续拆 Runtime PR，不修改 RuntimeKernel / Experience Runtime / RuntimeContext / AgentRunner / Memory，不实现 PR-4.2 Adapter，不实现 Memory Evolution，不做 Trading Strategy**。
 - [ ] PR-4.2 Candidate Provider Adapter：**保留 Design Gate，Implementation stopped**。`docs/design/experience-runtime-candidate-provider-adapter-review-pr4.2.md` 已冻结 ArtifactReader/read-side port、CandidateProvider I/O、experience-artifact 依赖方向、Selector stateless 边界、candidate ingestion vs RuntimeContext projection 边界，以及 PR-4.2 implementation/forbidden scope。**当前不写 PR-4.2 实现、不接 RuntimeContext execution flow / AgentRuntime / Memory / Artifact persistence / Evaluation / E2E**。
 
 ## 下一步（已确定路线）

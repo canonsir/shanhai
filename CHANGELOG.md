@@ -45,6 +45,18 @@
 - `services/agent-runtime`：执行模型 think → act → observe（ADR 0006）。
   - `types.py`：`AgentStatus` 生命周期 + `Step` / `RunResult` 结构化运行记录 + `Plan`。
   - `context.py`：`AgentContext` 收口模型/工具访问（`complete()`→ModelRouter，`use_tool()`→ToolRegistry），从结构上保证架构铁律。
+- Milestone 2.2 Market Data Runtime MVP。
+  - 新增 `EntityResolver` v0.1：基于 Tushare `ts_code` 确定性生成 Company / ListedEntity / Security / Listing 四层身份，保留 source external id，防止公司与股票代码塌缩。
+  - 新增 `PostgresMarketKnowledgeStore`：惰性依赖 `psycopg`，通过 `SHANHAI_MARKET_PG_DSN` 连接，写入 `market_company_intelligence` read model；本地测试仍可用 memory store。
+  - 新增 `TushareScheduledIngestion`：支持 `run_once()` 与进程内 daily loop，生产可由 cron/systemd/container scheduler 托管；不依赖 RuntimeKernel / AgentRunner。
+  - `apps/api` 新增 Company Intelligence API：`/companies`、`/companies/search`、`/companies/{ts_code}`、`/market/ingestion/tushare/run`，以及只读 Company Console Alpha `/console/companies`。
+  - `.env.example` 新增 `SHANHAI_TUSHARE_TOKEN`、`SHANHAI_MARKET_STORE`、`SHANHAI_MARKET_PG_DSN` 占位；真实 token 不入库。
+  - 边界：不修改 RuntimeKernel / Experience Runtime / RuntimeContext / AgentRunner / Memory；不做 Trading Strategy。
+- Milestone 2 Data Foundation MVP（Market Reality Foundation 第一阶段）。
+  - 新增 `services/market-data`：`TushareProvider`（标准库 HTTP + 可注入 transport，真实 token 走 `SHANHAI_TUSHARE_TOKEN`）、Market Entity Schema MVP（Company / ListedEntity / Security / Listing / Industry / QuoteSnapshot / MarketFact）、`AShareCompanySyncService`、`InMemoryMarketKnowledgeStore`、`CompanyIntelligenceAPI`。
+  - 默认同步目标覆盖贵州茅台、宁德时代、比亚迪、平安银行、招商银行、中国平安、五粮液、隆基绿能、美的集团、中芯国际 10 家 A 股公司；测试使用 fake provider，不发真实网络请求。
+  - 新增 `tests/market_data/`：Tushare Provider 请求/解析/缺 token、10 家公司同步闭环、Company Intelligence API、Company/ListEntity/Security/Listing 身份不塌缩、依赖边界与无交易 surface。
+  - 边界：不修改 RuntimeKernel / Experience Runtime / RuntimeContext / AgentRunner；不实现 PR-4.2 Adapter；不做交易策略；不做 Memory Evolution。
   - `runner.py`：`AgentRunner` 驱动生命周期与运行记录。
   - `agent.py`：`BaseAgent`（think/act/observe 钩子 + max_steps），保留 `Agent` 别名与 `use_tool`/`run` 向后兼容。
   - `examples.py`：`ToolEchoAgent`（单步）、`MultiStepToolAgent`（多步逐项调度）示例。

@@ -12,6 +12,7 @@ members = [
     "services/agent-runtime",
     "services/runtime-kernel",
     "services/experience-runtime",
+    "services/market-data",
     "services/wiki-engine",
     "services/data-pipeline",
     "services/evaluation",
@@ -36,6 +37,7 @@ shanhai-model-router = { workspace = true }
 shanhai-agent-runtime = { workspace = true }
 shanhai-runtime-kernel = { workspace = true }
 shanhai-experience-runtime = { workspace = true }
+shanhai-market-data = { workspace = true }
 shanhai-wiki-engine = { workspace = true }
 shanhai-data-pipeline = { workspace = true }
 shanhai-evaluation = { workspace = true }

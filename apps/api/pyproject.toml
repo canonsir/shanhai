@@ -9,6 +9,7 @@ dependencies = [
     "shanhai-schemas",
     "shanhai-model-router",
     "shanhai-agent-runtime",
+    "shanhai-market-data",
 ]
 
 [build-system]

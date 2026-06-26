@@ -9,14 +9,16 @@ v0.2.0
 
 ## 当前阶段
 
-Phase 1 — Agent Runtime（进行中）
+Foundation Phase — Runtime / Experience Contract Foundation（✅ Completed）
 
 ```
-Phase 1
+Foundation Phase
  |
- +-- Experience Evolution Layer
-       |
-       +-- Stage 2-b Completed（package skeleton / lifecycle service / validator·promotion contracts / regression coverage）
+ +-- PR-1 Runtime Kernel Skeleton ✅ Closed
+ +-- PR-2 RuntimeContext v1 ✅ Closed
+ +-- PR-3 RunStore Identity Migration ✅ Closed
+ +-- PR-4.1 Experience Runtime Contract Layer ✅ Closed
+ +-- PR-4.2 Candidate Provider Adapter ⏸️ Design Gate only / Implementation stopped
 ```
 
 ## 最新提交
@@ -46,15 +48,16 @@ Phase 1
 - [x] Runtime Kernel — PR-2 RuntimeContext v1 Contract Implementation（纯契约实现，零执行集成，✅ Closed）：`RuntimeContext` 冻结为 Execution Initialization Snapshot；`metadata_context → intent_context`；七个 context v1 schema 固定为 identity/task/intent/experience/policy/constraint/environment；所有 context model 使用 `frozen=True + extra="forbid"`，集合字段使用 tuple，`schema_version` 固定为 `Literal["1.0"]`；`experience_context` 只承载 `SelectedExperienceRef` 与选择理由/分数，不承载 Artifact dump / Memory / embedding。新增/强化 contract tests（deep immutable、unknown/execution/storage 字段拒绝、schema evolution v1.0 forbid、字段级 contract table）。未触碰 `kernel.py` / `events.py` / `lifecycle.py` / AgentRunner / RunStore / Experience Runtime / Memory / ArtifactReader / E2E。
 - [x] Runtime Kernel — PR-3 RunStore Identity Migration（identity ownership migration only，✅ Implementation Completed，✅ Closure Review Completed）：`RunStore.save_run` contract 扩展为 `save_run(run, run_id: str | None = None) -> str`；external `run_id` 为 Runtime-owned identity 主路径，`run_id=None` 仅作为 migration window fallback 并发出 `DeprecationWarning`；`InMemoryRunStore` / `SqliteRunStore` / `PostgresRunStore` 同步签名，不暴露 `generate_run_id()`；新增 run identity / trace identity contract tests，验证 `RuntimeContext.run_id = RuntimeEvent.run_id = RunRecord.run_id`。Closure Review 见 `docs/design/runstore-identity-migration-closure-review.md`：确认满足冻结约束、migration window 处于 Phase 1、无 forbidden boundary violation。未触碰 RuntimeKernel execution path / `kernel.py` / `events.py` / `lifecycle.py` / RuntimeContext contract / AgentRunner / Experience Runtime / Memory / Artifact Layer / Evaluation / E2E。**完成后停在 PR-4 Experience Runtime Review Gate。**
 - [x] Experience Runtime — PR-4.1 Contract Layer（纯契约层，✅ Implementation Completed，✅ Closure Review Completed）：新增 `services/experience-runtime`，只包含 `ExperienceCandidateProvider` / `ExperienceSelector` / `ExperienceProjection` Protocol interfaces 与 `ExperienceQuery` / `ExperienceCandidateView` / `ExperienceSelection` / `ExperienceProjectionResult` 类型契约；`ExperienceSelection` 仅允许 candidate_id / artifact_ref / relevance_score / selection_reason；Projection 只输出 ArtifactRef / Metadata / Summary / DecisionHint 形态；新增 `tests/experience_runtime/` contract + dependency boundary tests。Closure Review 见 `docs/design/experience-runtime-contract-closure-review-pr4.1.md`：确认 contract completeness / schema stability / dependency boundary / frozen constraints consistency 均通过。未触碰 RuntimeContext execution flow / RuntimeKernel / AgentRunner / ArtifactReader / Memory / Evaluation / Evolution / E2E。**完成后停在 PR-4.2 Candidate Provider Adapter Review Gate。**
+- [x] Foundation Phase Closure（Runtime / Experience Contract Foundation，✅ Completed）：PR-1 Runtime Kernel、PR-2 RuntimeContext v1、PR-3 RunStore Identity Migration、PR-4.1 Experience Runtime Contract Layer 均完成 implementation + closure；PR-4.2 仅完成 Candidate Provider Adapter Design Gate，明确停止 implementation。Closure Review 见 `docs/design/foundation-phase-closure-review.md`。当前分支完成 Foundation 文档整理，下一阶段需重新进入 Review Gate 后再开工。
 - [x] Agent Runtime 单元测试（通过）
 
 ## 当前目标
 
 完善 AI Harness 基础设施（Agent Runtime / Workflow / Tool / Memory / Evaluation），保证模块边界与架构正确性。
 
-## 进行中
+## 当前 Gate / 暂停点
 
-- [ ] PR-4.2 Candidate Provider Adapter Review Gate：PR-4.1 Experience Runtime Contract Layer Implementation + Closure Review 已完成；已新增 `docs/design/experience-runtime-candidate-provider-adapter-review-pr4.2.md`，冻结 ArtifactReader/read-side port、CandidateProvider I/O、experience-artifact 依赖方向、Selector stateless 边界、candidate ingestion vs RuntimeContext projection 边界，以及 PR-4.2 implementation/forbidden scope。**当前不写 PR-4.2 实现、不接 RuntimeContext execution flow / AgentRuntime / Memory / Artifact persistence / Evaluation / E2E**。
+- [ ] PR-4.2 Candidate Provider Adapter：**保留 Design Gate，Implementation stopped**。`docs/design/experience-runtime-candidate-provider-adapter-review-pr4.2.md` 已冻结 ArtifactReader/read-side port、CandidateProvider I/O、experience-artifact 依赖方向、Selector stateless 边界、candidate ingestion vs RuntimeContext projection 边界，以及 PR-4.2 implementation/forbidden scope。**当前不写 PR-4.2 实现、不接 RuntimeContext execution flow / AgentRuntime / Memory / Artifact persistence / Evaluation / E2E**。
 
 ## 下一步（已确定路线）
 

@@ -1,8 +1,18 @@
 # ADR 0018：Experience Artifact Layer MVP（候选经验晋升后的稳定资产承载层）
 
-状态：**草案（Draft）** —— 仅设计 + 分阶段实现（Commit 5/6/7），每步重入 Review Gate；Finalization 时转 Accepted。
+状态：**MVP Contract Established（生产侧契约已立）** —— 非 Draft（Artifact 生产链路已成稳定契约），亦**未 Finalize**（消费侧未闭环，Finalization 时转 Accepted）。每步重入 Review Gate。
 日期：2026-06-24
 目标版本：v0.3.0
+
+**Scope（本 ADR 已确立的稳定契约）：**
+- Artifact schema（`ExperienceArtifact` / `ArtifactRule` / `Provenance`，见 D2）
+- ArtifactBuilder production bridge（`ArtifactBuilder.build(candidate, promotion_decision) → ExperienceArtifact`，纯转换，Commit 6 已落地）
+
+**Pending（尚未闭环，留待后续 ADR / Review）：**
+- Artifact consumption model（消费模型：Experience Selection 选择策略，见 [Runtime Kernel Design v0.2](../design/runtime-kernel-v0.2.md) §B）
+- Projection layer（ExperienceProjection 只读投影视图）
+- Runtime integration（RuntimeContext 装配与 Runtime Kernel 集成）
+
 关系：承接 [ADR 0016（Experience Evolution Layer，Proposed）](0016-Experience-Evolution-Layer-Architecture.md) 四层语义中 `ExperienceCandidate → ExperienceArtifact` 的跃迁，落地 [ADR 0017（Candidate Lifecycle，Accepted）](0017-Experience-Candidate-Lifecycle-Architecture.md) 在 `PromotionDecision` 处留空的 **Artifact 承载层**。本 ADR **不**实现 ADR 0016 的 Knowledge Projection（Vector / Graph / Retrieval / Memory 消费），那属后续单独 ADR。
 
 ## 1. 背景（Context）

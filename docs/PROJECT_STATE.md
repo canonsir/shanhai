@@ -9,7 +9,7 @@ v0.2.0
 
 ## 当前阶段
 
-Milestone 2.2 — Market Data Runtime MVP（✅ Implementation Completed）
+Milestone 2.3 — Market Knowledge Expansion Review（Design Gate）
 
 ```
 Foundation Phase ✅ Completed
@@ -25,6 +25,7 @@ Milestone 2
  +-- Data Foundation MVP ✅ Implementation Completed
  +-- market-data service / Tushare Provider / Entity Schema MVP / Knowledge Store / Company Intelligence API
  +-- Market Data Runtime MVP ✅ Scheduled ingestion / PostgreSQL Store / Resolver / API / Console
+ +-- Market Knowledge Expansion ⏳ Design Review only
  +-- PR-4.2 Candidate Provider Adapter ⛔ Implementation stopped
  +-- Runtime / Memory / Evolution / Trading ⛔ Not in scope
 ```
@@ -59,15 +60,16 @@ Milestone 2
 - [x] Foundation Phase Closure（Runtime / Experience Contract Foundation，✅ Completed）：PR-1 Runtime Kernel、PR-2 RuntimeContext v1、PR-3 RunStore Identity Migration、PR-4.1 Experience Runtime Contract Layer 均完成 implementation + closure；PR-4.2 仅完成 Candidate Provider Adapter Design Gate，明确停止 implementation。Closure Review 见 `docs/design/foundation-phase-closure-review.md`。当前分支完成 Foundation 文档整理，下一阶段需重新进入 Review Gate 后再开工。
 - [x] Milestone 2 — Data Foundation MVP Phase 1（真实 A 股数据闭环，✅ Implementation Completed）：新增 `services/market-data`，包含 `TushareProvider`（标准库 HTTP + fake transport 测试，token 走 `SHANHAI_TUSHARE_TOKEN`）、Market Entity Schema MVP（Company / ListedEntity / Security / Listing / Industry / QuoteSnapshot / MarketFact）、`AShareCompanySyncService`（默认贵州茅台/宁德时代等 10 家 A 股公司）、`InMemoryMarketKnowledgeStore`、`CompanyIntelligenceAPI`；新增 `tests/market_data/` 覆盖 Provider、10 公司同步、API、身份不塌缩、依赖边界与无交易 surface。未修改 RuntimeKernel / Experience Runtime / RuntimeContext，未实现 PR-4.2 Adapter / Memory Evolution / 交易策略。
 - [x] Milestone 2.2 — Market Data Runtime MVP（每天自动获得真实 A 股数据，✅ Implementation Completed）：新增 `EntityResolver` v0.1、`PostgresMarketKnowledgeStore`（`SHANHAI_MARKET_PG_DSN` + lazy psycopg）、`TushareScheduledIngestion`（run_once + daily loop）、Company Intelligence API routes（`/companies` / `/companies/search` / `/companies/{ts_code}` / `/market/ingestion/tushare/run`）与 Company Console Alpha（`/console/companies`）。`.env.example` 仅新增 Tushare / market store 占位，真实 token 不入库。未修改 RuntimeKernel / Experience Runtime / RuntimeContext / AgentRunner / Memory，未做 Trading Strategy。
+- [x] Milestone 2.3 — Market Knowledge Expansion Review（Design Gate，⏳ Design Only）：新增 `docs/design/market-knowledge-expansion-review-m2.3.md`，冻结 MarketFact schema v1 / FinancialFact / AnnouncementFact / NewsFact / Entity linking strategy / Timeline model；明确 M2.3 目标是从“知道公司存在”进入“理解公司发生了什么”。当前不写 M2.3 实现、不继续 Runtime 抽象、不实现 PR-4.2 Adapter、不做 Memory Evolution、不做 Trading Strategy。
 - [x] Agent Runtime 单元测试（通过）
 
 ## 当前目标
 
-完善 AI Harness 基础设施（Agent Runtime / Workflow / Tool / Memory / Evaluation），保证模块边界与架构正确性。
+AI Native Capital Market Cognition Foundation：用真实 A 股数据、公司实体、市场事实与时间线持续验证 ShanHai 架构；Runtime contract 继续扩展已停止，下一阶段聚焦 Market Knowledge Layer。
 
 ## 当前 Gate / 暂停点
 
-- [ ] Milestone 2.2 Market Data Runtime MVP Closure Review：**Implementation Completed，待 Closure Review**。`services/market-data` 已实现 scheduled Tushare ingestion、PostgreSQL Knowledge Store、Entity Resolver v0.1、Company Intelligence API、Company Console Alpha。**当前结束 Runtime contract 继续扩展，不继续拆 Runtime PR，不修改 RuntimeKernel / Experience Runtime / RuntimeContext / AgentRunner / Memory，不实现 PR-4.2 Adapter，不实现 Memory Evolution，不做 Trading Strategy**。
+- [ ] Milestone 2.3 Market Knowledge Expansion Review：**Design Review only**。`docs/design/market-knowledge-expansion-review-m2.3.md` 已冻结 MarketFact schema v1 / FinancialFact / AnnouncementFact / NewsFact / Entity linking strategy / Timeline model；下一步如获批准，优先从 Tushare structured financial / shareholder / moneyflow / industry / concept 扩展，不优先接新闻。**当前不写 M2.3 实现、不继续 Runtime 抽象、不修改 RuntimeKernel / Experience Runtime / RuntimeContext / AgentRunner / Memory，不实现 PR-4.2 Adapter，不实现 Memory Evolution，不做 Trading Strategy**。
 - [ ] PR-4.2 Candidate Provider Adapter：**保留 Design Gate，Implementation stopped**。`docs/design/experience-runtime-candidate-provider-adapter-review-pr4.2.md` 已冻结 ArtifactReader/read-side port、CandidateProvider I/O、experience-artifact 依赖方向、Selector stateless 边界、candidate ingestion vs RuntimeContext projection 边界，以及 PR-4.2 implementation/forbidden scope。**当前不写 PR-4.2 实现、不接 RuntimeContext execution flow / AgentRuntime / Memory / Artifact persistence / Evaluation / E2E**。
 
 ## 下一步（已确定路线）

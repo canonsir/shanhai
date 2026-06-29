@@ -12,8 +12,9 @@ v0.2.0
 Milestone 2.5 — Market Foundation Hardening Review（Design Gate）
 
 > 触发：Market Data MVP 接入真实 A 股数据后暴露地基问题（Entity Identity 与 ts_code 同构 / Postgres 被内存缓存遮蔽 / MarketFact 为 demo 形态）。
-> 暂停 PR-4.2 与 Experience Runtime 扩展，先修地基。见 `docs/design/market-foundation-hardening-review-m2.5.md`。
-> 本阶段只做 Design Review + Migration Plan + Implementation Plan，**不写实现代码**。
+> 暂停 PR-4.2 与 Experience Runtime 扩展，先修地基。
+> 见 `docs/design/market-foundation-hardening-review-m2.5.md` + `docs/design/market-foundation-hardening-phase0-closure-m2.5.md`。
+> 本阶段只做 Design Review，**不写实现代码**。Phase 0 Closure 已补充冻结：Identity Migration Strategy / Resolver v0.1 边界 / MarketFact v1 优先级 / Console Alpha 验证入口。
 
 ```
 Foundation Phase ✅ Completed
@@ -30,7 +31,7 @@ Milestone 2
  +-- market-data service / Tushare Provider / Entity Schema MVP / Knowledge Store / Company Intelligence API
  +-- Market Data Runtime MVP ✅ Scheduled ingestion / PostgreSQL Store / Resolver / API / Console
  +-- Market Knowledge Expansion ⏳ Design only（M2.3，待 M2.5 地基修正后推进）
- +-- Market Foundation Hardening ⏳ Design Review（M2.5，P0 Entity Identity + P0 Storage / P1 MarketFact v1 + Ingestion）
+ +-- Market Foundation Hardening ⏳ Phase 0 Closure ✅ Design Review Completed / ⬇️ Waiting Phase 1 Entity Hardening Approval
  +-- Runtime / Memory / Evolution / Trading ⛔ Not in scope
 ```
 

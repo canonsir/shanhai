@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="../colors_and_type.css">
+<title>Toast · 山海</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;padding:24px;background:var(--background);color:var(--foreground);font-family:var(--font-sans);font-size:14px;line-height:1.4}
+  .stack{display:flex;flex-direction:column;gap:12px;max-width:400px}
+  .label{font:600 11px/1 var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted-foreground);margin-bottom:4px}
+
+  .toast{display:flex;align-items:flex-start;gap:10px;padding:12px 12px 12px 14px;border:1px solid var(--border);border-left-width:3px;border-radius:12px;background:var(--popover);color:var(--popover-foreground);box-shadow:var(--shadow-lg)}
+  .toast .ic{width:18px;height:18px;flex:none;margin-top:1px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .toast .body{flex:1;min-width:0}
+  .toast .ttl{font-weight:600;margin-bottom:2px}
+  .toast .msg{font-size:13px;color:var(--muted-foreground)}
+  .toast .close{width:24px;height:24px;border:0;border-radius:7px;background:transparent;color:var(--muted-foreground);cursor:pointer;display:grid;place-items:center;flex:none}
+  .toast .close:hover{background:var(--muted);color:var(--foreground)}
+  .toast .act{border:0;background:transparent;color:var(--primary);font:600 13px var(--font-sans);cursor:pointer;padding:0 4px;flex:none;align-self:center}
+
+  .info{border-left-color:var(--primary)}
+  .info .ic{color:var(--primary)}
+  .success{border-left-color:var(--chart-2)}
+  .success .ic{color:var(--chart-2)}
+  .warning{border-left-color:var(--warning)}
+  .warning .ic{color:var(--warning)}
+  .destructive{border-left-color:var(--destructive)}
+  .destructive .ic{color:var(--destructive)}
+</style>
+</head>
+<body>
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8.5 12 2.5 2.5 4.5-5"/></symbol>
+  <symbol id="info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol>
+  <symbol id="alert" viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01"/><path d="M10.3 4.3 2.7 18a1.5 1.5 0 0 0 1.3 2.3h16a1.5 1.5 0 0 0 1.3-2.3L13.7 4.3a1.5 1.5 0 0 0-2.6 0Z"/></symbol>
+  <symbol id="x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+</svg>
+
+<div class="stack">
+  <span class="label">Toast 栈</span>
+
+  <div class="toast success">
+    <svg class="ic"><use href="#check"/></svg>
+    <div class="body"><div class="msg">已保存修改。</div></div>
+    <button class="close" aria-label="关闭"><svg class="ic" style="width:14px;height:14px"><use href="#x"/></svg></button>
+  </div>
+
+  <div class="toast info">
+    <svg class="ic"><use href="#info"/></svg>
+    <div class="body"><div class="ttl">行情已更新</div><div class="msg">已抓取 600519 最新行情，来源 EastMoney。</div></div>
+    <button class="close" aria-label="关闭"><svg class="ic" style="width:14px;height:14px"><use href="#x"/></svg></button>
+  </div>
+
+  <div class="toast destructive">
+    <svg class="ic"><use href="#alert"/></svg>
+    <div class="body"><div class="msg">数据源响应超时。</div></div>
+    <button class="act">重试</button>
+  </div>
+
+  <div class="toast warning">
+    <svg class="ic"><use href="#alert"/></svg>
+    <div class="body"><div class="msg">已删除 1 条本地缓存。</div></div>
+    <button class="act">撤销</button>
+  </div>
+</div>
+</body>
+</html>

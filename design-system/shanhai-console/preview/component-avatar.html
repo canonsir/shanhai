@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="../colors_and_type.css">
+<title>Avatar · 山海</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;padding:24px;background:var(--background);color:var(--foreground);font-family:var(--font-sans);font-size:14px;line-height:1.4}
+  .stack{display:flex;flex-direction:column;gap:20px;max-width:640px}
+  .group{display:flex;flex-direction:column;gap:11px}
+  .label{font:600 11px/1 var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted-foreground)}
+  .row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+
+  .av{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;color:#fff;font-weight:600;font-family:var(--font-sans);flex:none;position:relative;overflow:visible}
+  .av.sq{border-radius:11px}
+  .xs{width:24px;height:24px;font-size:10px}
+  .sm{width:30px;height:30px;font-size:12px}
+  .md{width:40px;height:40px;font-size:15px}
+  .lg{width:52px;height:52px;font-size:19px;border-radius:50%}
+  .lg.sq{border-radius:15px}
+  .c1{background:var(--chart-1)}.c2{background:var(--chart-2)}.c3{background:var(--chart-3)}.c4{background:var(--chart-4)}.c5{background:var(--chart-5)}
+  .ic{color:#fff;width:55%;height:55%;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .status{position:absolute;right:-1px;bottom:-1px;width:11px;height:11px;border-radius:50%;border:2px solid var(--background)}
+  .online{background:var(--chart-2)}
+  .busy{background:var(--warning)}
+  .offline{background:var(--muted-foreground)}
+
+  .grp{display:flex}
+  .grp .av{border:2px solid var(--background);margin-left:-8px}
+  .grp .av:first-child{margin-left:0}
+  .grp .more{background:var(--muted);color:var(--muted-foreground)}
+</style>
+</head>
+<body>
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="bot" viewBox="0 0 24 24"><rect x="5" y="8" width="14" height="11" rx="2"/><path d="M12 8V5M9 13h.01M15 13h.01"/></symbol>
+</svg>
+
+<div class="stack">
+  <div class="group">
+    <span class="label">Sizes · 尺寸（人 / Agent 用圆形）</span>
+    <div class="row">
+      <span class="av c1 xs">用</span>
+      <span class="av c2 sm">用</span>
+      <span class="av c3 md">用</span>
+      <span class="av c4 lg">用</span>
+      <span class="av c2 md"><svg class="ic"><use href="#bot"/></svg></span>
+    </div>
+  </div>
+
+  <div class="group">
+    <span class="label">Company · 公司（圆角方形）</span>
+    <div class="row">
+      <span class="av sq c2 md">茅</span>
+      <span class="av sq c4 md">五</span>
+      <span class="av sq c1 lg">宁</span>
+    </div>
+  </div>
+
+  <div class="group">
+    <span class="label">Status · 状态点</span>
+    <div class="row">
+      <span class="av c3 md">A<span class="status online"></span></span>
+      <span class="av c1 md"><svg class="ic"><use href="#bot"/></svg><span class="status busy"></span></span>
+      <span class="av c5 md">研<span class="status offline"></span></span>
+    </div>
+  </div>
+
+  <div class="group">
+    <span class="label">Group · 协作者 / 多源</span>
+    <div class="grp">
+      <span class="av c2 md">茅</span>
+      <span class="av c3 md">研</span>
+      <span class="av c4 md">析</span>
+      <span class="av md more">+3</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>

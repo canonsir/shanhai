@@ -1,0 +1,37 @@
+{
+  "slug": "pagination",
+  "name": "Pagination",
+  "purpose": "Page navigation for tables and long fact lists, with optional page-size control.",
+  "variantDimensions": {
+    "structure": ["numbered", "prev-next", "with-summary"],
+    "state": ["default", "active", "disabled"],
+    "withPageSize": ["page-size", "no-page-size"]
+  },
+  "structures": [
+    {
+      "name": "Numbered Pager",
+      "anatomy": ["prev", "page-buttons", "ellipsis", "next"],
+      "notes": "Active page uses the primary token; neighbors stay quiet outline."
+    },
+    {
+      "name": "Prev / Next",
+      "anatomy": ["prev", "position-label", "next"],
+      "notes": "Minimal control for simple lists; disables edges at bounds."
+    },
+    {
+      "name": "Pager with Summary",
+      "anatomy": ["range-summary", "page-size-select", "pager"],
+      "notes": "Shows result range and a page-size selector for dense tables."
+    }
+  ],
+  "contentExamples": [
+    "第 1-20 条，共 128 条",
+    "每页 20 条",
+    "上一页",
+    "下一页"
+  ],
+  "interactionNotes": [
+    "Disabled edges keep layout stable; never hide prev/next at bounds.",
+    "Only the active page is filled; all other controls use the outline button style."
+  ]
+}

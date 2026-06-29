@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="../colors_and_type.css">
+<title>Metric Card · 山海</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;padding:24px;background:var(--background);color:var(--foreground);font-family:var(--font-sans);font-size:14px;line-height:1.4}
+  .label{font:600 11px/1 var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted-foreground);margin-bottom:12px;display:block}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;max-width:760px}
+
+  .metric{border:1px solid var(--border);border-radius:14px;background:var(--card);padding:15px 16px;display:flex;flex-direction:column;gap:8px}
+  .metric.primary{border-color:color-mix(in srgb,var(--primary) 35%,var(--border));background:color-mix(in srgb,var(--accent) 22%,var(--card))}
+  .mlabel{font:600 11px/1 var(--font-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted-foreground)}
+  .mval{font:600 24px/1 var(--font-sans);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+  .mval .unit{font-size:13px;font-weight:500;color:var(--muted-foreground);margin-left:3px}
+  .delta{display:inline-flex;align-items:center;gap:4px;font:600 12px var(--font-sans);font-variant-numeric:tabular-nums;align-self:flex-start;padding:2px 8px;border-radius:999px}
+  .up{color:var(--chart-2);background:color-mix(in srgb,var(--chart-2) 14%,transparent)}
+  .down{color:var(--destructive);background:color-mix(in srgb,var(--destructive) 12%,transparent)}
+  .flat{color:var(--muted-foreground);background:color-mix(in srgb,var(--muted-foreground) 14%,transparent)}
+  .delta .icon{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+  .spark{margin-top:2px}
+</style>
+</head>
+<body>
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="up" viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></symbol>
+  <symbol id="down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+  <symbol id="flat" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+</svg>
+
+<span class="label">Metric Cards · 行情指标</span>
+<div class="grid">
+  <div class="metric primary">
+    <span class="mlabel">最新价</span>
+    <span class="mval">1,685.00<span class="unit">元</span></span>
+    <span class="delta up"><svg class="icon"><use href="#up"/></svg>+1.24%</span>
+  </div>
+
+  <div class="metric">
+    <span class="mlabel">总市值</span>
+    <span class="mval">21,168<span class="unit">亿</span></span>
+    <span class="delta down"><svg class="icon"><use href="#down"/></svg>-0.38%</span>
+  </div>
+
+  <div class="metric">
+    <span class="mlabel">市盈率 TTM</span>
+    <span class="mval">22.4</span>
+    <span class="delta flat"><svg class="icon"><use href="#flat"/></svg>持平</span>
+  </div>
+
+  <div class="metric">
+    <span class="mlabel">事实总数</span>
+    <span class="mval">128</span>
+    <svg class="spark" width="100%" height="28" viewBox="0 0 100 28" preserveAspectRatio="none">
+      <polyline points="0,22 14,18 28,20 42,12 56,14 70,8 84,10 100,4" fill="none" stroke="var(--chart-1)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+</div>
+</body>
+</html>

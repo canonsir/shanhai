@@ -44,6 +44,125 @@
       "category": "ai-interaction",
       "previewPage": "preview/component-chat-composer.html",
       "componentFile": "components/chat-composer.json"
+    },
+    {
+      "slug": "badge",
+      "name": "Badge",
+      "category": "data-display",
+      "previewPage": "preview/component-badge.html",
+      "componentFile": "components/badge.json"
+    },
+    {
+      "slug": "tabs",
+      "name": "Tabs",
+      "category": "navigation",
+      "previewPage": "preview/component-tabs.html",
+      "componentFile": "components/tabs.json"
+    },
+    {
+      "slug": "text-input",
+      "name": "Text Input",
+      "category": "form",
+      "previewPage": "preview/component-text-input.html",
+      "componentFile": "components/text-input.json"
+    },
+    {
+      "slug": "select",
+      "name": "Select",
+      "category": "form",
+      "previewPage": "preview/component-select.html",
+      "componentFile": "components/select.json"
+    },
+    {
+      "slug": "switch",
+      "name": "Switch",
+      "category": "form",
+      "previewPage": "preview/component-switch.html",
+      "componentFile": "components/switch.json"
+    },
+    {
+      "slug": "tooltip",
+      "name": "Tooltip",
+      "category": "overlay",
+      "previewPage": "preview/component-tooltip.html",
+      "componentFile": "components/tooltip.json"
+    },
+    {
+      "slug": "modal",
+      "name": "Modal",
+      "category": "overlay",
+      "previewPage": "preview/component-modal.html",
+      "componentFile": "components/modal.json"
+    },
+    {
+      "slug": "toast",
+      "name": "Toast",
+      "category": "feedback",
+      "previewPage": "preview/component-toast.html",
+      "componentFile": "components/toast.json"
+    },
+    {
+      "slug": "empty-state",
+      "name": "Empty State",
+      "category": "feedback",
+      "previewPage": "preview/component-empty-state.html",
+      "componentFile": "components/empty-state.json"
+    },
+    {
+      "slug": "skeleton",
+      "name": "Skeleton",
+      "category": "feedback",
+      "previewPage": "preview/component-skeleton.html",
+      "componentFile": "components/skeleton.json"
+    },
+    {
+      "slug": "alert",
+      "name": "Alert",
+      "category": "feedback",
+      "previewPage": "preview/component-alert.html",
+      "componentFile": "components/alert.json"
+    },
+    {
+      "slug": "metric-card",
+      "name": "Metric Card",
+      "category": "data-display",
+      "previewPage": "preview/component-metric-card.html",
+      "componentFile": "components/metric-card.json"
+    },
+    {
+      "slug": "timeline",
+      "name": "Timeline",
+      "category": "data-display",
+      "previewPage": "preview/component-timeline.html",
+      "componentFile": "components/timeline.json"
+    },
+    {
+      "slug": "source-chip",
+      "name": "Source Chip",
+      "category": "data-display",
+      "previewPage": "preview/component-source-chip.html",
+      "componentFile": "components/source-chip.json"
+    },
+    {
+      "slug": "breadcrumb",
+      "name": "Breadcrumb",
+      "category": "navigation",
+      "previewPage": "preview/component-breadcrumb.html",
+      "componentFile": "components/breadcrumb.json"
+    },
+    {
+      "slug": "pagination",
+      "name": "Pagination",
+      "category": "navigation",
+      "previewPage": "preview/component-pagination.html",
+      "componentFile": "components/pagination.json"
+    },
+    {
+      "slug": "avatar",
+      "name": "Avatar",
+      "category": "data-display",
+      "previewPage": "preview/component-avatar.html",
+      "componentFile": "components/avatar.json"
     }
   ],
   "crossComponentPatterns": {

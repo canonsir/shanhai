@@ -1,0 +1,37 @@
+{
+  "slug": "tabs",
+  "name": "Tabs",
+  "purpose": "Switch between sibling views such as company profile sections, dataset facets, or workspace modes.",
+  "variantDimensions": {
+    "style": ["underline", "segmented", "pill"],
+    "state": ["default", "hover", "active", "disabled"],
+    "withCount": ["count", "no-count"]
+  },
+  "structures": [
+    {
+      "name": "Underline Tabs",
+      "anatomy": ["tab-list", "tab", "active-underline"],
+      "notes": "Primary navigation between content sections; active tab carries the brand underline."
+    },
+    {
+      "name": "Segmented Control",
+      "anatomy": ["track", "segment", "active-segment"],
+      "notes": "Compact view toggle inside a muted track for 2-4 mutually exclusive options."
+    },
+    {
+      "name": "Tabs with Count",
+      "anatomy": ["tab-list", "tab", "count-badge"],
+      "notes": "Adds a trailing count badge for facets like sources or facts."
+    }
+  ],
+  "contentExamples": [
+    "概览",
+    "财务",
+    "公告",
+    "知识时间线"
+  ],
+  "interactionNotes": [
+    "Only the active tab uses foreground weight; inactive tabs stay muted.",
+    "Underline indicator should animate position, not opacity, for a precise technical feel."
+  ]
+}

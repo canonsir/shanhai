@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="../colors_and_type.css">
+<title>Tabs · 山海</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;padding:24px;background:var(--background);color:var(--foreground);font-family:var(--font-sans);font-size:14px;line-height:1.4}
+  .stack{display:flex;flex-direction:column;gap:24px;max-width:680px}
+  .group{display:flex;flex-direction:column;gap:12px}
+  .label{font:600 11px/1 var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted-foreground)}
+
+  .tabs{display:flex;align-items:center;gap:4px;border-bottom:1px solid var(--border)}
+  .tab{position:relative;border:0;background:transparent;color:var(--muted-foreground);font:500 14px var(--font-sans);padding:10px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:color .14s}
+  .tab:hover{color:var(--foreground)}
+  .tab.active{color:var(--foreground);font-weight:600}
+  .tab.active::after{content:"";position:absolute;left:8px;right:8px;bottom:-1px;height:2px;border-radius:2px;background:var(--primary)}
+  .tab:disabled{color:color-mix(in srgb,var(--muted-foreground) 55%,transparent);cursor:not-allowed}
+  .tcount{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:color-mix(in srgb,var(--muted-foreground) 18%,transparent);color:var(--muted-foreground);font:600 11px/1 var(--font-sans);font-variant-numeric:tabular-nums}
+  .tab.active .tcount{background:color-mix(in srgb,var(--primary) 16%,transparent);color:var(--primary)}
+
+  .seg{display:inline-flex;padding:3px;border-radius:10px;background:var(--muted);gap:2px}
+  .seg button{border:0;background:transparent;color:var(--muted-foreground);font:500 13px var(--font-sans);padding:6px 14px;border-radius:8px;cursor:pointer;transition:background .14s,color .14s}
+  .seg button:hover{color:var(--foreground)}
+  .seg button.active{background:var(--background);color:var(--foreground);font-weight:600}
+</style>
+</head>
+<body>
+<div class="stack">
+  <div class="group">
+    <span class="label">Underline · 内容分区</span>
+    <div class="tabs">
+      <button class="tab active">概览</button>
+      <button class="tab">财务</button>
+      <button class="tab">公告</button>
+      <button class="tab">知识时间线</button>
+      <button class="tab" disabled>关系图谱</button>
+    </div>
+  </div>
+
+  <div class="group">
+    <span class="label">Underline + Count · 带计数</span>
+    <div class="tabs">
+      <button class="tab active">事实 <span class="tcount">128</span></button>
+      <button class="tab">来源 <span class="tcount">6</span></button>
+      <button class="tab">公告 <span class="tcount">42</span></button>
+    </div>
+  </div>
+
+  <div class="group">
+    <span class="label">Segmented · 视图切换</span>
+    <div class="seg">
+      <button class="active">日</button>
+      <button>周</button>
+      <button>月</button>
+      <button>年</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>

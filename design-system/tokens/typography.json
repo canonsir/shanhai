@@ -1,0 +1,32 @@
+{
+  "$schema": "shanhai-design-tokens/typography",
+  "$comment": "ShanHai Design System 字体 token（平台无关）。事实来源：design-system/shanhai-console/colors_and_type.css 的 --font-*。字号 / 行高 / 字重在导出物中尚未定义（Trae Design 仅导出字体族），故 scale 暂留 ShanHai 约定的基础梯度，待 Review 与真实页面验证后收敛。",
+  "fontFamily": {
+    "sans": "Stack Sans Text, ui-sans-serif, sans-serif, system-ui",
+    "serif": "Source Serif 4, serif",
+    "mono": "JetBrains Mono, monospace"
+  },
+  "fontSize": {
+    "$comment": "导出物未定义字号梯度；以下为 ShanHai dashboard 密度的基础约定，待 Review。",
+    "xs": "0.75rem",
+    "sm": "0.86rem",
+    "base": "0.95rem",
+    "lg": "1.05rem",
+    "xl": "1.25rem",
+    "2xl": "1.5rem"
+  },
+  "fontWeight": {
+    "normal": "400",
+    "medium": "500",
+    "semibold": "600",
+    "bold": "700"
+  },
+  "lineHeight": {
+    "tight": "1.2",
+    "normal": "1.5",
+    "relaxed": "1.7"
+  },
+  "letterSpacing": {
+    "normal": "0em"
+  }
+}

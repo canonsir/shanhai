@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="../colors_and_type.css">
+<title>Breadcrumb · 山海</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;padding:24px;background:var(--background);color:var(--foreground);font-family:var(--font-sans);font-size:14px;line-height:1.4}
+  .stack{display:flex;flex-direction:column;gap:18px;max-width:640px}
+  .group{display:flex;flex-direction:column;gap:9px}
+  .label{font:600 11px/1 var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted-foreground)}
+
+  .bc{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:14px}
+  .bc a{color:var(--muted-foreground);text-decoration:none;padding:2px 4px;border-radius:6px;cursor:pointer;display:inline-flex;align-items:center;gap:5px}
+  .bc a:hover{color:var(--foreground);background:var(--muted)}
+  .bc .cur{color:var(--foreground);font-weight:600;padding:2px 4px}
+  .sep{color:var(--muted-foreground);opacity:.6;display:inline-flex}
+  .sep .icon{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .home{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  .more{border:0;background:transparent;color:var(--muted-foreground);cursor:pointer;padding:2px 6px;border-radius:6px;font:600 14px var(--font-sans)}
+  .more:hover{background:var(--muted);color:var(--foreground)}
+  .code{font:600 13px var(--font-mono)}
+</style>
+</head>
+<body>
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+  <symbol id="home" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7"/><path d="M6 10v9a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9"/></symbol>
+</svg>
+
+<div class="stack">
+  <div class="group">
+    <span class="label">Entity Trail · 实体下钻</span>
+    <nav class="bc">
+      <a><svg class="home"><use href="#home"/></svg>首页</a>
+      <span class="sep"><svg class="icon"><use href="#chev"/></svg></span>
+      <a>食品饮料</a>
+      <span class="sep"><svg class="icon"><use href="#chev"/></svg></span>
+      <a>白酒</a>
+      <span class="sep"><svg class="icon"><use href="#chev"/></svg></span>
+      <span class="cur">贵州茅台</span>
+    </nav>
+  </div>
+
+  <div class="group">
+    <span class="label">With Code · 至证券</span>
+    <nav class="bc">
+      <a>贵州茅台</a>
+      <span class="sep"><svg class="icon"><use href="#chev"/></svg></span>
+      <span class="cur code">600519.SH</span>
+    </nav>
+  </div>
+
+  <div class="group">
+    <span class="label">Collapsed · 折叠中间层</span>
+    <nav class="bc">
+      <a><svg class="home"><use href="#home"/></svg>首页</a>
+      <span class="sep"><svg class="icon"><use href="#chev"/></svg></span>
+      <button class="more" aria-label="展开省略路径">…</button>
+      <span class="sep"><svg class="icon"><use href="#chev"/></svg></span>
+      <a>贵州茅台</a>
+      <span class="sep"><svg class="icon"><use href="#chev"/></svg></span>
+      <span class="cur">2025 年报</span>
+    </nav>
+  </div>
+</div>
+</body>
+</html>

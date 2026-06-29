@@ -78,6 +78,10 @@
       "destructive": {
         "hex": "#ef4444",
         "opacity": "1"
+      },
+      "warning": {
+        "hex": "#d97706",
+        "opacity": "1"
       }
     },
     "border": {
@@ -205,6 +209,14 @@
       },
       "destructive-foreground": {
         "hex": "#ffffff",
+        "opacity": "1"
+      },
+      "warning": {
+        "hex": "#f59e0b",
+        "opacity": "1"
+      },
+      "warning-foreground": {
+        "hex": "#0e1115",
         "opacity": "1"
       },
       "border": {

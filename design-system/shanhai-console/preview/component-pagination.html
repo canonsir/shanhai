@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="../colors_and_type.css">
+<title>Pagination · 山海</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;padding:24px;background:var(--background);color:var(--foreground);font-family:var(--font-sans);font-size:14px;line-height:1.4}
+  .stack{display:flex;flex-direction:column;gap:22px;max-width:680px}
+  .group{display:flex;flex-direction:column;gap:11px}
+  .label{font:600 11px/1 var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted-foreground)}
+
+  .pager{display:flex;align-items:center;gap:6px}
+  .pg{min-width:34px;height:34px;padding:0 10px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:9px;background:var(--background);color:var(--foreground);font:500 13px var(--font-sans);font-variant-numeric:tabular-nums;cursor:pointer;transition:background .14s,border-color .14s}
+  .pg:hover{background:var(--muted)}
+  .pg.active{background:var(--primary);color:var(--primary-foreground);border-color:var(--primary)}
+  .pg:disabled{opacity:.4;cursor:not-allowed}
+  .pg.icon-btn{padding:0;width:34px}
+  .icon{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .ellipsis{min-width:34px;text-align:center;color:var(--muted-foreground)}
+
+  .bar{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  .summary{font-size:13px;color:var(--muted-foreground)}
+  .summary b{color:var(--foreground);font-variant-numeric:tabular-nums;font-weight:600}
+  .size{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted-foreground)}
+  .sizesel{height:32px;padding:0 10px;border:1px solid var(--input);border-radius:9px;background:var(--background);color:var(--foreground);font:13px var(--font-sans);cursor:pointer}
+</style>
+</head>
+<body>
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="prev" viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></symbol>
+  <symbol id="next" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+</svg>
+
+<div class="stack">
+  <div class="group">
+    <span class="label">Numbered · 数字分页</span>
+    <div class="pager">
+      <button class="pg icon-btn" disabled aria-label="上一页"><svg class="icon"><use href="#prev"/></svg></button>
+      <button class="pg active">1</button>
+      <button class="pg">2</button>
+      <button class="pg">3</button>
+      <span class="ellipsis">…</span>
+      <button class="pg">7</button>
+      <button class="pg icon-btn" aria-label="下一页"><svg class="icon"><use href="#next"/></svg></button>
+    </div>
+  </div>
+
+  <div class="group">
+    <span class="label">Prev / Next · 简洁</span>
+    <div class="pager">
+      <button class="pg"><svg class="icon"><use href="#prev"/></svg>上一页</button>
+      <span class="ellipsis" style="font-variant-numeric:tabular-nums">2 / 7</span>
+      <button class="pg">下一页<svg class="icon"><use href="#next"/></svg></button>
+    </div>
+  </div>
+
+  <div class="group">
+    <span class="label">With Summary · 表格底栏</span>
+    <div class="bar">
+      <span class="summary">第 <b>1-20</b> 条，共 <b>128</b> 条</span>
+      <div class="size">
+        <label for="ps">每页</label>
+        <select id="ps" class="sizesel"><option>20 条</option><option>50 条</option><option>100 条</option></select>
+        <div class="pager" style="margin-left:8px">
+          <button class="pg icon-btn" disabled aria-label="上一页"><svg class="icon"><use href="#prev"/></svg></button>
+          <button class="pg active">1</button>
+          <button class="pg">2</button>
+          <button class="pg icon-btn" aria-label="下一页"><svg class="icon"><use href="#next"/></svg></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

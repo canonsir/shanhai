@@ -1,0 +1,37 @@
+{
+  "slug": "timeline",
+  "name": "Timeline",
+  "purpose": "Chronological knowledge timeline for company facts, announcements, and market events.",
+  "variantDimensions": {
+    "nodeType": ["fact", "announcement", "event", "milestone"],
+    "density": ["compact", "comfortable"],
+    "withSource": ["source", "no-source"]
+  },
+  "structures": [
+    {
+      "name": "Event Item",
+      "anatomy": ["rail", "node", "timestamp", "title", "detail"],
+      "notes": "Vertical rail with node markers; each item carries a date and short body."
+    },
+    {
+      "name": "Sourced Fact",
+      "anatomy": ["rail", "node", "title", "predicate", "source-chip"],
+      "notes": "Fact item exposes a trailing provenance chip linking to the raw snapshot."
+    },
+    {
+      "name": "Grouped by Date",
+      "anatomy": ["date-header", "items"],
+      "notes": "Optional sticky date headers group same-day entries."
+    }
+  ],
+  "contentExamples": [
+    "2026-06-29",
+    "披露 2025 年报",
+    "分类于行业：白酒",
+    "来源：CNInfo"
+  ],
+  "interactionNotes": [
+    "Node color encodes type using chart and accent tokens, with text labels alongside.",
+    "Keep the rail thin and quiet; emphasis comes from titles, not the connector."
+  ]
+}

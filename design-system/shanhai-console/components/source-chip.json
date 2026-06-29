@@ -1,0 +1,37 @@
+{
+  "slug": "source-chip",
+  "name": "Source Chip",
+  "purpose": "Compact provenance marker exposing where a fact came from and when it was captured.",
+  "variantDimensions": {
+    "provider": ["eastmoney", "cninfo", "sina", "tushare"],
+    "structure": ["provider", "provider-time", "provider-version"],
+    "state": ["default", "hover", "stale"]
+  },
+  "structures": [
+    {
+      "name": "Provider Chip",
+      "anatomy": ["dot", "provider-name"],
+      "notes": "Minimal chip naming the data source; dot reserved per provider family."
+    },
+    {
+      "name": "Provenance Chip",
+      "anatomy": ["dot", "provider-name", "captured-time"],
+      "notes": "Adds captured_at so the user can judge freshness inline."
+    },
+    {
+      "name": "Snapshot Link",
+      "anatomy": ["dot", "provider-name", "version", "external-icon"],
+      "notes": "Links to raw_snapshot_ref by version/hash for full traceability."
+    }
+  ],
+  "contentExamples": [
+    "EastMoney",
+    "CNInfo · 2026-06-29",
+    "Tushare · v1 #a3f0",
+    "查看原始快照"
+  ],
+  "interactionNotes": [
+    "Free public sources and commercial adapters should be visually distinguishable but equally legible.",
+    "A stale state can dim the chip and add a small warning, prompting re-fetch."
+  ]
+}

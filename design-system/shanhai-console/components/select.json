@@ -1,0 +1,37 @@
+{
+  "slug": "select",
+  "name": "Select",
+  "purpose": "Single-choice dropdown for filters, data source switching, period selection, and entity facets.",
+  "variantDimensions": {
+    "state": ["default", "open", "filled", "disabled"],
+    "menuItem": ["default", "hover", "selected"],
+    "size": ["sm", "md"]
+  },
+  "structures": [
+    {
+      "name": "Trigger",
+      "anatomy": ["control", "value", "chevron"],
+      "notes": "Closed state mirrors Text Input metrics with a trailing chevron token."
+    },
+    {
+      "name": "Menu",
+      "anatomy": ["popover", "option", "check-indicator"],
+      "notes": "Popover uses the popover token surface; selected option carries a leading check."
+    },
+    {
+      "name": "Grouped Menu",
+      "anatomy": ["popover", "group-label", "option"],
+      "notes": "Optional uppercase mono group labels for source or category grouping."
+    }
+  ],
+  "contentExamples": [
+    "全部数据源",
+    "EastMoney",
+    "CNInfo",
+    "近一年"
+  ],
+  "interactionNotes": [
+    "Open state borrows the focus ring halo; chevron rotates on open.",
+    "Selected option uses accent surface plus a check rather than bold weight alone."
+  ]
+}

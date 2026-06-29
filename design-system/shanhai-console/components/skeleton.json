@@ -1,0 +1,32 @@
+{
+  "slug": "skeleton",
+  "name": "Skeleton",
+  "purpose": "Loading placeholder that mirrors final layout while data is fetched from sources.",
+  "variantDimensions": {
+    "shape": ["line", "block", "circle"],
+    "context": ["text", "card", "table-row", "metric"],
+    "motion": ["shimmer", "static"]
+  },
+  "structures": [
+    {
+      "name": "Text Lines",
+      "anatomy": ["line-long", "line-medium", "line-short"],
+      "notes": "Variable-width lines approximate paragraph or label content."
+    },
+    {
+      "name": "Card Skeleton",
+      "anatomy": ["avatar-circle", "title-line", "meta-line"],
+      "notes": "Mirrors app-card and list-item layouts to reduce layout shift."
+    },
+    {
+      "name": "Table Skeleton",
+      "anatomy": ["row", "cell-blocks"],
+      "notes": "Repeats row blocks matching column rhythm of the data table."
+    }
+  ],
+  "contentExamples": [],
+  "interactionNotes": [
+    "Use a low-contrast muted fill with a subtle shimmer; never block interaction longer than needed.",
+    "Match skeleton geometry to the real component so content does not jump on load."
+  ]
+}

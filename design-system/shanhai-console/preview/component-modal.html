@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="../colors_and_type.css">
+<title>Modal · 山海</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;padding:24px;background:var(--background);color:var(--foreground);font-family:var(--font-sans);font-size:14px;line-height:1.4}
+  .stack{display:flex;flex-direction:column;gap:24px}
+  .label{font:600 11px/1 var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted-foreground);margin-bottom:12px}
+  .scene{position:relative;border:1px solid var(--border);border-radius:14px;overflow:hidden;height:340px;background:color-mix(in srgb,var(--muted) 50%,var(--background))}
+  .scrim{position:absolute;inset:0;background:color-mix(in srgb,var(--foreground) 32%,transparent);display:grid;place-items:center;padding:20px}
+
+  .panel{width:100%;max-width:380px;background:var(--card);color:var(--card-foreground);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-xl);overflow:hidden}
+  .panel.lg{max-width:440px}
+  .phead{display:flex;align-items:center;gap:10px;padding:18px 20px 0}
+  .pbody{padding:8px 20px 0;font-size:14px;color:var(--muted-foreground);line-height:1.55}
+  .ptitle{font-size:16px;font-weight:600;color:var(--foreground)}
+  .pfoot{display:flex;justify-content:flex-end;gap:10px;padding:18px 20px 18px}
+  .close{margin-left:auto;width:30px;height:30px;border:0;border-radius:8px;background:transparent;color:var(--muted-foreground);cursor:pointer;display:grid;place-items:center}
+  .close:hover{background:var(--muted);color:var(--foreground)}
+
+  .iconwrap{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;flex:none}
+  .iconwrap.danger{background:color-mix(in srgb,var(--destructive) 14%,transparent);color:var(--destructive)}
+  .icon{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+  .field{display:flex;align-items:center;height:38px;padding:0 12px;border:1px solid var(--input);border-radius:10px;background:var(--background);margin-top:6px}
+  .field input{border:0;outline:0;background:transparent;color:inherit;font:inherit;width:100%}
+  .flabel{font:600 11px/1 var(--font-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted-foreground);margin-top:14px;display:block}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;height:36px;padding:0 16px;border:1px solid transparent;border-radius:999px;font:500 13px var(--font-sans);cursor:pointer}
+  .btn.ghost{background:var(--muted);color:var(--foreground)}
+  .btn.primary{background:var(--primary);color:var(--primary-foreground)}
+  .btn.danger{background:var(--destructive);color:var(--destructive-foreground)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+</style>
+</head>
+<body>
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="alert" viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01"/><path d="M10.3 4.3 2.7 18a1.5 1.5 0 0 0 1.3 2.3h16a1.5 1.5 0 0 0 1.3-2.3L13.7 4.3a1.5 1.5 0 0 0-2.6 0Z"/></symbol>
+</svg>
+
+<div class="stack">
+  <div class="grid">
+    <div>
+      <span class="label">Destructive · 删除确认</span>
+      <div class="scene">
+        <div class="scrim">
+          <div class="panel">
+            <div class="phead">
+              <span class="iconwrap danger"><svg class="icon"><use href="#alert"/></svg></span>
+              <span class="ptitle">删除该对话？</span>
+            </div>
+            <div class="pbody">删除后将无法恢复该对话及其关联的临时上下文。此操作不可撤销。</div>
+            <div class="pfoot">
+              <button class="btn ghost">取消</button>
+              <button class="btn danger">确认删除</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <span class="label">Form · 编辑实体</span>
+      <div class="scene">
+        <div class="scrim">
+          <div class="panel lg">
+            <div class="phead">
+              <span class="ptitle">编辑公司展示名</span>
+              <button class="close" aria-label="关闭"><svg class="icon"><use href="#x"/></svg></button>
+            </div>
+            <div class="pbody" style="padding-bottom:4px">
+              <label class="flabel">公司名称</label>
+              <div class="field"><input value="贵州茅台"></div>
+              <label class="flabel">证券代码（属性）</label>
+              <div class="field"><input value="600519.SH"></div>
+            </div>
+            <div class="pfoot">
+              <button class="btn ghost">取消</button>
+              <button class="btn primary">保存</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

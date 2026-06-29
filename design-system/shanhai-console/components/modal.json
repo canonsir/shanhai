@@ -1,0 +1,37 @@
+{
+  "slug": "modal",
+  "name": "Modal",
+  "purpose": "Focused overlay for confirmations, entity detail edits, and destructive action gating.",
+  "variantDimensions": {
+    "size": ["sm", "md", "lg"],
+    "intent": ["default", "destructive"],
+    "structure": ["confirm", "form", "detail"]
+  },
+  "structures": [
+    {
+      "name": "Confirm Dialog",
+      "anatomy": ["overlay", "panel", "title", "body", "footer-actions"],
+      "notes": "Centered panel with title, supporting copy, and a primary/quiet action pair."
+    },
+    {
+      "name": "Destructive Dialog",
+      "anatomy": ["overlay", "panel", "icon", "title", "body", "footer-actions"],
+      "notes": "Leading destructive icon; confirm button uses the destructive token."
+    },
+    {
+      "name": "Form Modal",
+      "anatomy": ["overlay", "panel", "header", "scroll-body", "footer-actions"],
+      "notes": "Header with close control; body scrolls while footer stays pinned."
+    }
+  ],
+  "contentExamples": [
+    "删除该对话？",
+    "此操作不可撤销。",
+    "取消",
+    "确认删除"
+  ],
+  "interactionNotes": [
+    "Overlay scrim uses a translucent foreground wash, not pure black.",
+    "Panel relies on a border plus large shadow token; corners use the shared radius scale."
+  ]
+}

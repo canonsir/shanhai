@@ -1,0 +1,37 @@
+{
+  "slug": "switch",
+  "name": "Switch",
+  "purpose": "Binary on/off toggle for settings such as live refresh, provenance display, or feature flags.",
+  "variantDimensions": {
+    "state": ["off", "on", "disabled-off", "disabled-on"],
+    "size": ["sm", "md"],
+    "layout": ["standalone", "with-label", "with-description"]
+  },
+  "structures": [
+    {
+      "name": "Standalone Switch",
+      "anatomy": ["track", "thumb"],
+      "notes": "On state fills the track with the primary token; thumb slides without bounce."
+    },
+    {
+      "name": "Labeled Row",
+      "anatomy": ["label", "switch"],
+      "notes": "Label leads, switch trails; whole row is the hit target."
+    },
+    {
+      "name": "Setting Row",
+      "anatomy": ["title", "description", "switch"],
+      "notes": "Adds a muted description line for settings panels."
+    }
+  ],
+  "contentExamples": [
+    "实时刷新行情",
+    "显示数据溯源",
+    "启用暗色主题",
+    "仅看免费数据源"
+  ],
+  "interactionNotes": [
+    "Off track uses a muted surface; on track uses the primary token, not a gradient.",
+    "Disabled states keep the same colors at reduced opacity for predictability."
+  ]
+}

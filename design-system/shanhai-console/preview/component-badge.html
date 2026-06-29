@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="../colors_and_type.css">
+<title>Badge · 山海</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;padding:24px;background:var(--background);color:var(--foreground);font-family:var(--font-sans);font-size:14px;line-height:1.4}
+  .stack{display:flex;flex-direction:column;gap:20px;max-width:680px}
+  .group{display:flex;flex-direction:column;gap:10px}
+  .label{font:600 11px/1 var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted-foreground)}
+  .row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .divider{border:0;border-top:1px solid var(--border);margin:4px 0}
+  .badge{display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 9px;border-radius:999px;font:500 12px/1 var(--font-sans);white-space:nowrap}
+  .badge.soft{border-radius:7px}
+  .badge::before{content:none}
+  .badge.dot::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block}
+  .neutral{background:color-mix(in srgb,var(--muted-foreground) 14%,transparent);color:var(--muted-foreground)}
+  .primary{background:color-mix(in srgb,var(--primary) 14%,transparent);color:var(--primary)}
+  .success{background:color-mix(in srgb,var(--chart-2) 16%,transparent);color:var(--chart-2)}
+  .warning{background:color-mix(in srgb,var(--warning) 18%,transparent);color:var(--warning)}
+  .destructive{background:color-mix(in srgb,var(--destructive) 16%,transparent);color:var(--destructive)}
+  .info{background:color-mix(in srgb,var(--accent) 60%,transparent);color:var(--accent-foreground)}
+  .count{min-width:20px;height:20px;padding:0 6px;justify-content:center;background:var(--primary);color:var(--primary-foreground);font-variant-numeric:tabular-nums}
+  .count.muted{background:color-mix(in srgb,var(--muted-foreground) 22%,transparent);color:var(--foreground)}
+</style>
+</head>
+<body>
+<div class="stack">
+  <div class="group">
+    <span class="label">Status · 状态（带点）</span>
+    <div class="row">
+      <span class="badge primary dot">运行中</span>
+      <span class="badge success dot">已完成</span>
+      <span class="badge warning dot">待处理</span>
+      <span class="badge destructive dot">已失败</span>
+      <span class="badge neutral dot">已归档</span>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="group">
+    <span class="label">Category · 分类标签（soft）</span>
+    <div class="row">
+      <span class="badge soft info">白酒板块</span>
+      <span class="badge soft neutral">食品饮料</span>
+      <span class="badge soft primary">沪深 300</span>
+      <span class="badge soft success">EastMoney</span>
+      <span class="badge soft neutral">CNInfo</span>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="group">
+    <span class="label">Count · 计数</span>
+    <div class="row">
+      <span class="badge count">12</span>
+      <span class="badge count">99+</span>
+      <span class="badge count muted">3</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -25,12 +25,46 @@ The following artifacts were generated for this library:
 - `components/sidebar-nav.json`
 - `components/data-table.json`
 - `components/chat-composer.json`
+- `components/badge.json`
+- `components/tabs.json`
+- `components/text-input.json`
+- `components/select.json`
+- `components/switch.json`
+- `components/tooltip.json`
+- `components/modal.json`
+- `components/toast.json`
+- `components/empty-state.json`
+- `components/skeleton.json`
+- `components/alert.json`
+- `components/metric-card.json`
+- `components/timeline.json`
+- `components/source-chip.json`
+- `components/breadcrumb.json`
+- `components/pagination.json`
+- `components/avatar.json`
 - `preview/component-button.html`
 - `preview/component-search-input.html`
 - `preview/component-app-card.html`
 - `preview/component-sidebar-nav.html`
 - `preview/component-data-table.html`
 - `preview/component-chat-composer.html`
+- `preview/component-badge.html`
+- `preview/component-tabs.html`
+- `preview/component-text-input.html`
+- `preview/component-select.html`
+- `preview/component-switch.html`
+- `preview/component-tooltip.html`
+- `preview/component-modal.html`
+- `preview/component-toast.html`
+- `preview/component-empty-state.html`
+- `preview/component-skeleton.html`
+- `preview/component-alert.html`
+- `preview/component-metric-card.html`
+- `preview/component-timeline.html`
+- `preview/component-source-chip.html`
+- `preview/component-breadcrumb.html`
+- `preview/component-pagination.html`
+- `preview/component-avatar.html`
 - `ui_kits/dashboard/index.html`
 
 No artifacts were skipped for this completed bundle.
@@ -45,7 +79,7 @@ The library exposes 54 available CSS variables across color, typography, radius,
 - Font families: `Stack Sans Text`, `Source Serif 4`, `JetBrains Mono`
 - Base radius: `19.2px`
 - Base spacing unit: `3.84px`
-- Semantic roles mapped: `background`, `foreground`, `primary`, `destructive`
+- Semantic roles mapped: `background`, `foreground`, `primary`, `destructive`, `warning`
 - Icons included: none
 
 The system emphasizes subtle borders over visible elevation, compact dashboard spacing, and a single shared radius token for a clean, cohesive interface.
@@ -54,12 +88,40 @@ The system emphasizes subtle borders over visible elevation, compact dashboard s
 
 The completed component set includes:
 
+**Foundation**
+
 1. `Button` — primary and secondary action patterns
 2. `Search Input` — compact query entry for dashboard surfaces
 3. `App Card` — content and app/module summary card
 4. `Sidebar Navigation` — dashboard navigation rail and section structure
 5. `Data Table` — structured tabular data presentation
 6. `Chat Composer` — AI interaction input surface
+
+**Controls & inputs**
+
+7. `Badge` — status, category, and count labels
+8. `Tabs` — section switching (underline / segmented)
+9. `Text Input` — labeled single-line form field
+10. `Select` — single-choice dropdown with grouped menu
+11. `Switch` — binary on/off toggle for settings
+12. `Tooltip` — on-hover explanation for icons and predicates
+
+**Feedback & overlays**
+
+13. `Modal` — focused overlay for confirm / form / detail
+14. `Toast` — transient action feedback
+15. `Empty State` — zero-data, no-results, and error placeholders
+16. `Skeleton` — loading placeholders that mirror final layout
+17. `Alert` — persistent inline contextual banner
+
+**ShanHai knowledge & market**
+
+18. `Metric Card` — KPI tile for price, market cap, PE, fact counts
+19. `Timeline` — chronological knowledge timeline of facts and events
+20. `Source Chip` — provenance marker (provider / captured_at / snapshot)
+21. `Breadcrumb` — entity drill-down trail (industry → company → security)
+22. `Pagination` — page navigation for tables and long fact lists
+23. `Avatar` — identity marker for users, agents, companies, sources
 
 Component metadata is indexed in `components/index.json`, and each component has both a JSON definition and an HTML preview page.
 

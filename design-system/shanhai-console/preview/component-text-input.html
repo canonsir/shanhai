@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="../colors_and_type.css">
+<title>Text Input · 山海</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;padding:24px;background:var(--background);color:var(--foreground);font-family:var(--font-sans);font-size:14px;line-height:1.4}
+  .stack{display:flex;flex-direction:column;gap:18px;max-width:420px}
+  .group{display:flex;flex-direction:column;gap:7px}
+  .label{font:600 11px/1 var(--font-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted-foreground)}
+  .field{display:flex;align-items:center;gap:8px;height:40px;padding:0 12px;border:1px solid var(--input);border-radius:10px;background:var(--background);color:var(--foreground);transition:border-color .16s,box-shadow .16s,background .16s}
+  .field input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:inherit;font:inherit}
+  .field input::placeholder{color:var(--muted-foreground)}
+  .field:focus-within{border-color:var(--ring);box-shadow:0 0 0 3px color-mix(in srgb,var(--ring) 18%,transparent)}
+  .field.filled{border-color:var(--border)}
+  .field.error{border-color:var(--destructive)}
+  .field.error:focus-within{box-shadow:0 0 0 3px color-mix(in srgb,var(--destructive) 18%,transparent)}
+  .field.disabled{opacity:.5;background:var(--muted)}
+  .field.sm{height:34px;border-radius:9px}
+  .unit{font:500 12px var(--font-mono);color:var(--muted-foreground);white-space:nowrap}
+  .prefix{font:500 13px var(--font-mono);color:var(--muted-foreground)}
+  .helper{font-size:12px;color:var(--muted-foreground);padding-left:2px}
+  .helper.err{color:var(--destructive)}
+  .icon{width:16px;height:16px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;color:var(--muted-foreground)}
+</style>
+</head>
+<body>
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+</svg>
+
+<div class="stack">
+  <div class="group">
+    <span class="label">公司名称</span>
+    <div class="field filled"><input value="贵州茅台" aria-label="公司名称"></div>
+    <span class="helper">用于实体解析的展示名，可与证券代码分离。</span>
+  </div>
+
+  <div class="group">
+    <span class="label">搜索实体</span>
+    <div class="field"><svg class="icon"><use href="#search"/></svg><input placeholder="按名称或代码检索…" aria-label="搜索实体"></div>
+  </div>
+
+  <div class="group">
+    <span class="label">市值阈值</span>
+    <div class="field"><span class="prefix">¥</span><input placeholder="0.00"><span class="unit">亿元</span></div>
+  </div>
+
+  <div class="group">
+    <span class="label">股票代码</span>
+    <div class="field error"><input value="60051" aria-label="股票代码"></div>
+    <span class="helper err">请输入有效的 6 位代码。</span>
+  </div>
+
+  <div class="group">
+    <span class="label">数据源（只读）</span>
+    <div class="field disabled"><input value="EastMoney" disabled aria-label="数据源"></div>
+  </div>
+</div>
+</body>
+</html>

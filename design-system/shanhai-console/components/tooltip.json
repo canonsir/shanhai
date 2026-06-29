@@ -1,0 +1,37 @@
+{
+  "slug": "tooltip",
+  "name": "Tooltip",
+  "purpose": "Brief on-hover explanation for icons, truncated values, predicates, and provenance hints.",
+  "variantDimensions": {
+    "placement": ["top", "bottom", "left", "right"],
+    "content": ["text", "title-text", "key-value"],
+    "trigger": ["icon", "text", "control"]
+  },
+  "structures": [
+    {
+      "name": "Text Tooltip",
+      "anatomy": ["trigger", "bubble", "arrow"],
+      "notes": "Dark popover surface with small arrow; max width keeps copy to two lines."
+    },
+    {
+      "name": "Title + Detail",
+      "anatomy": ["trigger", "title", "detail"],
+      "notes": "Used to explain a bare predicate or metric with one supporting line."
+    },
+    {
+      "name": "Key-Value Tooltip",
+      "anatomy": ["trigger", "kv-row"],
+      "notes": "Compact provenance hint: source, captured time, version."
+    }
+  ],
+  "contentExamples": [
+    "分类于行业",
+    "来源：EastMoney",
+    "抓取于 2026-06-29",
+    "查看原始快照"
+  ],
+  "interactionNotes": [
+    "Tooltip is supplementary, never the only place for critical info.",
+    "Use the popover token surface inverted for contrast; keep arrow aligned to trigger center."
+  ]
+}

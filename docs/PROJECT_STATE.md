@@ -9,9 +9,10 @@ v0.2.0
 
 ## 当前阶段
 
-Milestone 3 — Market Intelligence Platform Alpha（🚧 进入实现阶段 / M3.1 待开工）
+Milestone 3 — Market Intelligence Platform Alpha（🚧 进行中 / M3.1 Console Alpha ✅ Completed，Next: M3.2 Data Provenance + Raw Snapshot Foundation）
 
 > 切换点：M2.5 Phase 2 Market Knowledge Foundation 已实现并提交（checkpoint `de296c0`），ShanHai 第一次具备真实 A 股公司知识（实体身份 + MarketFact v1 + 财务/公告事实 + 公司知识时间线）。据此**结束 Foundation / Runtime 抽象阶段**：不再推进 PR-4.2 Candidate Provider，不再深挖 Runtime 契约，正式进入由真实数据驱动的 Market Intelligence Platform 建设。
+> **M3.1 转折点（checkpoint `1087e7e`）**：Company Intelligence Console Alpha 已实现并经真实数据驱动的浏览器端到端验证关闭。这是项目最重要的转折点——从「设计 AI 系统」进入「构建一个真正理解中国资本市场的长期知识系统」。Console 让真实世界的数据模型被人观察、验证（先验证现实承载力，再决定抽象层如何演化），优先级高于回头继续 Experience Runtime 抽象。
 > **流程收敛**：不再使用 PR-4.x 命名与多文档 review gate 循环；未来统一为 `Milestone → Feature → Implementation → Review → Merge`。一个 feature 配一个实现 + 一份 review 文档。
 > **第一数据供应商**：Tushare 是当前唯一接入的 source adapter（非数据库本体）；未来经 Market Data Hub + Adapter Layer 融合多源（东方财富 / 巨潮 / 交易所 / 财联社 / Wind）。
 
@@ -34,24 +35,26 @@ Milestone 2
       +-- Phase 0 Closure ✅ Design Review Completed
       +-- Phase 1 Entity Hardening ✅ Closure PASS（带 2 项归属 Phase 3 的登记风险）
       +-- Phase 2 Market Knowledge Foundation ✅ Implementation Completed / Review PASS（checkpoint de296c0）
-      +-- Phase 3 Storage Refactor ⏳ Deferred（并入 Milestone 3 M3.2 Data Pipeline 正式化：Postgres identity tables / R1+R2 / cache-shadowing）
+      +-- Phase 3 Storage Refactor ⏳ Deferred（并入 Milestone 3 M3.2 Knowledge Provenance Foundation：Postgres identity tables / R1+R2 / cache-shadowing）
 
 Milestone 3 — Market Intelligence Platform Alpha 🚧
  |
- +-- M3.1 Company Intelligence Console Alpha ⏳ Not started（验证知识模型：页面不是展示数据，而是验证模型）
- +-- M3.2 Data Pipeline 正式化 ⏳ Not started（Raw Data Layer：External Data → Raw Snapshot → Normalized Entity → Knowledge Fact；含 Phase 3 Storage Refactor）
+ +-- M3.1 Company Intelligence Console Alpha ✅ Completed（checkpoint `1087e7e`；真实数据驱动浏览器端到端验证：知识模型可被人观察验证，页面不是展示数据而是验证模型）
+ +-- M3.2 Knowledge Provenance Foundation ⏳ Planned / Next（不可变 raw data provenance：External Data → Raw Snapshot → Normalized Entity → Knowledge Fact；Fact → Source(provider/dataset/captured_at/raw_snapshot_ref/version/hash)；含 Phase 3 Storage Refactor）
+ +-- M3.x Semantic Vocabulary Enhancement ⏳ Planned（Knowledge Vocabulary Layer：predicate → display_name → description；doc-only 登记，不改 MarketFact）
  +-- M3.3 Web Platform ⏳ Not started（Bun + Next.js + React + Tailwind + Rspack；apps/{api,console,worker}；定位 Bloomberg 公司百科 + AI Research Notebook）
  |
  +-- Runtime / Memory / Evolution / Trading ⛔ Not in scope
 ```
 
-依赖顺序：`Market Data → Market Knowledge → Console（模型验证）→ Data Pipeline 正式化 → Web Platform`。真实 Candidate / Experience Runtime 推迟到平台积累真实市场知识后再反向验证。
+依赖顺序：`Market Data → Market Knowledge → Console（模型验证）→ Knowledge Provenance（raw ingestion → normalization → knowledge）→ Web Platform`。真实 Candidate / Experience Runtime 推迟到平台积累真实市场知识后再反向验证（路线：`Foundation → Market Data → Knowledge Model → Console Validation → 真实研究流程 → Candidate Provider → Experience Runtime`）。
 
 ## 最新提交
 
 - 分支：`develop`（个人项目：直接在 develop 开发，完成后 merge 到 main）
 - 仓库：https://github.com/canonsir/shanhai
 - **历史 checkpoint `de296c0`**：`feat(market-data): complete M2.5 phase2 market knowledge foundation` —— ShanHai 第一个真正产品形态节点（真实 A 股公司知识进入系统）。后续 Milestone 3 围绕此节点展开。
+- **M3.1 checkpoint `1087e7e`**：`feat(console): company intelligence console alpha` —— `apps/console`（Bun + Next.js 16 + React 19 + Tailwind v4）只读消费现有 Market Data API，六分区 Company Detail（Identity / Facts / Financial / Announcement / Timeline / Sources）。经真实数据驱动（离线 fixture seed 3 家公司）浏览器端到端验证：搜索 / 过滤 / 六区块渲染 / Timeline 基准+方向切换 / 404 优雅。验证中修复 `company-timeline.tsx` unhandledRejection（timeline 接口失败无 catch）。验证结论：Entity Model（Company → ListedEntity → Security → Listing）可被产品入口自然承载，M2.5 方向正确。
 
 ## 已完成
 
@@ -81,26 +84,60 @@ Milestone 3 — Market Intelligence Platform Alpha 🚧
 - [x] Milestone 2.3 — Market Knowledge Expansion Review（Design Gate，⏳ Design Only）：新增 `docs/design/market-knowledge-expansion-review-m2.3.md`，冻结 MarketFact schema v1 / FinancialFact / AnnouncementFact / NewsFact / Entity linking strategy / Timeline model；明确 M2.3 目标是从“知道公司存在”进入“理解公司发生了什么”。当前不写 M2.3 实现、不继续 Runtime 抽象、不实现 PR-4.2 Adapter、不做 Memory Evolution、不做 Trading Strategy。
 - [x] Milestone 2.5 — Phase 1 Entity Hardening（Market Entity Identity 从 ts_code 解耦，✅ Implementation Completed，Closure PASS）：`identity.py` 新增 `new_internal_id(entity_type)` 代理键（不编码外部码），旧 `*_from_ts_code` 降级为迁移留痕；新增 `registry.py`（`IdentityRegistry` = `entity_identity_mapping`，确定性 `resolve_or_allocate` 外部码→代理键 + `link` 多源映射 + `record_legacy_migration` old→new 留痕 + 正/反双向索引可回滚，纯确定性无 AI/fuzzy/embedding）；`resolver.py` v0.1 改为经 registry 做确定性映射（同一 ts_code 复用同一代理键）；`models.py` 新增 `IdentityMapping` 模型 + `Company.external_ids`（外部码作为属性）；`store.py` 移除硬编码 `security:cn-a:{ts_code}` 反查，改 `ts_code → security_id` 索引；`mapper.py`/`sync.py` 共享一个 resolver，保证 bundle 与 quote 的 security_id 一致；测试删除“前缀不同即身份不同”假阳性，改验真实生命周期关系（`listed_entity.company_id == company.company_id` 等）+ 代理键不可由 ts_code 推导 + ts_code 仅为属性，新增 `tests/market_data/test_identity_registry.py`（确定性复用 / 多源映射 / old→new 迁移与回滚 / 冲突报错）。未触碰 RuntimeKernel / RuntimeContext / Experience Runtime；未实现 PR-4.2 / Memory Evolution / Trading；未重构 Postgres cache（属 Phase 3）。
 - [x] Milestone 2.5 — Phase 2 Market Knowledge Foundation（让真实 A 股公司知识进入系统，✅ Implementation Completed / Review PASS）：按用户指令取消 design gate，改「实现优先 + 单一 review 文档」。`models.py` `MarketFact` 升级为认知单元 v1（`subject_ref`/`predicate`/`object_value`/`object_ref` + 三时间戳 occurred_at/published_at/captured_at + source_ref/evidence_refs/confidence/entity_links/attributes，`schema_version="market_fact.v1"`），新增独立 `FinancialFact`（period/metric/unit/yoy）与 `AnnouncementFact`（announcement_id/type/title/document_url/document_hash），新增 read model `CompanyTimelineEvent` + 值对象 `SubjectRef`/`FactAttribute`/`EntityLink` + 枚举 `FactType`/`TimeBasis`/`AnnouncementType`；新增 `fact_mapper.py`（profile/industry/quote → MarketFact；fina_indicator 一行拆每指标一条 FinancialFact；anns_d → AnnouncementFact 启发式分类）；新增 `timeline.py`（`build_company_timeline` 三类事实家族投影到一条有序时间线，read model 非超级表，三时间戳回退永不塌缩）；`tushare.py` 新增 `fina_indicator`/`anns_d`，`provider.py` 新增可选 `FinancialDataProvider`/`AnnouncementDataProvider` Protocol，`sync.py` 用 `getattr` 能力探测优雅降级，`store.py` 三类 fact 分桶 + `get_company_timeline`，`api.py` payload 增 facts/timeline；`apps/api/.../main.py` 新增 Console Alpha 数据模型验证页 `/company/{ts_code}` + `/companies/{ts_code}/timeline`；新增 `tests/market_data/test_market_knowledge_facts.py`（6 用例），market-data 全量 5 文件全绿。Review 见 `docs/design/market-foundation-hardening-phase2-implementation-review-m2.5.md`。边界：不修改 RuntimeKernel / Experience Runtime；不实现 Selector / Memory Evolution / Trading；不做 AI entity merge；不做 Postgres identity registry migration（R1/R2 归 Phase 3）。
+- [x] Milestone 3 — M3.1 Company Intelligence Console Alpha（用真实产品入口验证 Market Foundation 能否承载公司认知，✅ Completed，checkpoint `1087e7e`）：新增 `apps/console`（Bun 1.3.14 + Next.js 16 App Router/Turbopack + React 19 + TypeScript + Tailwind v4 + shadcn 风格手写组件 + Radix + lucide-react）。只读消费现有 Market Data API（`/companies` / `/companies/search` / `/companies/{ts_code}` / `/companies/{ts_code}/timeline`），**未改任何 API 契约**。`company-search.tsx` 搜索+列表（含错误兜底），`company/[tsCode]/page.tsx` server component 六分区 Company Detail（Identity / Facts / Financial / Announcement / Timeline / Sources），`company-timeline.tsx` 支持 TimeBasis（published_at/occurred_at/captured_at）切换 + 最新/最早方向切换。验证方式：Tushare token 积分受限（四接口全 40203），改用离线 fixture seed 3 家公司（贵州茅台/宁德时代/比亚迪）灌入 `InMemoryMarketKnowledgeStore` 做真实 ingestion shape 验证，浏览器端到端跑通搜索/过滤/六区块/timeline 切换/404 优雅。验证中修复 `company-timeline.tsx` unhandledRejection（reload 只有 try/finally 无 catch，timeline 接口失败 rejection 无人接）。**验证结论**：Entity Model（Company → ListedEntity → Security → Listing）可被产品入口自然承载，六分区自然成立，M2.5 方向正确；UI 层比单元测试更早暴露模型表达问题。**验证发现（已登记不实现）**：① Facts 展示裸 `predicate`（如 `classified_in_industry`）人类研究员需脑补语义 → 登记 M3.x Semantic Vocabulary Enhancement；② Source provenance 需从 attribute 升级为独立 provenance 模型 → 登记 M3.2 Knowledge Provenance Foundation。边界：未修改 RuntimeKernel / RuntimeContext / Experience Runtime；未实现 Selector / Memory / Evolution / Trading；未删除后端遗留 HTML console（`apps/api` 的 `/company/{ts_code}` / `/console/companies` 作历史验证痕迹保留，待 console 稳定后单独 `cleanup(api)`）。
 - [x] Agent Runtime 单元测试（通过）
 
 ## 当前目标
 
-Market Intelligence Platform Alpha：把 M2.5 已落地的知识模型（Company entity 四层身份 + MarketFact v1 + FinancialFact + AnnouncementFact + Timeline）用**真实 A 股公司数据**在一个可交互页面上反向验证——「页面不是展示数据，而是验证知识模型」。Runtime / Experience 契约抽象阶段已收尾，不再扩展。下一步从 **M3.1 Company Intelligence Console Alpha** 开始：新建 `apps/console`（Next.js + Tailwind + design system），实现 Company Intelligence 页面，接入现有 Market Data API，验证模型表达力；模型若无法自然表达某一区块，即说明模型需要修正。
+M3.1 Console Alpha 已完成并关闭（checkpoint `1087e7e`）——`apps/console` 用真实 A 股公司数据在可交互页面上反向验证 M2.5 知识模型，确认 Entity Model（Company → ListedEntity → Security → Listing）+ MarketFact v1 + FinancialFact + AnnouncementFact + Timeline 可被产品入口自然承载（页面不是展示数据，而是验证模型）。**下一步进入 M3.2 Knowledge Provenance Foundation**：引入不可变 raw data provenance 模型，解决 `raw ingestion → normalization → knowledge` 分层，为多源融合（Tushare 仅为 Market Data Adapter，非系统核心依赖）奠基。Runtime / Experience 契约抽象阶段已收尾，按路线 `Foundation → Market Data → Knowledge Model → Console Validation → 真实研究流程 → Candidate Provider → Experience Runtime`，不回头继续 Experience Runtime。
 
 ## Milestone 3 路线（已确定）
 
 > 流程：`Milestone → Feature → Implementation → Review → Merge`（不再 PR-4.x gate / 多文档循环；一个 feature 一份 review）。
 
-### M3.1 Company Intelligence Console Alpha（下一步开工）
+### M3.1 Company Intelligence Console Alpha ✅ Completed（checkpoint `1087e7e`）
 - **目标**：用真实 A 股公司数据验证当前知识模型（Knowledge Model Validator，非产品 dashboard）。
-- **范围**：① 创建 `apps/console`；② Next.js + Tailwind + 基础 design system；③ 实现 Company Intelligence 页面（公司搜索 / 详情 / Fact timeline / Financial timeline / Announcement timeline）；④ 接入现有 Market Data API；⑤ 验证 Company entity model / MarketFact v1 / FinancialFact / AnnouncementFact / Timeline model。
-- **禁止**：不修改 RuntimeKernel；不修改 RuntimeContext；不实现 Experience Runtime；不实现 Trading；不引入 Memory / Evolution；第一版不做 dashboard / 大屏 / K 线 / 智能交易页面。
-- **交付**：一个完整 feature commit。
+- **范围**：① 创建 `apps/console`；② Bun + Next.js 16 + React 19 + Tailwind v4 + 基础 design system；③ 实现 Company Intelligence 页面（公司搜索 / 详情 / Fact / Financial / Announcement / Timeline / Sources）；④ 只读接入现有 Market Data API（不改契约）；⑤ 验证 Company entity model / MarketFact v1 / FinancialFact / AnnouncementFact / Timeline model。
+- **结果**：六分区 Company Detail 自然成立，Entity Model 可被产品入口承载，M2.5 方向正确。Tushare 积分受限下用离线 fixture seed 3 家公司完成真实数据驱动的浏览器端到端验证；修复 timeline unhandledRejection。
+- **暴露的模型 gap（已登记，本里程碑不实现）**：① Facts 裸 `predicate` 缺语义层 → M3.x Semantic Vocabulary Enhancement；② Source 仅为 attribute、需升级为独立 provenance 模型 → M3.2 Knowledge Provenance Foundation。
+- **交付**：feature commit `feat(console): company intelligence console alpha`。
 
-### M3.2 Data Pipeline 正式化
-- 引入 Raw Data Layer 分层：`External Data → Raw Snapshot → Normalized Entity → Knowledge Fact`，为多源融合（Tushare / 东方财富 / 巨潮 / 交易所 / 财联社 / Wind）做准备。
-- Tushare 定位为「第一数据供应商」而非数据库本体；未来 Market Data Hub + Adapter Layer。
+### M3.2 Knowledge Provenance Foundation ⏳ Planned / Next
+- **定位升级**：原「Data Pipeline 正式化」升级为 **Knowledge Provenance Foundation**（命名升级而非 SourceRef 扩展）。来源未来不止 Tushare（还有 Wind / 东方财富 / 交易所公告 / 巨潮资讯 / 新闻媒体 / 研报 / 社交舆情），因此 source 必须建模为一等公民的 provenance，而非 `fact.source = tushare`，否则将重蹈 identity（外部码当主键）的覆辙。
+- **Goals**：
+  - Introduce immutable raw data provenance model
+  - Preserve source traceability
+  - Support future multi-source ingestion
+- **Not included**：
+  - News crawler
+  - Research report ingestion
+  - Sentiment analysis
+  - AI merge
+- **Provenance 模型形态**（待实现，登记不进入实现）：
+  ```
+  Fact
+   └── Source
+        + provider          # 数据来源方（tushare / wind / ...）
+        + dataset           # 接口/数据集（stock_basic / daily / ...）
+        + captured_at       # 抓取时刻
+        + raw_snapshot_ref  # 指向不可变原始快照
+        + version           # 来源数据版本
+        + hash              # 原始内容指纹（防篡改 / 去重）
+  ```
+- **分层目标**：`External Data → Raw Snapshot → Normalized Entity → Knowledge Fact`（raw ingestion → normalization → knowledge）。Tushare 定位为「Market Data Adapter / 第一数据供应商」而非数据库本体；未来经 Market Data Hub + Adapter Layer 内部统一为 Canonical Entity / Canonical Fact / Canonical Timeline。
 - 并入原 Phase 3 Storage Refactor（Postgres identity tables / R1+R2 external_ids 登记 / cache-shadowing 治理）。
+
+### M3.x Semantic Vocabulary Enhancement ⏳ Planned（doc-only 登记，不改 MarketFact）
+- **背景**：Console 验证暴露 Facts 展示裸 `predicate`（如 `classified_in_industry` / `closing_price`），人类研究员需脑补语义。当前验证的是「schema 能否承载现实」而非「产品文案是否完善」，故只登记不修代码。
+- **方向**：引入 **Knowledge Vocabulary Layer**，将 predicate 映射到展示语义：
+  ```json
+  {
+    "predicate": "classified_in_industry",
+    "display_name": "所属行业",
+    "description": "公司所属申万行业分类"
+  }
+  ```
+- **边界**：现阶段不修改 `MarketFact`；vocabulary 作为独立映射层，待 M3.2 之后排期。
 
 ### M3.3 Web Platform
 - 技术栈：Bun + Next.js + React + Tailwind + Rspack；目录结构 `apps/{api, console, worker}`。
@@ -111,9 +148,10 @@ Market Intelligence Platform Alpha：把 M2.5 已落地的知识模型（Company
 
 - [x] **M2.5 Phase 1 Closure Review Gate**：✅ 已批准 PASS（`docs/design/market-foundation-hardening-phase1-closure-review-m2.5.md`，带 R1/R2 两项归属 Phase 3 的登记风险）。
 - [x] **M2.5 Phase 2 Implementation Review**：✅ PASS（`docs/design/market-foundation-hardening-phase2-implementation-review-m2.5.md`）。已提交 checkpoint `de296c0` 并 push 到 `develop`。**Foundation / Runtime 抽象阶段在此收尾。**
-- [ ] **M3.1 Company Intelligence Console Alpha（当前停靠点）**：路线已批准（Milestone 3 approved），待确认 M3.1 具体技术初始化方式与本机前端环境就绪度（Bun / Node / pnpm）后开工。范围与禁止项见上。
+- [x] **M3.1 Company Intelligence Console Alpha**：✅ Completed（checkpoint `1087e7e`）。Console Alpha 已实现并经真实数据驱动浏览器端到端验证关闭；用户批准 push。验证暴露的两项模型 gap 登记为 M3.2 / M3.x（doc-only，不进入实现）。
+- [ ] **M3.2 Knowledge Provenance Foundation（当前停靠点 / Next）**：路线与命名升级已批准（doc-only 登记完成）；实现待 Review Gate 批准后开工。范围与 Goals/Not included 见上。
 - ~~PR-4.2 Candidate Provider Adapter~~：**不再推进**（被 Milestone 3 取代；design gate 文档保留作历史参考，不进入实现）。
-- ~~Milestone 2.3 Market Knowledge Expansion~~：蓝本已被 Phase 2 实现采用；后续扩展并入 M3.2 Data Pipeline 正式化。
+- ~~Milestone 2.3 Market Knowledge Expansion~~：蓝本已被 Phase 2 实现采用；后续扩展并入 M3.2 Knowledge Provenance Foundation。
 
 ## 下一步（已确定路线）
 

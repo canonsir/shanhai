@@ -19,6 +19,11 @@ node_modules/
 dist/
 .next/
 *.log
+next-env.d.ts
+.turbo/
+
+# ---- Bun（本机沙箱限制，工具链装在项目内 .bun/，不纳管二进制）----
+.bun/
 
 # ---- Env ----
 .env

@@ -9,21 +9,20 @@ v0.2.0
 
 ## 当前阶段
 
-Milestone 2.5 — Market Foundation Hardening / Phase 2 Market Knowledge Foundation（✅ Implementation Completed）
+Milestone 3 — Market Intelligence Platform Alpha（🚧 进入实现阶段 / M3.1 待开工）
 
-> 触发：Market Data MVP 接入真实 A 股数据后暴露地基问题（Entity Identity 与 ts_code 同构 / Postgres 被内存缓存遮蔽 / MarketFact 为 demo 形态）。
-> Phase 1 Entity Hardening 已批准 Closure；按用户指令取消 Phase 2 review gate，改「实现优先 + 单一 review 文档」，直接进入 Phase 2 实现。
-> 见 `docs/design/market-foundation-hardening-review-m2.5.md` + `docs/design/market-foundation-hardening-phase0-closure-m2.5.md` + `docs/design/market-foundation-hardening-phase1-closure-review-m2.5.md` + `docs/design/market-foundation-hardening-phase2-implementation-review-m2.5.md`。
-> **Phase 2 已实现**：让真实 A 股公司知识进入系统——MarketFact v1（subject/predicate/object + 三时间戳 + 实体链接 + 置信度）/ 独立 FinancialFact / 独立 AnnouncementFact / 公司知识时间线（read model，非超级表）/ Tushare 首个 source adapter（fina_indicator + anns_d，能力探测式优雅降级）/ Console Alpha 数据模型验证页 `/company/:id`。Phase 2 Implementation Review 已生成（5 项范围 + Console Alpha 全部 ✅ PASS）。
+> 切换点：M2.5 Phase 2 Market Knowledge Foundation 已实现并提交（checkpoint `de296c0`），ShanHai 第一次具备真实 A 股公司知识（实体身份 + MarketFact v1 + 财务/公告事实 + 公司知识时间线）。据此**结束 Foundation / Runtime 抽象阶段**：不再推进 PR-4.2 Candidate Provider，不再深挖 Runtime 契约，正式进入由真实数据驱动的 Market Intelligence Platform 建设。
+> **流程收敛**：不再使用 PR-4.x 命名与多文档 review gate 循环；未来统一为 `Milestone → Feature → Implementation → Review → Merge`。一个 feature 配一个实现 + 一份 review 文档。
+> **第一数据供应商**：Tushare 是当前唯一接入的 source adapter（非数据库本体）；未来经 Market Data Hub + Adapter Layer 融合多源（东方财富 / 巨潮 / 交易所 / 财联社 / Wind）。
 
 ```
-Foundation Phase ✅ Completed
+Foundation Phase ✅ Completed（Runtime / Experience 契约抽象阶段已收尾，不再扩展）
  |
  +-- PR-1 Runtime Kernel Skeleton ✅ Closed
  +-- PR-2 RuntimeContext v1 ✅ Closed
  +-- PR-3 RunStore Identity Migration ✅ Closed
- +-- PR-4.1 Experience Runtime Contract Layer 🧊 Frozen（契约层保留，待真实 candidate 反向验证）
- +-- PR-4.2 Candidate Provider Adapter ⏸️ Paused（降优先级，依赖顺序后置到 Market Knowledge 之后）
+ +-- PR-4.1 Experience Runtime Contract Layer 🧊 Frozen / Reason: Waiting for real market knowledge validation
+ +-- PR-4.2 Candidate Provider Adapter ❌ Not pursued（被 Milestone 3 取代；不再按 PR-4.x 推进）
 
 Milestone 2
  |
@@ -34,17 +33,25 @@ Milestone 2
  +-- Market Foundation Hardening
       +-- Phase 0 Closure ✅ Design Review Completed
       +-- Phase 1 Entity Hardening ✅ Closure PASS（带 2 项归属 Phase 3 的登记风险）
-      +-- Phase 2 Market Knowledge Foundation ✅ Implementation Completed / Review PASS
-      +-- Phase 3 Storage Refactor ⏳ Not started（Postgres identity tables / R1+R2 / cache-shadowing）
+      +-- Phase 2 Market Knowledge Foundation ✅ Implementation Completed / Review PASS（checkpoint de296c0）
+      +-- Phase 3 Storage Refactor ⏳ Deferred（并入 Milestone 3 M3.2 Data Pipeline 正式化：Postgres identity tables / R1+R2 / cache-shadowing）
+
+Milestone 3 — Market Intelligence Platform Alpha 🚧
+ |
+ +-- M3.1 Company Intelligence Console Alpha ⏳ Not started（验证知识模型：页面不是展示数据，而是验证模型）
+ +-- M3.2 Data Pipeline 正式化 ⏳ Not started（Raw Data Layer：External Data → Raw Snapshot → Normalized Entity → Knowledge Fact；含 Phase 3 Storage Refactor）
+ +-- M3.3 Web Platform ⏳ Not started（Bun + Next.js + React + Tailwind + Rspack；apps/{api,console,worker}；定位 Bloomberg 公司百科 + AI Research Notebook）
+ |
  +-- Runtime / Memory / Evolution / Trading ⛔ Not in scope
 ```
 
-依赖顺序修正：`Market Data → Market Knowledge → 真实 Candidate → Experience Runtime`（不再反向）。
+依赖顺序：`Market Data → Market Knowledge → Console（模型验证）→ Data Pipeline 正式化 → Web Platform`。真实 Candidate / Experience Runtime 推迟到平台积累真实市场知识后再反向验证。
 
 ## 最新提交
 
 - 分支：`develop`（个人项目：直接在 develop 开发，完成后 merge 到 main）
 - 仓库：https://github.com/canonsir/shanhai
+- **历史 checkpoint `de296c0`**：`feat(market-data): complete M2.5 phase2 market knowledge foundation` —— ShanHai 第一个真正产品形态节点（真实 A 股公司知识进入系统）。后续 Milestone 3 围绕此节点展开。
 
 ## 已完成
 
@@ -78,14 +85,35 @@ Milestone 2
 
 ## 当前目标
 
-AI Native Capital Market Cognition Foundation：用真实 A 股数据、公司实体、市场事实与时间线持续验证 ShanHai 架构；Runtime contract 继续扩展已停止，Market Knowledge Layer 基础已落地（MarketFact v1 + 财务/公告事实 + 公司知识时间线 + Tushare adapter + Console Alpha）。下一阶段聚焦 Console Alpha 反向验证模型 → 真实 Candidate Provider → Experience Runtime。
+Market Intelligence Platform Alpha：把 M2.5 已落地的知识模型（Company entity 四层身份 + MarketFact v1 + FinancialFact + AnnouncementFact + Timeline）用**真实 A 股公司数据**在一个可交互页面上反向验证——「页面不是展示数据，而是验证知识模型」。Runtime / Experience 契约抽象阶段已收尾，不再扩展。下一步从 **M3.1 Company Intelligence Console Alpha** 开始：新建 `apps/console`（Next.js + Tailwind + design system），实现 Company Intelligence 页面，接入现有 Market Data API，验证模型表达力；模型若无法自然表达某一区块，即说明模型需要修正。
+
+## Milestone 3 路线（已确定）
+
+> 流程：`Milestone → Feature → Implementation → Review → Merge`（不再 PR-4.x gate / 多文档循环；一个 feature 一份 review）。
+
+### M3.1 Company Intelligence Console Alpha（下一步开工）
+- **目标**：用真实 A 股公司数据验证当前知识模型（Knowledge Model Validator，非产品 dashboard）。
+- **范围**：① 创建 `apps/console`；② Next.js + Tailwind + 基础 design system；③ 实现 Company Intelligence 页面（公司搜索 / 详情 / Fact timeline / Financial timeline / Announcement timeline）；④ 接入现有 Market Data API；⑤ 验证 Company entity model / MarketFact v1 / FinancialFact / AnnouncementFact / Timeline model。
+- **禁止**：不修改 RuntimeKernel；不修改 RuntimeContext；不实现 Experience Runtime；不实现 Trading；不引入 Memory / Evolution；第一版不做 dashboard / 大屏 / K 线 / 智能交易页面。
+- **交付**：一个完整 feature commit。
+
+### M3.2 Data Pipeline 正式化
+- 引入 Raw Data Layer 分层：`External Data → Raw Snapshot → Normalized Entity → Knowledge Fact`，为多源融合（Tushare / 东方财富 / 巨潮 / 交易所 / 财联社 / Wind）做准备。
+- Tushare 定位为「第一数据供应商」而非数据库本体；未来 Market Data Hub + Adapter Layer。
+- 并入原 Phase 3 Storage Refactor（Postgres identity tables / R1+R2 external_ids 登记 / cache-shadowing 治理）。
+
+### M3.3 Web Platform
+- 技术栈：Bun + Next.js + React + Tailwind + Rspack；目录结构 `apps/{api, console, worker}`。
+- 第一版定位：「Bloomberg 公司百科 + AI Research Notebook」。
+- 禁止：dashboard / 大屏 / K 线 / 智能交易页面。
 
 ## 当前 Gate / 暂停点
 
-- [x] **M2.5 Phase 1 Closure Review Gate**：✅ 已批准 PASS（`docs/design/market-foundation-hardening-phase1-closure-review-m2.5.md`，带 R1/R2 两项归属 Phase 3 的登记风险）。Phase 2 已据此开工并完成。
-- [ ] **M2.5 Phase 2 Implementation Review（当前停靠点）**：Phase 2 Market Knowledge Foundation 实现完成，**Implementation Review 已生成**（`docs/design/market-foundation-hardening-phase2-implementation-review-m2.5.md`：5 项批准范围 + Console Alpha 全部 ✅ PASS）。已交付：MarketFact v1 / 独立 FinancialFact / 独立 AnnouncementFact / 公司知识时间线（read model）/ Tushare fina_indicator+anns_d adapter（能力探测优雅降级）/ Console Alpha `/company/:id` 数据模型验证页。验证：market-data 全量 5 文件（identity registry / foundation MVP / runtime MVP / dependency boundary / market knowledge facts）全绿。登记延续 R1/R2 + NewsFact source adapter + external_ids 结构化（均归后续）。下一步路线：Console Alpha 反向验证 → 真实 Candidate Provider（PR-4.2）→ Experience Runtime。
-- [ ] Milestone 2.3 Market Knowledge Expansion Review：**Design Review only**。`docs/design/market-knowledge-expansion-review-m2.3.md` 已冻结 MarketFact schema v1 / FinancialFact / AnnouncementFact / NewsFact / Entity linking strategy / Timeline model；下一步如获批准，优先从 Tushare structured financial / shareholder / moneyflow / industry / concept 扩展，不优先接新闻。**当前不写 M2.3 实现、不继续 Runtime 抽象、不修改 RuntimeKernel / Experience Runtime / RuntimeContext / AgentRunner / Memory，不实现 PR-4.2 Adapter，不实现 Memory Evolution，不做 Trading Strategy**。
-- [ ] PR-4.2 Candidate Provider Adapter：**保留 Design Gate，Implementation stopped**。`docs/design/experience-runtime-candidate-provider-adapter-review-pr4.2.md` 已冻结 ArtifactReader/read-side port、CandidateProvider I/O、experience-artifact 依赖方向、Selector stateless 边界、candidate ingestion vs RuntimeContext projection 边界，以及 PR-4.2 implementation/forbidden scope。**当前不写 PR-4.2 实现、不接 RuntimeContext execution flow / AgentRuntime / Memory / Artifact persistence / Evaluation / E2E**。
+- [x] **M2.5 Phase 1 Closure Review Gate**：✅ 已批准 PASS（`docs/design/market-foundation-hardening-phase1-closure-review-m2.5.md`，带 R1/R2 两项归属 Phase 3 的登记风险）。
+- [x] **M2.5 Phase 2 Implementation Review**：✅ PASS（`docs/design/market-foundation-hardening-phase2-implementation-review-m2.5.md`）。已提交 checkpoint `de296c0` 并 push 到 `develop`。**Foundation / Runtime 抽象阶段在此收尾。**
+- [ ] **M3.1 Company Intelligence Console Alpha（当前停靠点）**：路线已批准（Milestone 3 approved），待确认 M3.1 具体技术初始化方式与本机前端环境就绪度（Bun / Node / pnpm）后开工。范围与禁止项见上。
+- ~~PR-4.2 Candidate Provider Adapter~~：**不再推进**（被 Milestone 3 取代；design gate 文档保留作历史参考，不进入实现）。
+- ~~Milestone 2.3 Market Knowledge Expansion~~：蓝本已被 Phase 2 实现采用；后续扩展并入 M3.2 Data Pipeline 正式化。
 
 ## 下一步（已确定路线）
 

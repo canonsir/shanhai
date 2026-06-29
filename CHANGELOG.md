@@ -42,6 +42,13 @@
   - 边界（PR-1 范围外，明确禁止）：no AgentRunner integration / no RunStore change / no Experience Runtime / no Memory / no Domain Provider / no ArtifactReader；ADR 0018 维持 MVP Contract Established 不 Finalize。
 
 ### Changed
+- 路线切换 — 结束 Foundation / Runtime 抽象阶段，进入 **Milestone 3：Market Intelligence Platform Alpha**（仅状态登记，无代码改动）。
+  - checkpoint `de296c0`（M2.5 Phase 2）定为 ShanHai 第一个真正产品形态节点；后续围绕真实数据驱动的平台建设展开，不再深挖 Runtime 契约。
+  - 流程收敛为 `Milestone → Feature → Implementation → Review → Merge`，不再使用 PR-4.x 命名与多文档 review gate 循环。
+  - **PR-4.1 Experience Runtime Contract Layer 状态改为 Frozen**（Reason: Waiting for real market knowledge validation）；契约层保留不删除。
+  - **PR-4.2 Candidate Provider Adapter 不再推进**（被 Milestone 3 取代）；design gate 文档保留作历史参考。
+  - Milestone 3 三阶段登记：M3.1 Company Intelligence Console Alpha（验证知识模型）/ M3.2 Data Pipeline 正式化（Raw Data Layer：External → Raw Snapshot → Normalized Entity → Knowledge Fact，含原 Phase 3 Storage Refactor）/ M3.3 Web Platform（Bun + Next.js + React + Tailwind + Rspack，apps/{api,console,worker}）。
+  - Tushare 定位明确为「第一数据供应商」（source adapter），非数据库本体；未来经 Market Data Hub + Adapter Layer 融合多源。详见 `docs/PROJECT_STATE.md`。
 - Runtime Kernel PR-2 — RuntimeContext v1 Contract Implementation（纯契约实现，零执行集成）。
   - `RuntimeContext` 定位冻结为 **Execution Initialization Snapshot**，只描述本次 Run 为什么 / 如何被语境化，不承载 Agent state / Memory / Conversation state / Experience storage。
   - `metadata_context → intent_context`：移除自由形态 `MetadataContext`，新增 `IntentContext`（objective / user_intent / decision_intent），避免 metadata 垃圾抽屉。

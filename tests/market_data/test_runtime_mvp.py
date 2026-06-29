@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from datetime import date
 
-from shanhai_api.main import company_console
+from shanhai_api.main import company_console, company_detail_console
 from shanhai_market_data import (
     EntityResolver,
     Exchange,
@@ -77,25 +77,39 @@ class _FakePgConnection:
         return []
 
 
-def test_entity_resolver_preserves_four_identities() -> None:
+def test_entity_resolver_maps_external_code_to_stable_surrogates() -> None:
     record = TushareStockBasicRecord(
         ts_code="600519.SH",
         symbol="600519",
         name="贵州茅台",
         exchange=Exchange.SSE,
     )
-    identity = EntityResolver().resolve_stock_basic(record)
+    resolver = EntityResolver()
+    identity = resolver.resolve_stock_basic(record)
 
-    assert len(
-        {
-            identity.company_id,
-            identity.listed_entity_id,
-            identity.security_id,
-            identity.listing_id,
-        }
-    ) == 4
+    # The four layers are independent surrogate ids, none derived from ts_code.
+    layers = (
+        identity.company_id,
+        identity.listed_entity_id,
+        identity.security_id,
+        identity.listing_id,
+    )
+    assert len(set(layers)) == 4
+    for layer_id in layers:
+        assert "600519" not in layer_id
+
+    # The external code is preserved as an attribute, not as an identity.
     assert "tushare:ts_code:600519.SH" in identity.external_ids
-    print("[OK] Entity Resolver v0.1 保持四层身份边界")
+
+    # Deterministic: resolving the same ts_code again reuses the same surrogates.
+    again = resolver.resolve_stock_basic(record)
+    assert again.company_id == identity.company_id
+    assert again.security_id == identity.security_id
+
+    # Registry keeps an old -> new migration trail for rollback.
+    legacy = resolver.registry.legacy_id_for(identity.company_id)
+    assert legacy == "company:cn-a:600519.sh"
+    print("[OK] Entity Resolver v0.1 确定性映射外部码到代理键身份")
 
 
 def test_postgres_store_schema_and_persist_boundary() -> None:
@@ -112,7 +126,10 @@ def test_postgres_store_schema_and_persist_boundary() -> None:
         exchange=Exchange.SSE,
         list_status=ListingStatus.LISTED,
     )
-    company, listed_entity, security, listing, industry, facts = map_stock_basic(record)
+    resolver = EntityResolver()
+    company, listed_entity, security, listing, industry, facts = map_stock_basic(
+        record, resolver=resolver
+    )
     store.upsert_company_bundle(
         company=company,
         listed_entity=listed_entity,
@@ -127,7 +144,8 @@ def test_postgres_store_schema_and_persist_boundary() -> None:
                 ts_code="600519.SH",
                 trade_date=date(2024, 6, 26),
                 close=123.45,
-            )
+            ),
+            resolver=resolver,
         )
     )
 
@@ -159,11 +177,25 @@ def test_company_console_alpha_route() -> None:
     print("[OK] Company Console Alpha route 通过")
 
 
+def test_company_detail_console_alpha_route() -> None:
+    html = company_detail_console("600519.SH")
+
+    # The data-model validation page must express every fact family naturally.
+    assert "600519.SH" in html
+    assert "证券关系" in html
+    assert "财务事实 (FinancialFact)" in html
+    assert "公告时间线 (AnnouncementFact)" in html
+    assert "MarketFact Timeline" in html
+    assert "/companies/600519.SH/timeline" not in html  # built client-side from tsCode
+    print("[OK] Company Detail Console (/company/:id) 数据模型验证页通过")
+
+
 def main() -> None:
-    test_entity_resolver_preserves_four_identities()
+    test_entity_resolver_maps_external_code_to_stable_surrogates()
     test_postgres_store_schema_and_persist_boundary()
     test_scheduled_ingestion_run_once()
     test_company_console_alpha_route()
+    test_company_detail_console_alpha_route()
     print("\nMilestone 2.2 Market Data Runtime MVP 测试全部通过 ✅")
 
 

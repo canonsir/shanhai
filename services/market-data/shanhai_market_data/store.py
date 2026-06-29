@@ -3,8 +3,11 @@
 from __future__ import annotations
 
 from shanhai_market_data.models import (
+    AnnouncementFact,
     Company,
     CompanyIntelligence,
+    CompanyTimelineEvent,
+    FinancialFact,
     Industry,
     ListedEntity,
     Listing,
@@ -12,14 +15,17 @@ from shanhai_market_data.models import (
     QuoteSnapshot,
     Security,
     SourceRef,
+    TimeBasis,
 )
+from shanhai_market_data.timeline import build_company_timeline
 
 
 class InMemoryMarketKnowledgeStore:
     """Local-first, process-local market knowledge store.
 
     This is a minimal Knowledge Store for Data Foundation MVP. It is not Memory,
-    Experience, RuntimeContext, or a trading store.
+    Experience, RuntimeContext, or a trading store. Facts are kept per company so
+    the read model can assemble one company knowledge timeline.
     """
 
     def __init__(self) -> None:
@@ -29,8 +35,11 @@ class InMemoryMarketKnowledgeStore:
         self._listings: dict[str, Listing] = {}
         self._industries: dict[str, Industry] = {}
         self._company_industries: dict[str, str] = {}
-        self._facts_by_entity: dict[str, dict[str, MarketFact]] = {}
+        self._facts_by_company: dict[str, dict[str, MarketFact]] = {}
+        self._financial_facts_by_company: dict[str, dict[str, FinancialFact]] = {}
+        self._announcement_facts_by_company: dict[str, dict[str, AnnouncementFact]] = {}
         self._quotes_by_security: dict[str, dict[str, QuoteSnapshot]] = {}
+        self._security_id_by_ts_code: dict[str, str] = {}
 
     def upsert_company_bundle(
         self,
@@ -41,22 +50,49 @@ class InMemoryMarketKnowledgeStore:
         listing: Listing,
         industry: Industry | None = None,
         facts: tuple[MarketFact, ...] = (),
+        financial_facts: tuple[FinancialFact, ...] = (),
+        announcement_facts: tuple[AnnouncementFact, ...] = (),
     ) -> None:
         self._companies[company.company_id] = company
         self._listed_entities[listed_entity.listed_entity_id] = listed_entity
         self._securities[security.security_id] = security
+        self._security_id_by_ts_code[security.ts_code.lower()] = security.security_id
         self._listings[listing.listing_id] = listing
         if industry is not None:
             self._industries[industry.industry_id] = industry
             self._company_industries[company.company_id] = industry.industry_id
+        self.upsert_market_facts(company.company_id, facts)
+        self.upsert_financial_facts(company.company_id, financial_facts)
+        self.upsert_announcement_facts(company.company_id, announcement_facts)
+
+    def upsert_market_facts(
+        self, company_id: str, facts: tuple[MarketFact, ...]
+    ) -> None:
+        bucket = self._facts_by_company.setdefault(company_id, {})
         for fact in facts:
-            self._facts_by_entity.setdefault(fact.entity_id, {})[fact.fact_id] = fact
+            bucket[fact.fact_id] = fact
+
+    def upsert_financial_facts(
+        self, company_id: str, facts: tuple[FinancialFact, ...]
+    ) -> None:
+        bucket = self._financial_facts_by_company.setdefault(company_id, {})
+        for fact in facts:
+            bucket[fact.fact_id] = fact
+
+    def upsert_announcement_facts(
+        self, company_id: str, facts: tuple[AnnouncementFact, ...]
+    ) -> None:
+        bucket = self._announcement_facts_by_company.setdefault(company_id, {})
+        for fact in facts:
+            bucket[fact.fact_id] = fact
 
     def upsert_quote(self, quote: QuoteSnapshot) -> None:
         self._quotes_by_security.setdefault(quote.security_id, {})[quote.quote_id] = quote
 
     def get_company_intelligence_by_ts_code(self, ts_code: str) -> CompanyIntelligence | None:
-        security_id = f"security:cn-a:{ts_code.lower()}"
+        security_id = self._security_id_by_ts_code.get(ts_code.lower())
+        if security_id is None:
+            return None
         security = self._securities.get(security_id)
         if security is None:
             return None
@@ -74,8 +110,22 @@ class InMemoryMarketKnowledgeStore:
             return None
         industry = self._industries.get(self._company_industries.get(company.company_id, ""))
         latest_quote = self._latest_quote(security.security_id)
-        facts = tuple(self._facts_by_entity.get(company.company_id, {}).values())
-        source_refs = self._collect_source_refs(listed_entity, latest_quote, facts)
+        facts = tuple(self._facts_by_company.get(company.company_id, {}).values())
+        financial_facts = tuple(
+            self._financial_facts_by_company.get(company.company_id, {}).values()
+        )
+        announcement_facts = tuple(
+            self._announcement_facts_by_company.get(company.company_id, {}).values()
+        )
+        timeline = build_company_timeline(
+            company.company_id,
+            market_facts=facts,
+            financial_facts=financial_facts,
+            announcement_facts=announcement_facts,
+        )
+        source_refs = self._collect_source_refs(
+            listed_entity, latest_quote, facts, financial_facts, announcement_facts
+        )
         return CompanyIntelligence(
             company=company,
             listed_entity=listed_entity,
@@ -84,7 +134,38 @@ class InMemoryMarketKnowledgeStore:
             industry=industry,
             latest_quote=latest_quote,
             facts=facts,
+            financial_facts=financial_facts,
+            announcement_facts=announcement_facts,
+            timeline=timeline,
             source_refs=source_refs,
+        )
+
+    def get_company_timeline(
+        self,
+        ts_code: str,
+        *,
+        time_basis: TimeBasis = TimeBasis.PUBLISHED_AT,
+        latest_first: bool = True,
+    ) -> tuple[CompanyTimelineEvent, ...]:
+        security_id = self._security_id_by_ts_code.get(ts_code.lower())
+        if security_id is None:
+            return ()
+        security = self._securities.get(security_id)
+        if security is None:
+            return ()
+        listed_entity = self._listed_entities.get(security.listed_entity_id)
+        if listed_entity is None:
+            return ()
+        company_id = listed_entity.company_id
+        return build_company_timeline(
+            company_id,
+            market_facts=tuple(self._facts_by_company.get(company_id, {}).values()),
+            financial_facts=tuple(self._financial_facts_by_company.get(company_id, {}).values()),
+            announcement_facts=tuple(
+                self._announcement_facts_by_company.get(company_id, {}).values()
+            ),
+            time_basis=time_basis,
+            latest_first=latest_first,
         )
 
     def list_company_intelligence(self, limit: int = 50) -> tuple[CompanyIntelligence, ...]:
@@ -141,9 +222,13 @@ class InMemoryMarketKnowledgeStore:
         listed_entity: ListedEntity,
         latest_quote: QuoteSnapshot | None,
         facts: tuple[MarketFact, ...],
+        financial_facts: tuple[FinancialFact, ...],
+        announcement_facts: tuple[AnnouncementFact, ...],
     ) -> tuple[SourceRef, ...]:
         refs = [listed_entity.source_ref]
         refs.extend(fact.source_ref for fact in facts)
+        refs.extend(fact.source_ref for fact in financial_facts)
+        refs.extend(fact.source_ref for fact in announcement_facts)
         if latest_quote is not None:
             refs.append(latest_quote.source_ref)
         deduped: dict[tuple[str, str | None], SourceRef] = {}

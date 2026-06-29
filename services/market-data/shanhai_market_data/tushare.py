@@ -17,7 +17,9 @@ from typing import Any
 from shanhai_market_data.models import (
     Exchange,
     ListingStatus,
+    TushareAnnouncementRecord,
     TushareDailyRecord,
+    TushareFinaIndicatorRecord,
     TushareRequest,
     TushareResponse,
     TushareStockBasicRecord,
@@ -87,6 +89,39 @@ class TushareProvider:
         rows = self._call("daily", params=params, fields=fields)
         return tuple(self._daily_record(row) for row in rows)
 
+    def fina_indicator(
+        self,
+        ts_code: str,
+        start_date: str | None = None,
+        end_date: str | None = None,
+    ) -> tuple[TushareFinaIndicatorRecord, ...]:
+        params: dict[str, Any] = {"ts_code": ts_code}
+        if start_date:
+            params["start_date"] = start_date
+        if end_date:
+            params["end_date"] = end_date
+        fields = (
+            "ts_code,ann_date,end_date,eps,roe,grossprofit_margin,"
+            "or_yoy,netprofit_yoy"
+        )
+        rows = self._call("fina_indicator", params=params, fields=fields)
+        return tuple(self._fina_indicator_record(row) for row in rows)
+
+    def anns_d(
+        self,
+        ts_code: str,
+        start_date: str | None = None,
+        end_date: str | None = None,
+    ) -> tuple[TushareAnnouncementRecord, ...]:
+        params: dict[str, Any] = {"ts_code": ts_code}
+        if start_date:
+            params["start_date"] = start_date
+        if end_date:
+            params["end_date"] = end_date
+        fields = "ts_code,ann_date,title,ann_type,url"
+        rows = self._call("anns_d", params=params, fields=fields)
+        return tuple(self._announcement_record(row) for row in rows)
+
     def _call(
         self,
         api_name: str,
@@ -144,6 +179,32 @@ class TushareProvider:
             pre_close=_float_or_none(row.get("pre_close")),
             vol=_float_or_none(row.get("vol")),
             amount=_float_or_none(row.get("amount")),
+        )
+
+    @staticmethod
+    def _fina_indicator_record(row: dict[str, Any]) -> TushareFinaIndicatorRecord:
+        return TushareFinaIndicatorRecord(
+            ts_code=str(row["ts_code"]),
+            end_date=_parse_yyyymmdd(row.get("end_date")) or date.min,
+            ann_date=_parse_yyyymmdd(row.get("ann_date")),
+            revenue=_float_or_none(row.get("revenue")),
+            netprofit=_float_or_none(row.get("netprofit")),
+            roe=_float_or_none(row.get("roe")),
+            eps=_float_or_none(row.get("eps")),
+            grossprofit_margin=_float_or_none(row.get("grossprofit_margin")),
+            or_yoy=_float_or_none(row.get("or_yoy")),
+            netprofit_yoy=_float_or_none(row.get("netprofit_yoy")),
+        )
+
+    @staticmethod
+    def _announcement_record(row: dict[str, Any]) -> TushareAnnouncementRecord:
+        return TushareAnnouncementRecord(
+            ts_code=str(row["ts_code"]),
+            ann_date=_parse_yyyymmdd(row.get("ann_date")) or date.min,
+            title=str(row.get("title") or ""),
+            ann_type=row.get("ann_type"),
+            url=row.get("url"),
+            content=row.get("content"),
         )
 
 

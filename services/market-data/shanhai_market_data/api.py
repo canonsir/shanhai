@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from shanhai_market_data.models import CompanyIntelligence
+from shanhai_market_data.models import CompanyIntelligence, TimeBasis
 from shanhai_market_data.store import InMemoryMarketKnowledgeStore
 
 
@@ -21,6 +21,28 @@ class CompanyIntelligenceAPI:
         if intelligence is None:
             return None
         return self._to_payload(intelligence)
+
+    def get_company_timeline(
+        self,
+        ts_code: str,
+        *,
+        time_basis: str = TimeBasis.PUBLISHED_AT.value,
+        latest_first: bool = True,
+    ) -> dict[str, Any] | None:
+        intelligence = self._store.get_company_intelligence_by_ts_code(ts_code)
+        if intelligence is None:
+            return None
+        events = self._store.get_company_timeline(
+            ts_code,
+            time_basis=TimeBasis(time_basis),
+            latest_first=latest_first,
+        )
+        return {
+            "company": intelligence.company.model_dump(mode="json"),
+            "security": intelligence.security.model_dump(mode="json"),
+            "time_basis": time_basis,
+            "events": [event.model_dump(mode="json") for event in events],
+        }
 
     def search_companies(self, text: str, limit: int = 50) -> tuple[dict[str, Any], ...]:
         return tuple(
@@ -46,5 +68,12 @@ class CompanyIntelligenceAPI:
                 item.latest_quote.model_dump(mode="json") if item.latest_quote else None
             ),
             "facts": [fact.model_dump(mode="json") for fact in item.facts],
+            "financial_facts": [
+                fact.model_dump(mode="json") for fact in item.financial_facts
+            ],
+            "announcement_facts": [
+                fact.model_dump(mode="json") for fact in item.announcement_facts
+            ],
+            "timeline": [event.model_dump(mode="json") for event in item.timeline],
             "source_refs": [ref.model_dump(mode="json") for ref in item.source_refs],
         }

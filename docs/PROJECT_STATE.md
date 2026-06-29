@@ -9,12 +9,12 @@ v0.2.0
 
 ## 当前阶段
 
-Milestone 2.5 — Market Foundation Hardening Review（Design Gate）
+Milestone 2.5 — Market Foundation Hardening / Phase 2 Market Knowledge Foundation（✅ Implementation Completed）
 
 > 触发：Market Data MVP 接入真实 A 股数据后暴露地基问题（Entity Identity 与 ts_code 同构 / Postgres 被内存缓存遮蔽 / MarketFact 为 demo 形态）。
-> 暂停 PR-4.2 与 Experience Runtime 扩展，先修地基。
-> 见 `docs/design/market-foundation-hardening-review-m2.5.md` + `docs/design/market-foundation-hardening-phase0-closure-m2.5.md`。
-> 本阶段只做 Design Review，**不写实现代码**。Phase 0 Closure 已补充冻结：Identity Migration Strategy / Resolver v0.1 边界 / MarketFact v1 优先级 / Console Alpha 验证入口。
+> Phase 1 Entity Hardening 已批准 Closure；按用户指令取消 Phase 2 review gate，改「实现优先 + 单一 review 文档」，直接进入 Phase 2 实现。
+> 见 `docs/design/market-foundation-hardening-review-m2.5.md` + `docs/design/market-foundation-hardening-phase0-closure-m2.5.md` + `docs/design/market-foundation-hardening-phase1-closure-review-m2.5.md` + `docs/design/market-foundation-hardening-phase2-implementation-review-m2.5.md`。
+> **Phase 2 已实现**：让真实 A 股公司知识进入系统——MarketFact v1（subject/predicate/object + 三时间戳 + 实体链接 + 置信度）/ 独立 FinancialFact / 独立 AnnouncementFact / 公司知识时间线（read model，非超级表）/ Tushare 首个 source adapter（fina_indicator + anns_d，能力探测式优雅降级）/ Console Alpha 数据模型验证页 `/company/:id`。Phase 2 Implementation Review 已生成（5 项范围 + Console Alpha 全部 ✅ PASS）。
 
 ```
 Foundation Phase ✅ Completed
@@ -30,8 +30,12 @@ Milestone 2
  +-- Data Foundation MVP ✅ Implementation Completed
  +-- market-data service / Tushare Provider / Entity Schema MVP / Knowledge Store / Company Intelligence API
  +-- Market Data Runtime MVP ✅ Scheduled ingestion / PostgreSQL Store / Resolver / API / Console
- +-- Market Knowledge Expansion ⏳ Design only（M2.3，待 M2.5 地基修正后推进）
- +-- Market Foundation Hardening ⏳ Phase 0 Closure ✅ Design Review Completed / ⬇️ Waiting Phase 1 Entity Hardening Approval
+ +-- Market Knowledge Expansion ⏳ Design only（M2.3，蓝本已被 Phase 2 实现采用）
+ +-- Market Foundation Hardening
+      +-- Phase 0 Closure ✅ Design Review Completed
+      +-- Phase 1 Entity Hardening ✅ Closure PASS（带 2 项归属 Phase 3 的登记风险）
+      +-- Phase 2 Market Knowledge Foundation ✅ Implementation Completed / Review PASS
+      +-- Phase 3 Storage Refactor ⏳ Not started（Postgres identity tables / R1+R2 / cache-shadowing）
  +-- Runtime / Memory / Evolution / Trading ⛔ Not in scope
 ```
 
@@ -68,14 +72,18 @@ Milestone 2
 - [x] Milestone 2 — Data Foundation MVP Phase 1（真实 A 股数据闭环，✅ Implementation Completed）：新增 `services/market-data`，包含 `TushareProvider`（标准库 HTTP + fake transport 测试，token 走 `SHANHAI_TUSHARE_TOKEN`）、Market Entity Schema MVP（Company / ListedEntity / Security / Listing / Industry / QuoteSnapshot / MarketFact）、`AShareCompanySyncService`（默认贵州茅台/宁德时代等 10 家 A 股公司）、`InMemoryMarketKnowledgeStore`、`CompanyIntelligenceAPI`；新增 `tests/market_data/` 覆盖 Provider、10 公司同步、API、身份不塌缩、依赖边界与无交易 surface。未修改 RuntimeKernel / Experience Runtime / RuntimeContext，未实现 PR-4.2 Adapter / Memory Evolution / 交易策略。
 - [x] Milestone 2.2 — Market Data Runtime MVP（每天自动获得真实 A 股数据，✅ Implementation Completed）：新增 `EntityResolver` v0.1、`PostgresMarketKnowledgeStore`（`SHANHAI_MARKET_PG_DSN` + lazy psycopg）、`TushareScheduledIngestion`（run_once + daily loop）、Company Intelligence API routes（`/companies` / `/companies/search` / `/companies/{ts_code}` / `/market/ingestion/tushare/run`）与 Company Console Alpha（`/console/companies`）。`.env.example` 仅新增 Tushare / market store 占位，真实 token 不入库。未修改 RuntimeKernel / Experience Runtime / RuntimeContext / AgentRunner / Memory，未做 Trading Strategy。
 - [x] Milestone 2.3 — Market Knowledge Expansion Review（Design Gate，⏳ Design Only）：新增 `docs/design/market-knowledge-expansion-review-m2.3.md`，冻结 MarketFact schema v1 / FinancialFact / AnnouncementFact / NewsFact / Entity linking strategy / Timeline model；明确 M2.3 目标是从“知道公司存在”进入“理解公司发生了什么”。当前不写 M2.3 实现、不继续 Runtime 抽象、不实现 PR-4.2 Adapter、不做 Memory Evolution、不做 Trading Strategy。
+- [x] Milestone 2.5 — Phase 1 Entity Hardening（Market Entity Identity 从 ts_code 解耦，✅ Implementation Completed，Closure PASS）：`identity.py` 新增 `new_internal_id(entity_type)` 代理键（不编码外部码），旧 `*_from_ts_code` 降级为迁移留痕；新增 `registry.py`（`IdentityRegistry` = `entity_identity_mapping`，确定性 `resolve_or_allocate` 外部码→代理键 + `link` 多源映射 + `record_legacy_migration` old→new 留痕 + 正/反双向索引可回滚，纯确定性无 AI/fuzzy/embedding）；`resolver.py` v0.1 改为经 registry 做确定性映射（同一 ts_code 复用同一代理键）；`models.py` 新增 `IdentityMapping` 模型 + `Company.external_ids`（外部码作为属性）；`store.py` 移除硬编码 `security:cn-a:{ts_code}` 反查，改 `ts_code → security_id` 索引；`mapper.py`/`sync.py` 共享一个 resolver，保证 bundle 与 quote 的 security_id 一致；测试删除“前缀不同即身份不同”假阳性，改验真实生命周期关系（`listed_entity.company_id == company.company_id` 等）+ 代理键不可由 ts_code 推导 + ts_code 仅为属性，新增 `tests/market_data/test_identity_registry.py`（确定性复用 / 多源映射 / old→new 迁移与回滚 / 冲突报错）。未触碰 RuntimeKernel / RuntimeContext / Experience Runtime；未实现 PR-4.2 / Memory Evolution / Trading；未重构 Postgres cache（属 Phase 3）。
+- [x] Milestone 2.5 — Phase 2 Market Knowledge Foundation（让真实 A 股公司知识进入系统，✅ Implementation Completed / Review PASS）：按用户指令取消 design gate，改「实现优先 + 单一 review 文档」。`models.py` `MarketFact` 升级为认知单元 v1（`subject_ref`/`predicate`/`object_value`/`object_ref` + 三时间戳 occurred_at/published_at/captured_at + source_ref/evidence_refs/confidence/entity_links/attributes，`schema_version="market_fact.v1"`），新增独立 `FinancialFact`（period/metric/unit/yoy）与 `AnnouncementFact`（announcement_id/type/title/document_url/document_hash），新增 read model `CompanyTimelineEvent` + 值对象 `SubjectRef`/`FactAttribute`/`EntityLink` + 枚举 `FactType`/`TimeBasis`/`AnnouncementType`；新增 `fact_mapper.py`（profile/industry/quote → MarketFact；fina_indicator 一行拆每指标一条 FinancialFact；anns_d → AnnouncementFact 启发式分类）；新增 `timeline.py`（`build_company_timeline` 三类事实家族投影到一条有序时间线，read model 非超级表，三时间戳回退永不塌缩）；`tushare.py` 新增 `fina_indicator`/`anns_d`，`provider.py` 新增可选 `FinancialDataProvider`/`AnnouncementDataProvider` Protocol，`sync.py` 用 `getattr` 能力探测优雅降级，`store.py` 三类 fact 分桶 + `get_company_timeline`，`api.py` payload 增 facts/timeline；`apps/api/.../main.py` 新增 Console Alpha 数据模型验证页 `/company/{ts_code}` + `/companies/{ts_code}/timeline`；新增 `tests/market_data/test_market_knowledge_facts.py`（6 用例），market-data 全量 5 文件全绿。Review 见 `docs/design/market-foundation-hardening-phase2-implementation-review-m2.5.md`。边界：不修改 RuntimeKernel / Experience Runtime；不实现 Selector / Memory Evolution / Trading；不做 AI entity merge；不做 Postgres identity registry migration（R1/R2 归 Phase 3）。
 - [x] Agent Runtime 单元测试（通过）
 
 ## 当前目标
 
-AI Native Capital Market Cognition Foundation：用真实 A 股数据、公司实体、市场事实与时间线持续验证 ShanHai 架构；Runtime contract 继续扩展已停止，下一阶段聚焦 Market Knowledge Layer。
+AI Native Capital Market Cognition Foundation：用真实 A 股数据、公司实体、市场事实与时间线持续验证 ShanHai 架构；Runtime contract 继续扩展已停止，Market Knowledge Layer 基础已落地（MarketFact v1 + 财务/公告事实 + 公司知识时间线 + Tushare adapter + Console Alpha）。下一阶段聚焦 Console Alpha 反向验证模型 → 真实 Candidate Provider → Experience Runtime。
 
 ## 当前 Gate / 暂停点
 
+- [x] **M2.5 Phase 1 Closure Review Gate**：✅ 已批准 PASS（`docs/design/market-foundation-hardening-phase1-closure-review-m2.5.md`，带 R1/R2 两项归属 Phase 3 的登记风险）。Phase 2 已据此开工并完成。
+- [ ] **M2.5 Phase 2 Implementation Review（当前停靠点）**：Phase 2 Market Knowledge Foundation 实现完成，**Implementation Review 已生成**（`docs/design/market-foundation-hardening-phase2-implementation-review-m2.5.md`：5 项批准范围 + Console Alpha 全部 ✅ PASS）。已交付：MarketFact v1 / 独立 FinancialFact / 独立 AnnouncementFact / 公司知识时间线（read model）/ Tushare fina_indicator+anns_d adapter（能力探测优雅降级）/ Console Alpha `/company/:id` 数据模型验证页。验证：market-data 全量 5 文件（identity registry / foundation MVP / runtime MVP / dependency boundary / market knowledge facts）全绿。登记延续 R1/R2 + NewsFact source adapter + external_ids 结构化（均归后续）。下一步路线：Console Alpha 反向验证 → 真实 Candidate Provider（PR-4.2）→ Experience Runtime。
 - [ ] Milestone 2.3 Market Knowledge Expansion Review：**Design Review only**。`docs/design/market-knowledge-expansion-review-m2.3.md` 已冻结 MarketFact schema v1 / FinancialFact / AnnouncementFact / NewsFact / Entity linking strategy / Timeline model；下一步如获批准，优先从 Tushare structured financial / shareholder / moneyflow / industry / concept 扩展，不优先接新闻。**当前不写 M2.3 实现、不继续 Runtime 抽象、不修改 RuntimeKernel / Experience Runtime / RuntimeContext / AgentRunner / Memory，不实现 PR-4.2 Adapter，不实现 Memory Evolution，不做 Trading Strategy**。
 - [ ] PR-4.2 Candidate Provider Adapter：**保留 Design Gate，Implementation stopped**。`docs/design/experience-runtime-candidate-provider-adapter-review-pr4.2.md` 已冻结 ArtifactReader/read-side port、CandidateProvider I/O、experience-artifact 依赖方向、Selector stateless 边界、candidate ingestion vs RuntimeContext projection 边界，以及 PR-4.2 implementation/forbidden scope。**当前不写 PR-4.2 实现、不接 RuntimeContext execution flow / AgentRuntime / Memory / Artifact persistence / Evaluation / E2E**。
 

@@ -4,7 +4,12 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from shanhai_market_data.models import TushareDailyRecord, TushareStockBasicRecord
+from shanhai_market_data.models import (
+    TushareAnnouncementRecord,
+    TushareDailyRecord,
+    TushareFinaIndicatorRecord,
+    TushareStockBasicRecord,
+)
 
 
 class MarketDataProvider(Protocol):
@@ -23,4 +28,32 @@ class MarketDataProvider(Protocol):
         start_date: str | None = None,
         end_date: str | None = None,
     ) -> tuple[TushareDailyRecord, ...]:
+        ...
+
+
+class FinancialDataProvider(Protocol):
+    """Optional structured-financial capability.
+
+    A provider may implement this in addition to MarketDataProvider. Sync only
+    requests financial facts when the provider supports it.
+    """
+
+    def fina_indicator(
+        self,
+        ts_code: str,
+        start_date: str | None = None,
+        end_date: str | None = None,
+    ) -> tuple[TushareFinaIndicatorRecord, ...]:
+        ...
+
+
+class AnnouncementDataProvider(Protocol):
+    """Optional disclosed-announcement capability."""
+
+    def anns_d(
+        self,
+        ts_code: str,
+        start_date: str | None = None,
+        end_date: str | None = None,
+    ) -> tuple[TushareAnnouncementRecord, ...]:
         ...

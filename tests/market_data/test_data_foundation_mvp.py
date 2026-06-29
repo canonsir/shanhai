@@ -127,16 +127,22 @@ def test_market_entity_schema_does_not_collapse_identity() -> None:
     item = store.get_company_intelligence_by_ts_code("002594.SZ")
     assert item is not None
 
-    ids = {
-        item.company.company_id,
-        item.listed_entity.listed_entity_id,
-        item.security.security_id,
-        item.listing.listing_id,
-    }
-    assert len(ids) == 4
+    # Real lifecycle relationships, not "different prefixes => different identity".
+    # Company / ListedEntity / Security / Listing are independent surrogate ids
+    # linked by foreign keys; the external code lives only on Security.
     assert item.security.ts_code == "002594.SZ"
+    assert item.listed_entity.company_id == item.company.company_id
+    assert item.security.listed_entity_id == item.listed_entity.listed_entity_id
+    assert item.listing.security_id == item.security.security_id
+
+    # company_id must NOT be derivable from the external code.
+    assert "002594" not in item.company.company_id
     assert item.company.company_id != item.security.ts_code
-    print("[OK] Company / ListedEntity / Security / Listing 身份未塌缩")
+    assert item.company.company_id != item.security.security_id
+
+    # the external code is preserved as a Company attribute, never as identity.
+    assert "tushare:ts_code:002594.SZ" in item.company.external_ids
+    print("[OK] Company / ListedEntity / Security / Listing 生命周期关系成立，ts_code 仅为属性")
 
 
 def main() -> None:

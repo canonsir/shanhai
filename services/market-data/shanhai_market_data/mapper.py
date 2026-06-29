@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 
-from shanhai_market_data.identity import (
-    industry_id_from_name,
-    security_id_from_ts_code,
+from shanhai_market_data.fact_mapper import (
+    TUSHARE_SOURCE_REF,
+    build_company_profile_facts,
 )
+from shanhai_market_data.identity import industry_id_from_name
 from shanhai_market_data.models import (
     Board,
     Company,
@@ -18,25 +19,20 @@ from shanhai_market_data.models import (
     QuoteSnapshot,
     Security,
     SourceRef,
-    SourceTrustLevel,
     TushareDailyRecord,
     TushareStockBasicRecord,
 )
 from shanhai_market_data.resolver import EntityResolver
-
-TUSHARE_SOURCE_REF = SourceRef(
-    source_id="tushare",
-    source_name="Tushare",
-    trust_level=SourceTrustLevel.LICENSED_AGGREGATOR,
-)
 
 
 def map_stock_basic(
     record: TushareStockBasicRecord,
     *,
     source_ref: SourceRef = TUSHARE_SOURCE_REF,
+    resolver: EntityResolver | None = None,
 ) -> tuple[Company, ListedEntity, Security, Listing, Industry | None, tuple[MarketFact, ...]]:
-    identity = EntityResolver().resolve_stock_basic(record)
+    resolver = resolver if resolver is not None else EntityResolver()
+    identity = resolver.resolve_stock_basic(record)
     company_id = identity.company_id
     listed_entity_id = identity.listed_entity_id
     security_id = identity.security_id
@@ -47,6 +43,7 @@ def map_stock_basic(
         name=record.name,
         aliases=identity.aliases,
         region=record.area,
+        external_ids=identity.external_ids,
     )
     listed_entity = ListedEntity(
         listed_entity_id=listed_entity_id,
@@ -79,36 +76,18 @@ def map_stock_basic(
         if record.industry
         else None
     )
-    facts = [
-        MarketFact(
-            fact_id=f"fact:{company_id}:area",
-            entity_id=company_id,
-            fact_type="region",
-            value=record.area,
-            source_ref=source_ref,
-        )
-        for _ in [record.area]
-        if record.area
-    ]
-    if industry:
-        facts.append(
-            MarketFact(
-                fact_id=f"fact:{company_id}:industry:tushare",
-                entity_id=company_id,
-                fact_type="industry",
-                value=industry.name,
-                source_ref=source_ref,
-            )
-        )
-    return company, listed_entity, security, listing, industry, tuple(facts)
+    facts = build_company_profile_facts(record, identity, source_ref=source_ref)
+    return company, listed_entity, security, listing, industry, facts
 
 
 def map_daily_quote(
     record: TushareDailyRecord,
     *,
     source_ref: SourceRef = TUSHARE_SOURCE_REF,
+    resolver: EntityResolver | None = None,
 ) -> QuoteSnapshot:
-    security_id = security_id_from_ts_code(record.ts_code)
+    resolver = resolver if resolver is not None else EntityResolver()
+    security_id = resolver.security_id_for(record.ts_code)
     return QuoteSnapshot(
         quote_id=f"quote:tushare:{record.ts_code.lower()}:{record.trade_date.isoformat()}",
         security_id=security_id,
@@ -120,7 +99,7 @@ def map_daily_quote(
         previous_close=record.pre_close,
         volume=record.vol,
         amount=record.amount,
-        source_ref=source_ref.model_copy(update={"captured_at": datetime.utcnow()}),
+        source_ref=source_ref.model_copy(update={"captured_at": datetime.now(timezone.utc)}),
     )
 
 

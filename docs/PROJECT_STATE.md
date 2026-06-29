@@ -9,7 +9,11 @@ v0.2.0
 
 ## 当前阶段
 
-Milestone 2.3 — Market Knowledge Expansion Review（Design Gate）
+Milestone 2.5 — Market Foundation Hardening Review（Design Gate）
+
+> 触发：Market Data MVP 接入真实 A 股数据后暴露地基问题（Entity Identity 与 ts_code 同构 / Postgres 被内存缓存遮蔽 / MarketFact 为 demo 形态）。
+> 暂停 PR-4.2 与 Experience Runtime 扩展，先修地基。见 `docs/design/market-foundation-hardening-review-m2.5.md`。
+> 本阶段只做 Design Review + Migration Plan + Implementation Plan，**不写实现代码**。
 
 ```
 Foundation Phase ✅ Completed
@@ -17,18 +21,20 @@ Foundation Phase ✅ Completed
  +-- PR-1 Runtime Kernel Skeleton ✅ Closed
  +-- PR-2 RuntimeContext v1 ✅ Closed
  +-- PR-3 RunStore Identity Migration ✅ Closed
- +-- PR-4.1 Experience Runtime Contract Layer ✅ Closed
- +-- PR-4.2 Candidate Provider Adapter ⏸️ Design Gate only / Implementation stopped
+ +-- PR-4.1 Experience Runtime Contract Layer 🧊 Frozen（契约层保留，待真实 candidate 反向验证）
+ +-- PR-4.2 Candidate Provider Adapter ⏸️ Paused（降优先级，依赖顺序后置到 Market Knowledge 之后）
 
 Milestone 2
  |
  +-- Data Foundation MVP ✅ Implementation Completed
  +-- market-data service / Tushare Provider / Entity Schema MVP / Knowledge Store / Company Intelligence API
  +-- Market Data Runtime MVP ✅ Scheduled ingestion / PostgreSQL Store / Resolver / API / Console
- +-- Market Knowledge Expansion ⏳ Design Review only
- +-- PR-4.2 Candidate Provider Adapter ⛔ Implementation stopped
+ +-- Market Knowledge Expansion ⏳ Design only（M2.3，待 M2.5 地基修正后推进）
+ +-- Market Foundation Hardening ⏳ Design Review（M2.5，P0 Entity Identity + P0 Storage / P1 MarketFact v1 + Ingestion）
  +-- Runtime / Memory / Evolution / Trading ⛔ Not in scope
 ```
+
+依赖顺序修正：`Market Data → Market Knowledge → 真实 Candidate → Experience Runtime`（不再反向）。
 
 ## 最新提交
 

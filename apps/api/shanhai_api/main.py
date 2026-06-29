@@ -13,8 +13,12 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from shanhai_market_data import (
     AShareCompanySyncService,
+    CninfoAnnouncementProvider,
     CompanyIntelligenceAPI,
     DEFAULT_A_SHARE_TARGETS,
+    EastMoneyProvider,
+    EntityResolver,
+    PublicDataAcquisitionService,
 )
 from shanhai_market_data.factory import default_market_store, default_tushare_provider
 from shanhai_model_router import ModelRegistry, ModelRouter
@@ -34,6 +38,18 @@ def _build_router() -> ModelRouter:
 router = _build_router()
 market_store = default_market_store()
 company_api = CompanyIntelligenceAPI(market_store)
+
+# M3.2 Data Acquisition Foundation: free, source-neutral public providers
+# (EastMoney profile/quote/financial + CNInfo announcements) land real facts —
+# each carrying its own provenance — into the shared market store.
+_public_acquisition = PublicDataAcquisitionService(
+    market_store,
+    profile_provider=EastMoneyProvider(),
+    announcement_provider=CninfoAnnouncementProvider(),
+    resolver=EntityResolver(),
+)
+
+DEFAULT_PUBLIC_ACQUISITION_TARGETS = ("600519.SH",)
 
 
 class CompleteRequest(BaseModel):
@@ -99,6 +115,62 @@ def run_tushare_ingestion() -> dict:
     service = AShareCompanySyncService(default_tushare_provider(), market_store)
     report = service.sync_companies(DEFAULT_A_SHARE_TARGETS)
     return report.model_dump(mode="json")
+
+
+class PublicAcquisitionRequest(BaseModel):
+    ts_codes: tuple[str, ...] = DEFAULT_PUBLIC_ACQUISITION_TARGETS
+
+
+@app.post("/market/acquisition/public/run")
+def run_public_acquisition(req: PublicAcquisitionRequest | None = None) -> dict:
+    """Acquire real A-share facts from free public providers (M3.2 spike).
+
+    Pulls profile / quote / financial from EastMoney and announcements from
+    CNInfo, landing them — with their own provenance — into the market store.
+    """
+    targets = (req.ts_codes if req else DEFAULT_PUBLIC_ACQUISITION_TARGETS)
+    reports = []
+    errors = []
+    for ts_code in targets:
+        try:
+            report = _public_acquisition.acquire_company(ts_code)
+        except Exception as exc:  # public endpoints are best-effort, never fatal
+            errors.append({"ts_code": ts_code, "error": str(exc)})
+            continue
+        reports.append(
+            {
+                "ts_code": report.ts_code,
+                "company_id": report.company_id,
+                "name": report.name,
+                "has_quote": report.has_quote,
+                "financial_fact_count": report.financial_fact_count,
+                "announcement_fact_count": report.announcement_fact_count,
+                "providers": list(report.providers),
+            }
+        )
+    return {"acquired": reports, "errors": errors}
+
+
+@app.on_event("startup")
+def _seed_public_data() -> None:
+    """Best-effort seed so the console shows real provenance on first load.
+
+    Network failures must never block API startup; the manual
+    ``/market/acquisition/public/run`` endpoint remains available.
+    """
+    if os.getenv("SHANHAI_SKIP_PUBLIC_SEED", "").lower() in ("1", "true", "yes"):
+        return
+    for ts_code in DEFAULT_PUBLIC_ACQUISITION_TARGETS:
+        try:
+            report = _public_acquisition.acquire_company(ts_code)
+            print(
+                f"[public-seed] {report.ts_code} {report.name} "
+                f"quote={report.has_quote} financial={report.financial_fact_count} "
+                f"announcement={report.announcement_fact_count} "
+                f"providers={report.providers}"
+            )
+        except Exception as exc:  # noqa: BLE001 - seed is advisory only
+            print(f"[public-seed] skip {ts_code}: {exc}")
 
 
 @app.get("/company/{ts_code}", response_class=HTMLResponse)

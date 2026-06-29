@@ -88,8 +88,9 @@ def map_daily_quote(
 ) -> QuoteSnapshot:
     resolver = resolver if resolver is not None else EntityResolver()
     security_id = resolver.security_id_for(record.ts_code)
+    provider = source_ref.provider or source_ref.source_id
     return QuoteSnapshot(
-        quote_id=f"quote:tushare:{record.ts_code.lower()}:{record.trade_date.isoformat()}",
+        quote_id=f"quote:{provider}:{record.ts_code.lower()}:{record.trade_date.isoformat()}",
         security_id=security_id,
         trade_date=record.trade_date,
         open=record.open,

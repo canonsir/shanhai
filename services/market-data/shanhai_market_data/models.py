@@ -92,11 +92,26 @@ class AnnouncementType(str, Enum):
 
 
 class SourceRef(_FrozenModel):
+    """Provenance of a fact: where it came from and whether it can be trusted.
+
+    Minimal built-in provenance (M3.2): on top of the source identity and trust
+    level, every captured fact records which provider/dataset produced it, when
+    it was captured, a reference to the raw snapshot it was derived from, the
+    adapter version, and a content hash. Heavy raw storage (data lake / object
+    store / parquet warehouse) is deliberately out of scope here and deferred to
+    a later milestone — ``raw_snapshot_ref`` is only a locator, not a store.
+    """
+
     source_id: str
     source_name: str
     trust_level: SourceTrustLevel = SourceTrustLevel.PUBLIC_AGGREGATOR
     external_id: str | None = None
     captured_at: datetime = Field(default_factory=datetime.utcnow)
+    provider: str | None = None
+    dataset: str | None = None
+    raw_snapshot_ref: str | None = None
+    version: str = "v1"
+    hash: str | None = None
 
 
 class ResolvedMarketIdentity(_FrozenModel):
@@ -362,6 +377,75 @@ class CompanyIntelligence(_FrozenModel):
     announcement_facts: tuple[AnnouncementFact, ...] = ()
     timeline: tuple[CompanyTimelineEvent, ...] = ()
     source_refs: tuple[SourceRef, ...] = ()
+
+
+# --- Source-neutral normalized records (M3.2 Data Acquisition Foundation) ---
+#
+# These are the ingestion-edge records ShanHai owns, decoupled from any single
+# vendor. A public provider (EastMoney / CNInfo / ...) normalizes its raw
+# response into these shapes; the mapper layer then turns them into entities and
+# facts. They are intentionally attribute-compatible with the legacy Tushare*
+# records so the proven mapper/fact_mapper layer can consume either family. The
+# vendor-named Tushare* records below are now just one (optional) source shape.
+
+
+class CompanyProfileRecord(_FrozenModel):
+    """Normalized company/security profile from any market data provider."""
+
+    ts_code: str
+    symbol: str
+    name: str
+    exchange: Exchange
+    area: str | None = None
+    industry: str | None = None
+    market: str | None = None
+    list_date: date | None = None
+    list_status: ListingStatus = ListingStatus.LISTED
+
+
+class QuoteRecord(_FrozenModel):
+    """Normalized daily/snapshot quote from any market data provider."""
+
+    ts_code: str
+    trade_date: date
+    open: float | None = None
+    high: float | None = None
+    low: float | None = None
+    close: float | None = None
+    pre_close: float | None = None
+    vol: float | None = None
+    amount: float | None = None
+
+
+class FinancialIndicatorRecord(_FrozenModel):
+    """Normalized structured financial indicator from any provider.
+
+    Attribute-compatible with ``TushareFinaIndicatorRecord`` so it can flow
+    through ``map_financial_indicator`` unchanged.
+    """
+
+    ts_code: str
+    end_date: date
+    ann_date: date | None = None
+    report_type_label: str | None = None
+    revenue: float | None = None
+    netprofit: float | None = None
+    roe: float | None = None
+    eps: float | None = None
+    grossprofit_margin: float | None = None
+    or_yoy: float | None = None
+    netprofit_yoy: float | None = None
+
+
+class AnnouncementRecord(_FrozenModel):
+    """Normalized disclosed-announcement reference from any provider."""
+
+    ts_code: str
+    ann_date: date
+    title: str
+    ann_type: str | None = None
+    url: str | None = None
+    content: str | None = None
 
 
 class TushareStockBasicRecord(_FrozenModel):

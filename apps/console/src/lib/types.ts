@@ -44,6 +44,11 @@ export interface SourceRef {
   trust_level: SourceTrustLevel;
   external_id: string | null;
   captured_at: string;
+  provider: string | null;
+  dataset: string | null;
+  raw_snapshot_ref: string | null;
+  version: string;
+  hash: string | null;
 }
 
 export interface SubjectRef {

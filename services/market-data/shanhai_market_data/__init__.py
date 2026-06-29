@@ -5,19 +5,26 @@ market knowledge store and Company Intelligence API. It intentionally has no
 RuntimeKernel / Experience Runtime / Memory Evolution dependency.
 """
 
+from shanhai_market_data.acquisition import (
+    AcquisitionReport,
+    PublicDataAcquisitionService,
+)
 from shanhai_market_data.api import CompanyIntelligenceAPI
 from shanhai_market_data.models import (
     AnnouncementFact,
+    AnnouncementRecord,
     AnnouncementType,
     Board,
     Company,
     CompanyIntelligence,
+    CompanyProfileRecord,
     CompanyTimelineEvent,
     EntityLink,
     Exchange,
     FactAttribute,
     FactType,
     FinancialFact,
+    FinancialIndicatorRecord,
     IdentityMapping,
     Industry,
     ListedEntity,
@@ -25,6 +32,7 @@ from shanhai_market_data.models import (
     ListingStatus,
     MarketFact,
     MarketSource,
+    QuoteRecord,
     QuoteSnapshot,
     ResolvedMarketIdentity,
     Security,
@@ -45,7 +53,9 @@ from shanhai_market_data.provider import (
     AnnouncementDataProvider,
     FinancialDataProvider,
     MarketDataProvider,
+    PublicMarketDataProvider,
 )
+from shanhai_market_data.providers import CninfoAnnouncementProvider, EastMoneyProvider
 from shanhai_market_data.registry import IdentityRegistry
 from shanhai_market_data.resolver import EntityResolver
 from shanhai_market_data.scheduler import ScheduledIngestionConfig, TushareScheduledIngestion
@@ -56,15 +66,20 @@ from shanhai_market_data.tushare import TushareProvider
 
 __all__ = [
     "AShareCompanySyncService",
+    "AcquisitionReport",
     "AnnouncementDataProvider",
     "AnnouncementFact",
+    "AnnouncementRecord",
     "AnnouncementType",
     "Board",
+    "CninfoAnnouncementProvider",
     "Company",
     "CompanyIntelligence",
     "CompanyIntelligenceAPI",
+    "CompanyProfileRecord",
     "CompanyTimelineEvent",
     "DEFAULT_A_SHARE_TARGETS",
+    "EastMoneyProvider",
     "EntityLink",
     "EntityResolver",
     "Exchange",
@@ -72,6 +87,7 @@ __all__ = [
     "FactType",
     "FinancialDataProvider",
     "FinancialFact",
+    "FinancialIndicatorRecord",
     "IdentityMapping",
     "IdentityRegistry",
     "Industry",
@@ -83,6 +99,9 @@ __all__ = [
     "MarketFact",
     "MarketSource",
     "PostgresMarketKnowledgeStore",
+    "PublicDataAcquisitionService",
+    "PublicMarketDataProvider",
+    "QuoteRecord",
     "QuoteSnapshot",
     "ResolvedMarketIdentity",
     "ScheduledIngestionConfig",

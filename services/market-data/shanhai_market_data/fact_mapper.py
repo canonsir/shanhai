@@ -138,6 +138,7 @@ def map_financial_indicator(
     """Split a fina_indicator row into one FinancialFact per disclosed metric."""
     subject = SubjectRef(entity_type="security", entity_id=security_id, label=label)
     report_period = _report_period(record.end_date)
+    report_type = getattr(record, "report_type_label", None) or "fina_indicator"
     occurred_at = _to_datetime(record.end_date)
     published_at = _to_datetime(record.ann_date) if record.ann_date else None
     facts: list[FinancialFact] = []
@@ -151,7 +152,7 @@ def map_financial_indicator(
                 fact_id=f"financial:{security_id}:{report_period}:{metric_name}",
                 subject_ref=subject,
                 report_period=report_period,
-                report_type="fina_indicator",
+                report_type=report_type,
                 metric_name=metric_name,
                 metric_value=value,
                 unit=unit,

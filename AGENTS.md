@@ -143,5 +143,6 @@ docs/frontend-guideline.md        # 前端实现铁律
 
 - 颜色 / 字体 / 圆角 / 间距一律走 token，不写死色值或 magic number。
 - 不随意引入新 UI library；技术栈固定 `Next.js + Tailwind + shadcn/ui + Radix + Lucide`（shadcn 是基础设施，ShanHai Design System 是产品语言）。
+- 动画以 `framer-motion` 为主（唯一指定动画库，用于进出场/布局/列表等）；允许用 Tailwind 的 `transition-*` 做简单微交互（hover/focus/press），但不得另引动画库；用法见 [docs/frontend-guideline.md](docs/frontend-guideline.md) §1.2。
 - 不创建未登记组件；新组件走 `Design System → Component Proposal → Implementation → Review`。
 - `design-system/shanhai-console/preview/` 是「产品应该长什么样」的事实来源，写页面前先看。

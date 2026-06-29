@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Search, ArrowRight } from "lucide-react";
 import { listCompanies, searchCompanies } from "@/lib/api";
 import type { CompanyIntelligence } from "@/lib/types";
@@ -10,7 +11,9 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 
 export function CompanySearch() {
-  const [query, setQuery] = React.useState("");
+  const searchParams = useSearchParams();
+  const urlQuery = searchParams.get("q") ?? "";
+  const [query, setQuery] = React.useState(urlQuery);
   const [items, setItems] = React.useState<CompanyIntelligence[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -33,9 +36,11 @@ export function CompanySearch() {
     }
   }, []);
 
+  // Drive results from the URL `?q=` so the sidebar global search works too.
   React.useEffect(() => {
-    void run("");
-  }, [run]);
+    setQuery(urlQuery);
+    void run(urlQuery);
+  }, [urlQuery, run]);
 
   return (
     <div className="space-y-6">
@@ -68,10 +73,10 @@ export function CompanySearch() {
       </form>
 
       {error && (
-        <Card className="border-red-200 bg-red-50">
-          <CardContent className="py-4 text-sm text-red-700">
+        <Card className="border-destructive/30 bg-destructive/5">
+          <CardContent className="py-4 text-sm text-destructive">
             无法连接 Market Data API：{error}
-            <div className="mt-1 text-xs text-red-500">
+            <div className="mt-1 text-xs text-destructive/80">
               请确认 FastAPI 已启动，并已运行 Tushare ingestion。
             </div>
           </CardContent>

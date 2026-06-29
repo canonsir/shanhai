@@ -90,7 +90,7 @@ export function CompanyTimelineView({
       </div>
 
       {error ? (
-        <p className="text-sm italic text-red-600">
+        <p className="text-sm italic text-destructive">
           时间线加载失败：{error}
         </p>
       ) : events.length === 0 ? (

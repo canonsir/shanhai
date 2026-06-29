@@ -1,27 +1,20 @@
 @import "tailwindcss";
+@import "../../../../design-system/tokens/shanhai-tokens.css";
 
 /*
- * ShanHai Console design tokens.
- * This is a research console (Bloomberg-style company encyclopedia), not a
- * marketing page: neutral surfaces, dense tables, monospace for identities.
+ * ShanHai Console — consumes the platform-neutral design tokens.
+ *
+ * Token source of truth: design-system/tokens/shanhai-tokens.css
+ *   (light `:root` + `.dark`, shared across every ShanHai frontend).
+ * 铁律：本文件不得写死十六进制色值；仅做两件事——
+ *   1) 把共享语义 token 映射进 Tailwind theme（生成 text-/bg-/border- 等工具类）；
+ *   2) 从共享 token 派生 console 本地别名（如 pill），不引入新色值。
  */
+
+/* console-local alias: badge default tone reuses the shared secondary surface */
 :root {
-  --background: #fbfbfa;
-  --foreground: #1a1a1a;
-  --card: #ffffff;
-  --card-foreground: #1a1a1a;
-  --muted: #f3f3f1;
-  --muted-foreground: #6b6b6b;
-  --border: #e6e6e3;
-  --input: #e6e6e3;
-  --ring: #3b6ea5;
-  --accent: #eef2f7;
-  --accent-foreground: #2c3e50;
-  --primary: #2c3e50;
-  --primary-foreground: #ffffff;
-  --pill: #eef2f7;
-  --pill-foreground: #33506b;
-  --radius: 0.5rem;
+  --pill: var(--secondary);
+  --pill-foreground: var(--secondary-foreground);
 }
 
 @theme inline {
@@ -29,6 +22,8 @@
   --color-foreground: var(--foreground);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-border: var(--border);
@@ -36,17 +31,31 @@
   --color-ring: var(--ring);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
   --color-pill: var(--pill);
   --color-pill-foreground: var(--pill-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
-  --font-sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
-    "Liberation Mono", monospace;
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
 }
 
 * {
@@ -58,4 +67,17 @@ body {
   color: var(--color-foreground);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+}
+
+/* thin, token-driven scrollbars for the shell scroll areas */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--muted-foreground) 28%, transparent);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--muted-foreground) 45%, transparent);
 }

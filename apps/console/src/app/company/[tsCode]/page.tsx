@@ -20,6 +20,7 @@ import {
 import { Section, KeyValue, Empty } from "@/components/section";
 import { SourceTag } from "@/components/source-tag";
 import { CompanyTimelineView } from "@/components/company-timeline";
+import { RecordRecent } from "@/components/record-recent";
 
 export default async function CompanyDetailPage({
   params,
@@ -38,6 +39,7 @@ export default async function CompanyDetailPage({
 
   return (
     <div className="space-y-8">
+      <RecordRecent tsCode={data.security.ts_code} name={data.company.name} />
       <div className="space-y-2">
         <Link
           href="/"

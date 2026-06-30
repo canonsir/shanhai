@@ -10,6 +10,7 @@ from shanhai_market_data.acquisition import (
     PublicDataAcquisitionService,
 )
 from shanhai_market_data.api import CompanyIntelligenceAPI
+from shanhai_market_data.domain.repository import MarketKnowledgeRepository
 from shanhai_market_data.models import (
     AnnouncementFact,
     AnnouncementRecord,
@@ -59,7 +60,10 @@ from shanhai_market_data.providers import CninfoAnnouncementProvider, EastMoneyP
 from shanhai_market_data.registry import IdentityRegistry
 from shanhai_market_data.resolver import EntityResolver
 from shanhai_market_data.scheduler import ScheduledIngestionConfig, TushareScheduledIngestion
-from shanhai_market_data.store import InMemoryMarketKnowledgeStore
+from shanhai_market_data.store import (
+    InMemoryMarketKnowledgeRepository,
+    InMemoryMarketKnowledgeStore,
+)
 from shanhai_market_data.sync import AShareCompanySyncService, DEFAULT_A_SHARE_TARGETS
 from shanhai_market_data.timeline import build_company_timeline
 from shanhai_market_data.tushare import TushareProvider
@@ -91,12 +95,14 @@ __all__ = [
     "IdentityMapping",
     "IdentityRegistry",
     "Industry",
+    "InMemoryMarketKnowledgeRepository",
     "InMemoryMarketKnowledgeStore",
     "ListedEntity",
     "Listing",
     "ListingStatus",
     "MarketDataProvider",
     "MarketFact",
+    "MarketKnowledgeRepository",
     "MarketSource",
     "PostgresMarketKnowledgeStore",
     "PublicDataAcquisitionService",

@@ -1,4 +1,10 @@
-"""Minimal market knowledge store for Milestone 2 MVP."""
+"""In-memory adapter for the Market Knowledge Store.
+
+``InMemoryMarketKnowledgeRepository`` is the local-first / test adapter behind the
+``MarketKnowledgeRepository`` boundary (M3.3 Phase 1). It is process-local and
+volatile — durable SQLite / Postgres adapters arrive in M3.3 Phase 2 / 3. It is
+not Memory, Experience, RuntimeContext, or a trading store.
+"""
 
 from __future__ import annotations
 
@@ -20,12 +26,12 @@ from shanhai_market_data.models import (
 from shanhai_market_data.timeline import build_company_timeline
 
 
-class InMemoryMarketKnowledgeStore:
-    """Local-first, process-local market knowledge store.
+class InMemoryMarketKnowledgeRepository:
+    """Local-first, process-local market knowledge repository.
 
-    This is a minimal Knowledge Store for Data Foundation MVP. It is not Memory,
-    Experience, RuntimeContext, or a trading store. Facts are kept per company so
-    the read model can assemble one company knowledge timeline.
+    This is a minimal Knowledge Store adapter for the Data Foundation MVP. It is
+    not Memory, Experience, RuntimeContext, or a trading store. Facts are kept
+    per company so the read model can assemble one company knowledge timeline.
     """
 
     def __init__(self) -> None:
@@ -235,3 +241,11 @@ class InMemoryMarketKnowledgeStore:
         for ref in refs:
             deduped[(ref.source_id, ref.external_id)] = ref
         return tuple(deduped.values())
+
+
+# Deprecated compatibility alias.
+# Only kept for legacy postgres_store.py inheritance.
+# Remove together with postgres_store.py in the persistence migration phase
+# (M3.3 Phase 3). No new code should import this name — depend on the
+# MarketKnowledgeRepository Protocol (domain/repository.py) instead.
+InMemoryMarketKnowledgeStore = InMemoryMarketKnowledgeRepository

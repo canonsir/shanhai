@@ -14,6 +14,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from shanhai_market_data.domain.repository import MarketKnowledgeRepository
 from shanhai_market_data.fact_mapper import (
     build_quote_fact,
     map_announcement,
@@ -23,7 +24,6 @@ from shanhai_market_data.mapper import map_daily_quote, map_stock_basic
 from shanhai_market_data.models import AnnouncementFact, FinancialFact, MarketFact
 from shanhai_market_data.provider import PublicMarketDataProvider
 from shanhai_market_data.resolver import EntityResolver
-from shanhai_market_data.store import InMemoryMarketKnowledgeStore
 
 
 @dataclass(frozen=True)
@@ -48,13 +48,13 @@ class PublicDataAcquisitionService:
 
     def __init__(
         self,
-        store: InMemoryMarketKnowledgeStore,
+        repository: MarketKnowledgeRepository,
         *,
         profile_provider: PublicMarketDataProvider,
         announcement_provider: PublicMarketDataProvider | None = None,
         resolver: EntityResolver | None = None,
     ) -> None:
-        self._store = store
+        self._store = repository
         self._profile = profile_provider
         self._announcements = announcement_provider
         self._resolver = resolver if resolver is not None else EntityResolver()

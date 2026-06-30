@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from shanhai_market_data.domain.repository import MarketKnowledgeRepository
 from shanhai_market_data.fact_mapper import (
     build_quote_fact,
     map_announcement,
@@ -17,7 +18,6 @@ from shanhai_market_data.models import (
 )
 from shanhai_market_data.provider import MarketDataProvider
 from shanhai_market_data.resolver import EntityResolver
-from shanhai_market_data.store import InMemoryMarketKnowledgeStore
 
 DEFAULT_A_SHARE_TARGETS: tuple[SyncTarget, ...] = (
     SyncTarget(ts_code="600519.SH", expected_name="贵州茅台"),
@@ -39,12 +39,12 @@ class AShareCompanySyncService:
     def __init__(
         self,
         provider: MarketDataProvider,
-        store: InMemoryMarketKnowledgeStore,
+        repository: MarketKnowledgeRepository,
         *,
         resolver: EntityResolver | None = None,
     ) -> None:
         self._provider = provider
-        self._store = store
+        self._store = repository
         self._resolver = resolver if resolver is not None else EntityResolver()
 
     def sync_companies(

@@ -4,15 +4,16 @@ from __future__ import annotations
 
 import os
 
+from shanhai_market_data.domain.repository import MarketKnowledgeRepository
 from shanhai_market_data.postgres_store import PostgresMarketKnowledgeStore
-from shanhai_market_data.store import InMemoryMarketKnowledgeStore
+from shanhai_market_data.store import InMemoryMarketKnowledgeRepository
 from shanhai_market_data.tushare import TushareProvider
 
 
-def default_market_store() -> InMemoryMarketKnowledgeStore:
+def default_market_store() -> MarketKnowledgeRepository:
     backend = os.getenv("SHANHAI_MARKET_STORE", "memory").lower()
     if backend == "memory":
-        return InMemoryMarketKnowledgeStore()
+        return InMemoryMarketKnowledgeRepository()
     if backend == "postgres":
         return PostgresMarketKnowledgeStore()
     raise ValueError(f"Unknown SHANHAI_MARKET_STORE backend: {backend!r}")

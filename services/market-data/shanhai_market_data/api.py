@@ -8,13 +8,13 @@ from __future__ import annotations
 
 from typing import Any
 
+from shanhai_market_data.domain.repository import MarketKnowledgeRepository
 from shanhai_market_data.models import CompanyIntelligence, TimeBasis
-from shanhai_market_data.store import InMemoryMarketKnowledgeStore
 
 
 class CompanyIntelligenceAPI:
-    def __init__(self, store: InMemoryMarketKnowledgeStore) -> None:
-        self._store = store
+    def __init__(self, repository: MarketKnowledgeRepository) -> None:
+        self._store = repository
 
     def get_company(self, ts_code: str) -> dict[str, Any] | None:
         intelligence = self._store.get_company_intelligence_by_ts_code(ts_code)

@@ -1,4 +1,4 @@
-"""Knowledge Evolution 领域模型契约测试（S4.2-1，plain assert + main()）。
+"""Knowledge Evolution 领域模型契约测试（S4.2-1 + S4.2-2，plain assert + main()）。
 
 运行：
 PYTHONPATH=services/market-data:services/market-intelligence:. \
@@ -14,11 +14,17 @@ PYTHONPATH=services/market-data:services/market-intelligence:. \
   + R5-1：KnowledgeObject 不拥有 Observation（无内嵌 observation 字段）
   + 生命周期状态机 ALLOWED_TRANSITIONS 合法/非法
   + deterministic id 复现（相同输入 → 相同 object_id / revision_id）
+
+S4.2-2（NoopReasoner，冻结未来智能插槽）追加：
+  11. Reasoner 不改变 Candidate（candidate 内容 hash 前后一致；两次 reason 内容 hash 一致）
+  12. Reasoner 替换不影响 Gate（NoopReasoner 与 FutureReasoner 都满足 ReasoningPort，
+      产出的 ProposedRevision 走同一 Gate 输入协议、均被 admit）
 """
 
 from __future__ import annotations
 
 import datetime
+import hashlib
 
 from shanhai_market_data.models import SubjectRef
 
@@ -27,15 +33,22 @@ from shanhai_market_intelligence.evolution import (
     Belief,
     BeliefDelta,
     BeliefStatement,
+    CandidateKnowledgeChange,
     CandidateRef,
+    ChangeKind,
     DeterministicRevisionGate,
     EvidenceRef,
     GateRejectReason,
     KnowledgeObject,
+    NOOP_REASONING_MODE,
+    NoopReasoner,
     ProposedRevision,
+    ReasoningPort,
+    RevisionHypothesis,
     RevisionState,
     assert_transition,
     build_next_version,
+    derive_belief_id,
     derive_object_id,
     derive_revision_id,
 )
@@ -56,6 +69,27 @@ def _belief(belief_id: str = "b1", *, evidence: tuple[EvidenceRef, ...] | None =
         statement=BeliefStatement(dimension="moat", claim="竞争优势下降"),
         evidence_refs=evidence if evidence is not None else (_evidence(),),
     )
+
+
+def _candidate(
+    *, evidence: tuple[EvidenceRef, ...] | None = None
+) -> CandidateKnowledgeChange:
+    return CandidateKnowledgeChange(
+        candidate_id="cand-1",
+        subject=_SUBJECT,
+        change_kind=ChangeKind.new_evidence,
+        hypothesis=RevisionHypothesis(
+            dimension="moat", claim="竞争优势下降", rationale="新公告披露产能扩张放缓"
+        ),
+        evidence_refs=evidence if evidence is not None else (_evidence(),),
+        created_at=_NOW,
+    )
+
+
+def _content_hash(model: object) -> str:
+    """基于 pydantic 稳定 JSON 序列化的内容指纹（frozen model 逐字段等价 → hash 等价）。"""
+    payload = model.model_dump_json()  # type: ignore[attr-defined]
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
 def _proposed(beliefs: tuple[Belief, ...], object_id: str) -> ProposedRevision:
@@ -233,6 +267,103 @@ def test_gate_rejects_missing_evidence_via_schema() -> None:
     print("[OK] Gate：delta 与 beliefs 不一致 → schema_invalid（deterministic 拒）")
 
 
+def test_reasoner_does_not_change_candidate() -> None:
+    """S4.2-2 Case 11：Reasoner 不改变 Candidate（恒等映射，deterministic）。
+
+        CandidateKnowledgeChange → NoopReasoner → ProposedRevision
+
+    断言：
+      - reason() 前后 candidate 内容 hash 不变（reasoner 不 mutate 输入）；
+      - 两次 reason() 产出 ProposedRevision 内容 hash 一致（无随机/时间注入）；
+      - evidence 直通（proposed belief 的 evidence_refs == candidate.evidence_refs）；
+      - confidence 未计算（None，R4-3）；reasoning_mode 标记为 noop。
+    """
+    reasoner = NoopReasoner()
+    assert isinstance(reasoner, ReasoningPort), "NoopReasoner 未满足 ReasoningPort 协议"
+
+    candidate = _candidate()
+    before = _content_hash(candidate)
+    proposed_a = reasoner.reason(candidate)
+    after = _content_hash(candidate)
+    assert before == after, "NoopReasoner 改变了 candidate（应恒等、不 mutate 输入）"
+
+    proposed_b = reasoner.reason(candidate)
+    assert _content_hash(proposed_a) == _content_hash(proposed_b), (
+        "NoopReasoner 非 deterministic：相同 candidate 两次 reason 内容 hash 不一致"
+    )
+
+    (belief,) = proposed_a.proposed_beliefs
+    assert belief.evidence_refs == candidate.evidence_refs, "evidence 未直通（应原样透传）"
+    assert belief.confidence is None, "NoopReasoner 不应计算 confidence（R4-3）"
+    assert belief.statement.dimension == candidate.hypothesis.dimension
+    assert belief.statement.claim == candidate.hypothesis.claim
+    assert proposed_a.reasoning_mode == NOOP_REASONING_MODE
+    assert proposed_a.reasoning_ref is None
+    # belief_id deterministic 派生：与 candidate 独立复现一致
+    assert belief.belief_id == derive_belief_id(candidate, candidate.evidence_refs)
+    print("[OK] Case 11：Reasoner 不改变 Candidate（恒等 + deterministic，内容 hash 一致）")
+
+
+def test_reasoner_swap_does_not_affect_gate() -> None:
+    """S4.2-2 Case 12：Reasoner 替换不影响 Gate（Gate 输入协议稳定、可互换）。
+
+        NoopReasoner ─┐
+                      ├─► RevisionGate.admit（同一协议，均 admit）
+        FutureReasoner┘
+
+    构造一个「未来推理器」stub（改 confidence/reasoning_mode，模拟真实推理器差异），
+    断言它同样满足 ReasoningPort，且 Gate 对两者产出的 ProposedRevision 都能 admit
+    ——Gate 不感知 reasoner 身份，只做 deterministic 校验。
+    """
+
+    class _FutureReasoner:
+        """未来 LLM 推理器占位（S4.2-2 不接 LLM，仅验证协议可互换）。"""
+
+        def reason(self, candidate: CandidateKnowledgeChange) -> ProposedRevision:
+            evidence_refs = candidate.evidence_refs
+            belief = Belief(
+                belief_id=derive_belief_id(candidate, evidence_refs),
+                statement=BeliefStatement(
+                    dimension=candidate.hypothesis.dimension,
+                    claim=candidate.hypothesis.claim,
+                ),
+                evidence_refs=evidence_refs,
+                confidence=0.87,  # 未来推理器可给分；Gate 仍不据此判定
+            )
+            return ProposedRevision(
+                candidate_id=candidate.candidate_id,
+                object_id=derive_object_id(candidate.subject),
+                proposed_beliefs=(belief,),
+                proposed_delta=BeliefDelta(added=(belief.belief_id,)),
+                reasoning_mode="future-llm",
+            )
+
+    assert isinstance(NoopReasoner(), ReasoningPort)
+    assert isinstance(_FutureReasoner(), ReasoningPort)
+
+    candidate = _candidate()
+    gate = DeterministicRevisionGate()
+    triggered_by = CandidateRef(candidate_id=candidate.candidate_id, hypothesis_version=1)
+
+    for reasoner in (NoopReasoner(), _FutureReasoner()):
+        proposed = reasoner.reason(candidate)
+        result = gate.admit(
+            _SUBJECT,
+            None,
+            proposed,
+            triggered_by,
+            as_of_knowledge_at=_NOW,
+            now=_NOW,
+        )
+        assert result.admitted, (
+            f"Gate 拒了 {type(reasoner).__name__} 的产出（协议应稳定）："
+            f"{result.reject_reasons}"
+        )
+        assert result.knowledge_object is not None
+        assert result.knowledge_object.version == 1
+    print("[OK] Case 12：Reasoner 替换不影响 Gate（协议稳定，NoopReasoner 与 Future 均 admit）")
+
+
 def main() -> None:
     test_evidence_ref_must_have_source()
     test_belief_without_evidence_is_invalid()
@@ -244,6 +375,8 @@ def main() -> None:
     test_lifecycle_transitions()
     test_deterministic_ids_reproduce()
     test_gate_rejects_missing_evidence_via_schema()
+    test_reasoner_does_not_change_candidate()
+    test_reasoner_swap_does_not_affect_gate()
     print("\nKnowledge Evolution 领域模型契约测试全部通过 ✅")
 
 

@@ -33,6 +33,7 @@ from shanhai_market_data.models import SubjectRef
 from shanhai_market_intelligence.evolution.evidence import EvidenceRef, _FrozenModel
 from shanhai_market_intelligence.evolution.models import (
     Belief,
+    CandidateKnowledgeChange,
     CandidateRef,
     KnowledgeObject,
     KnowledgeObjectRef,
@@ -79,7 +80,10 @@ class ProposedRevision(_FrozenModel):
     """ReasoningPort 产出的拟修订（Gate 的输入）。
 
     每条 ``proposed_beliefs`` 已在 ``Belief`` 层强制 evidence 非空（evidence-first）；
-    ``reasoning_ref`` 属 M3.7，本步为 None。
+    ``reasoning_ref`` 属 M3.7，本步为 None。``reasoning_mode`` 是 additive marker：
+    记录哪个 reasoner 产出了本提案（``NoopReasoner`` → ``"noop"``），供审计/回放区分
+    「这条认知是机械占位还是真实推理」。它**不**参与 Gate 判定——Gate 对任何 mode 的
+    提案一视同仁做 deterministic 校验（reasoner 可互换，见 S4.2-2 Case 12）。
     """
 
     candidate_id: str
@@ -87,6 +91,7 @@ class ProposedRevision(_FrozenModel):
     proposed_beliefs: tuple[Belief, ...]
     proposed_delta: BeliefDelta
     reasoning_ref: str | None = None
+    reasoning_mode: str | None = None
 
 
 class KnowledgeRevision(_FrozenModel):
@@ -113,6 +118,25 @@ def _digest(payload: object) -> str:
 def derive_object_id(subject: SubjectRef) -> str:
     """跨版本稳定：只由 subject 身份决定（同一 subject 所有版本共享）。"""
     return "ko-" + _digest([subject.entity_type, subject.entity_id])[:32]
+
+
+def derive_belief_id(
+    candidate: CandidateKnowledgeChange, evidence_refs: tuple[EvidenceRef, ...]
+) -> str:
+    """确定性 belief_id：由 (subject, hypothesis 结构, hypothesis_version, evidence 身份集)
+    决定。同一候选 + 同一证据 → 同一 belief_id（可复现、可去重）；reasoner 只是把它
+    恒等派生出来，不注入随机性（守 NoopReasoner deterministic，S4.2-2 Case 11）。
+    """
+    return "b-" + _digest(
+        [
+            candidate.subject.entity_type,
+            candidate.subject.entity_id,
+            candidate.hypothesis.dimension,
+            candidate.hypothesis.claim,
+            candidate.hypothesis_version,
+            _evidence_identity_set(evidence_refs),
+        ]
+    )[:32]
 
 
 def _evidence_identity_set(evidence_refs: tuple[EvidenceRef, ...]) -> list[list[str]]:

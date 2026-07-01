@@ -24,6 +24,7 @@ LLM / Agent / Reasoning / Knowledge Object 物化 / context_snapshot 落表 /
 from shanhai_market_intelligence.assembler import (
     CognitionRefReader,
     ContextAssembler,
+    KnowledgeViewReader,
 )
 from shanhai_market_intelligence.knowledge_view import (
     KnowledgeView,
@@ -53,6 +54,7 @@ __all__ = [
     "MarketContextSnapshot",
     "ContextAssembler",
     "CognitionRefReader",
+    "KnowledgeViewReader",
     "KnowledgeView",
     "build_knowledge_view",
 ]

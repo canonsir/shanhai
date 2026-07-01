@@ -40,9 +40,12 @@ class _FrozenModel(BaseModel):
 class KnowledgeView(_FrozenModel):
     """Context 可消费的认知视图引用（ref-only；ContextAssembler 未来放入 Snapshot）。
 
-    只引用「站在 ``knowledge_at`` 时该 object 处于哪个版本、当时持有哪些 belief_id」，
-    不内嵌 belief 值（值经 KnowledgeObjectStore 回取，本轮不做）。``resolved_version``
-    为 None 表示该时点系统尚无对此 subject 的认知（早于首个 revision）。
+    ``KnowledgeView`` is a deterministic projection (materialized view) of Knowledge
+    Evolution history. It is **not** a knowledge store and does **not** own belief
+    content —— 只引用「站在 ``knowledge_at`` 时该 object 处于哪个版本、当时持有哪些
+    belief_id」，不内嵌 belief 值 / claim / summary / confidence（值经 KnowledgeObjectStore
+    回取，本轮不做）。这条护栏防止它未来被扩成 AI summary cache（Review 建议 2）。
+    ``resolved_version`` 为 None 表示该时点系统尚无对此 subject 的认知（早于首个 revision）。
     """
 
     object_id: str

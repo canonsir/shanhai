@@ -10,6 +10,9 @@ PYTHONPATH=services/market-data:services/market-intelligence:. \
   Case 3  无 financials/news/technical/chip 类按数据种类平铺的容器字段
   Case 4  domain 值对象均 frozen + extra=forbid（不可变认知）
   Case 5  ContextAssembler 骨架抛 NotImplementedError（S1 不落实现，S4 才实现）
+  Case 19 S4.3-2 接缝：ContextAssembler 经注入的 KnowledgeViewReader 端口消费
+          Evolution 认知视图（Store→Resolver→View→Assembler），view 仍不进 frozen
+          snapshot（assemble 保持 NotImplementedError）；无 reader → None
 """
 
 from __future__ import annotations
@@ -29,6 +32,19 @@ from shanhai_market_intelligence import (
     MarketContextSnapshot,
     MarketState,
     ObservationRef,
+    build_knowledge_view,
+)
+from shanhai_market_intelligence.evolution import (
+    Belief,
+    BeliefDelta,
+    BeliefStatement,
+    CandidateRef,
+    DeterministicRevisionGate,
+    EvidenceRef,
+    InMemoryEvolutionStore,
+    KnowledgeResolver,
+    ProposedRevision,
+    derive_object_id,
 )
 
 COGNITION_FIELDS = {
@@ -46,6 +62,13 @@ META_FIELDS = {"snapshot_id", "schema_version", "assembled_at"}
 FORBIDDEN_FLATTENED = {"financials", "news", "technical", "chip", "quotes", "data"}
 
 _NOW = datetime.datetime(2026, 1, 1)
+
+
+class _NoopReadPort:
+    """空 ObservationReadPort stub（本文件无真实 observation，只验证认知视图接缝）。"""
+
+    def query(self, subject, *, knowledge_at, effective_at=None, fact_types=()):
+        return ()
 
 
 def _sample_snapshot(**overrides) -> MarketContextSnapshot:
@@ -123,11 +146,7 @@ def test_value_objects_are_frozen_extra_forbid() -> None:
 def test_assembler_skeleton_raises_not_implemented() -> None:
     """S1 边界：ContextAssembler.assemble 仍是骨架，抛 NotImplementedError（S4 实现）。"""
 
-    class _NoopPort:
-        def query(self, subject, *, knowledge_at, effective_at=None, fact_types=()):
-            return ()
-
-    assembler = ContextAssembler(_NoopPort())
+    assembler = ContextAssembler(_NoopReadPort())
     try:
         assembler.assemble(
             SubjectRef(entity_type="company", entity_id="c1"),
@@ -140,12 +159,88 @@ def test_assembler_skeleton_raises_not_implemented() -> None:
     print("[OK] Case 5：ContextAssembler 骨架抛 NotImplementedError（S1 不落实现）")
 
 
+def test_assembler_consumes_knowledge_view_via_reader() -> None:
+    """Case 19：ContextAssembler 经注入端口消费 Evolution 认知视图（S4.3-2 接缝）。
+
+    端到端组合根（在 context 之外，允许知道两侧）：
+
+        InMemoryEvolutionStore ─ append revision(v1: +b1)
+                 │
+        KnowledgeResolver.resolve_at(subject, knowledge_at)
+                 │
+        build_knowledge_view → KnowledgeView
+                 │  （实现 KnowledgeViewReader 端口）
+        ContextAssembler(knowledge_reader=...).knowledge_view_for(subject, as_of)
+
+    断言：assembler 拿到的 view 的 belief_ids / version / knowledge_at 与 resolver 一致；
+    无 reader 注入时返回 None；view **不进** frozen snapshot（assemble 仍 NotImplementedError）。
+    """
+    subject = SubjectRef(entity_type="company", entity_id="600519")
+    evidence = EvidenceRef(logical_key="lk-1", content_hash="ch-1", captured_at=_NOW)
+    belief = Belief(
+        belief_id="b1",
+        statement=BeliefStatement(dimension="moat", claim="竞争优势下降"),
+        evidence_refs=(evidence,),
+    )
+    object_id = derive_object_id(subject)
+    proposed = ProposedRevision(
+        candidate_id="cand-1",
+        object_id=object_id,
+        proposed_beliefs=(belief,),
+        proposed_delta=BeliefDelta(added=("b1",)),
+    )
+    result = DeterministicRevisionGate().admit(
+        subject, None, proposed,
+        CandidateRef(candidate_id="cand-1", hypothesis_version=1),
+        as_of_knowledge_at=_NOW, now=_NOW,
+    )
+    assert result.admitted and result.revision is not None
+    store = InMemoryEvolutionStore()
+    store.append_revision(result.revision)
+
+    class _ResolverBackedReader:
+        """组合根 adapter：包 Resolver + build_knowledge_view，实现 KnowledgeViewReader。"""
+
+        def __init__(self, store: InMemoryEvolutionStore) -> None:
+            self._resolver = KnowledgeResolver(store)
+
+        def view_for(self, subject: SubjectRef, as_of: AsOf):
+            resolved = self._resolver.resolve_at(subject, as_of.knowledge_at)
+            return build_knowledge_view(resolved)
+
+    as_of = AsOf(effective_at=_NOW, knowledge_at=_NOW)
+
+    # 有 reader：Context 经端口拿到 Evolution 折叠出的认知视图
+    assembler = ContextAssembler(
+        _NoopReadPort(), knowledge_reader=_ResolverBackedReader(store)
+    )
+    view = assembler.knowledge_view_for(subject, as_of)
+    assert view is not None
+    assert view.object_id == object_id
+    assert view.resolved_version == 1
+    assert view.belief_ids == ("b1",)
+    assert view.knowledge_at == _NOW
+
+    # 无 reader：不越界自造认知，返回 None
+    assert ContextAssembler(_NoopReadPort()).knowledge_view_for(subject, as_of) is None
+
+    # view 不进 frozen snapshot：assemble 仍未实现（S4.3-2 只落端口接缝）
+    try:
+        assembler.assemble(subject, as_of)
+    except NotImplementedError:
+        pass
+    else:
+        raise AssertionError("S4.3-2 边界破坏：KnowledgeView 不应折进 snapshot，assemble 应仍 NotImplementedError")
+    print("[OK] Case 19：ContextAssembler 经端口消费 KnowledgeView（consumes not owns，view 不进 snapshot）")
+
+
 def main() -> None:
     test_snapshot_fields_are_exactly_seven_cognition_plus_three_meta()
     test_snapshot_forbids_flattened_data_containers()
     test_snapshot_is_frozen_and_extra_forbid()
     test_value_objects_are_frozen_extra_forbid()
     test_assembler_skeleton_raises_not_implemented()
+    test_assembler_consumes_knowledge_view_via_reader()
     print("\nMarketContextSnapshot ref-based shape 守护测试全部通过 ✅")
 
 

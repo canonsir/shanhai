@@ -12,6 +12,9 @@ PYTHONPATH=services/market-data:services/market-intelligence:. \
           SHANHAI_DATA_MODE）——对 provider 无感知
   Case 4  R1-1 铁律：market-data 源码**绝不** 出现任何 intelligence 概念
           （shanhai_market_intelligence / KnowledgeObject / MarketContextSnapshot）
+  Case 18 D9 反向：Context 侧文件可消费 Evolution 值类型（ResolvedKnowledge），
+          但**禁** import Evolution 机器（EvolutionStore / KnowledgeResolver）
+          —— context consumes, not owns
 """
 
 from __future__ import annotations
@@ -24,9 +27,19 @@ MARKET_INTELLIGENCE = ROOT / "services" / "market-intelligence" / "shanhai_marke
 MARKET_DATA = ROOT / "services" / "market-data" / "shanhai_market_data"
 EVOLUTION = MARKET_INTELLIGENCE / "evolution"
 
+# Context 侧文件（D9「Context MAY consume Knowledge, not own」，Case 18）：可 import
+# Evolution 产出的**值类型**（ResolvedKnowledge），但禁 import Evolution 的**机器**
+# （EvolutionStore / KnowledgeResolver）——Context 不持写入口、不驱动解析，只接成品。
+CONTEXT_SIDE_FILES = {"models.py", "assembler.py", "knowledge_view.py"}
+EVOLUTION_MACHINE_IDENTIFIERS = {
+    "EvolutionStore",
+    "InMemoryEvolutionStore",
+    "KnowledgeResolver",
+}
+
 # evolution/ 禁引用的 context 侧 Snapshot 概念（D9 / R4-1：Knowledge MUST NOT
-# depend on MarketContextSnapshot）。反向（Context MAY consume Knowledge）不在
-# 本轮落地，故不加 context 禁 import evolution 的 case。
+# depend on MarketContextSnapshot）。反向（Context MAY consume Knowledge，且只消费
+# 值类型不持机器）由 Case 18（test_context_consumes_but_does_not_own_evolution）守护。
 SNAPSHOT_IDENTIFIERS = {
     "MarketContextSnapshot",
     "ContextAssembler",
@@ -264,6 +277,40 @@ def test_evolution_does_not_own_observation() -> None:
     print("[OK] R5-1：evolution/ 不拥有 Observation（不 import 存储实现 / Observation DTO）")
 
 
+def test_context_consumes_but_does_not_own_evolution() -> None:
+    """Case 18（D9 反向）：Context 侧只消费 Evolution 值类型，不持有 Evolution 机器。
+
+    Context MAY consume Knowledge（可 import ``ResolvedKnowledge`` 这类值），但 MUST NOT
+    own Evolution 的写入口 / 解析器（``EvolutionStore`` / ``InMemoryEvolutionStore`` /
+    ``KnowledgeResolver``）——否则 Context 会偷偷承担 Evolution 逻辑（Review 点 5）。
+
+    AST 扫 Context 侧文件的 import 名 + 代码标识符（不扫 docstring）。
+    """
+    violations = []
+    for filename in sorted(CONTEXT_SIDE_FILES):
+        path = MARKET_INTELLIGENCE / filename
+        if not path.exists():
+            continue
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        imported: set[str] = set()
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ImportFrom):
+                imported.update(alias.name for alias in node.names)
+            elif isinstance(node, ast.Import):
+                imported.update(alias.name for alias in node.names)
+        bad = sorted(
+            (imported & EVOLUTION_MACHINE_IDENTIFIERS)
+            | (_code_identifiers(path) & EVOLUTION_MACHINE_IDENTIFIERS)
+        )
+        if bad:
+            violations.append((path.relative_to(ROOT), bad))
+
+    assert not violations, (
+        f"Context 侧持有了 Evolution 机器（应只消费值类型，D9 违规）：{violations}"
+    )
+    print("[OK] Case 18：Context 只消费 Evolution 值类型，不持有 Store/Resolver（consumes not owns）")
+
+
 def main() -> None:
     test_market_intelligence_no_upstream_or_sibling_dependencies()
     test_market_intelligence_does_not_define_trading_surface()
@@ -272,6 +319,7 @@ def main() -> None:
     test_evolution_does_not_depend_on_snapshot()
     test_evolution_does_not_import_reasoning_engine()
     test_evolution_does_not_own_observation()
+    test_context_consumes_but_does_not_own_evolution()
     print("\nMarket Intelligence 依赖边界契约测试全部通过 ✅")
 
 

@@ -24,6 +24,10 @@ S4.2-3（InMemoryEvolutionStore，append-only 演化历史）追加：
   13. append-only：save v1 → save v2 → get_history(object) == [v1, v2]
   14. 历史不可变：v1 append 后再 append v2，v1 记录保持不变（frozen + 副本返回）
   15. 不同 object 隔离：company_A / company_B 历史不混
+
+S4.3（Knowledge Reference Resolution，Evolution → Context）追加：
+  16. Evolution → Context reference：Revision → KnowledgeResolver → KnowledgeView（ref-only）
+  17. 历史时点回放：resolve_at(T1) 得 v1；resolve_at(T2) 得 v1+v2（无 current truth）
 """
 
 from __future__ import annotations
@@ -46,11 +50,13 @@ from shanhai_market_intelligence.evolution import (
     GateRejectReason,
     InMemoryEvolutionStore,
     KnowledgeObject,
+    KnowledgeResolver,
     KnowledgeRevision,
     NOOP_REASONING_MODE,
     NoopReasoner,
     ProposedRevision,
     ReasoningPort,
+    ResolvedKnowledge,
     RevisionHypothesis,
     RevisionState,
     assert_transition,
@@ -59,6 +65,7 @@ from shanhai_market_intelligence.evolution import (
     derive_object_id,
     derive_revision_id,
 )
+from shanhai_market_intelligence import KnowledgeView, build_knowledge_view
 
 _NOW = datetime.datetime(2026, 7, 1)
 _SUBJECT = SubjectRef(entity_type="company", entity_id="600519")
@@ -128,17 +135,33 @@ def _revision(
     subject: SubjectRef,
     current: KnowledgeObject | None,
     beliefs: tuple[Belief, ...],
+    *,
+    now: datetime.datetime = _NOW,
+    retired: tuple[str, ...] = (),
 ) -> tuple[KnowledgeRevision, KnowledgeObject]:
-    """走一遍 Gate，返回 (KnowledgeRevision, KnowledgeObject@vN+1)（供 store 测试用）。"""
+    """走一遍 Gate，返回 (KnowledgeRevision, KnowledgeObject@vN+1)（供 store 测试用）。
+
+    ``now`` 决定 revision.created_at（Case 17 历史时点回放需要不同 created_at）；
+    ``retired`` 记入 belief_delta.retired（Case 17 让 v2 显式 retire 旧 belief_id，
+    Resolver 折叠 delta 时据此移除——delta 是演化的可审计事实，非从对象反推）。
+    """
     gate = DeterministicRevisionGate()
     object_id = current.object_id if current is not None else derive_object_id(subject)
+    proposed = ProposedRevision(
+        candidate_id="cand-1",
+        object_id=object_id,
+        proposed_beliefs=beliefs,
+        proposed_delta=BeliefDelta(
+            added=tuple(b.belief_id for b in beliefs), retired=retired
+        ),
+    )
     result = gate.admit(
         subject,
         current,
-        _proposed(beliefs, object_id),
+        proposed,
         CandidateRef(candidate_id="cand-1", hypothesis_version=1),
-        as_of_knowledge_at=_NOW,
-        now=_NOW,
+        as_of_knowledge_at=now,
+        now=now,
     )
     assert result.admitted, f"expected admit, got reasons={result.reject_reasons}"
     assert result.revision is not None and result.knowledge_object is not None
@@ -456,6 +479,98 @@ def test_store_isolates_distinct_objects() -> None:
     print("[OK] Case 15：不同 object 隔离（company_A / company_B 历史不混）")
 
 
+def test_evolution_to_context_reference() -> None:
+    """S4.3 Case 16：Evolution → Context reference（Revision → Resolver → KnowledgeView）。
+
+        KnowledgeRevision → KnowledgeResolver.resolve_at → ResolvedKnowledge
+                                     → build_knowledge_view → KnowledgeView（ref-only）
+
+    断言：
+      - Resolver 从 store 折叠出 ResolvedKnowledge（version/revision_id/live_belief_ids/chain）；
+      - KnowledgeView 是 ResolvedKnowledge 的纯投影（belief_ids == live_belief_ids）；
+      - ref-only：KnowledgeView 无任何 belief 值字段（只 id / 版本引用）。
+    """
+    store = InMemoryEvolutionStore()
+    rev1, v1 = _revision(_SUBJECT, None, (_belief("b1"),))
+    store.append_revision(rev1)
+
+    resolver = KnowledgeResolver(store)
+    resolved = resolver.resolve_at(_SUBJECT, _NOW)
+    assert isinstance(resolved, ResolvedKnowledge)
+    assert resolved.object_id == rev1.object_id
+    assert resolved.resolved_version == 1
+    assert resolved.resolved_revision_id == rev1.revision_id
+    assert resolved.live_belief_ids == ("b1",)
+    assert [r.to_version for r in resolved.revision_chain] == [1]
+
+    view = build_knowledge_view(resolved)
+    assert isinstance(view, KnowledgeView)
+    assert view.object_id == resolved.object_id
+    assert view.subject == _SUBJECT
+    assert view.resolved_version == 1
+    assert view.resolved_revision_id == rev1.revision_id
+    assert view.belief_ids == resolved.live_belief_ids
+    assert view.knowledge_at == _NOW
+    # ref-only：视图不内嵌 belief 值（只 belief_ids）
+    fields = set(KnowledgeView.model_fields)
+    assert "beliefs" not in fields and "belief" not in fields, (
+        f"KnowledgeView 泄漏了 belief 值字段（应 ref-only）：{fields}"
+    )
+    print("[OK] Case 16：Evolution → Context reference（Resolver → ref-only KnowledgeView）")
+
+
+def test_resolve_at_replays_by_knowledge_time() -> None:
+    """S4.3 Case 17：历史时点回放 —— resolve_at(T1)=v1；resolve_at(T2)=v1+v2。
+
+        knowledge_at=T1 → revision v1（live={b1}）
+        knowledge_at=T2 → revision v1+v2（v2 retire b1、add b3 → live={b3}）
+
+    证明「没有 current truth」：认知随 knowledge_at 变化，站在不同时点回看得到不同视图。
+    T0（早于首个 revision）→ 空视图（resolved_version=None）。
+    """
+    t1 = datetime.datetime(2026, 1, 1)
+    t2 = datetime.datetime(2026, 4, 1)
+    store = InMemoryEvolutionStore()
+
+    rev1, v1 = _revision(_SUBJECT, None, (_belief("b1"),), now=t1)
+    # v2：retire b1、新增 b3（模拟「需求增长假设」被「价格战」替代）
+    rev2, _v2 = _revision(
+        _SUBJECT,
+        v1,
+        (_belief("b3", evidence=(_evidence("lk-3", "ch-3"),)),),
+        now=t2,
+        retired=("b1",),
+    )
+    store.append_revision(rev1)
+    store.append_revision(rev2)
+
+    resolver = KnowledgeResolver(store)
+
+    # 站在 T0（早于任何 revision）：系统尚无认知
+    at_t0 = resolver.resolve_at(_SUBJECT, datetime.datetime(2025, 12, 31))
+    assert at_t0.resolved_version is None
+    assert at_t0.resolved_revision_id is None
+    assert at_t0.live_belief_ids == ()
+    assert at_t0.revision_chain == ()
+
+    # 站在 T1：只看到 v1
+    at_t1 = resolver.resolve_at(_SUBJECT, t1)
+    assert at_t1.resolved_version == 1
+    assert at_t1.live_belief_ids == ("b1",)
+    assert [r.to_version for r in at_t1.revision_chain] == [1]
+
+    # 站在 T2：看到 v1+v2；b1 已 retire、b3 生效（delta 折叠）
+    at_t2 = resolver.resolve_at(_SUBJECT, t2)
+    assert at_t2.resolved_version == 2
+    assert at_t2.resolved_revision_id == rev2.revision_id
+    assert at_t2.live_belief_ids == ("b3",), "v2 应 retire b1、add b3（折叠后只剩 b3）"
+    assert [r.to_version for r in at_t2.revision_chain] == [1, 2]
+
+    # deterministic：同一 knowledge_at 两次 resolve 结果一致
+    assert resolver.resolve_at(_SUBJECT, t2) == at_t2
+    print("[OK] Case 17：历史时点回放（resolve_at(T1)=v1；resolve_at(T2)=v1+v2，无 current truth）")
+
+
 def main() -> None:
     test_evidence_ref_must_have_source()
     test_belief_without_evidence_is_invalid()
@@ -472,6 +587,8 @@ def main() -> None:
     test_store_is_append_only_history()
     test_store_history_is_immutable()
     test_store_isolates_distinct_objects()
+    test_evolution_to_context_reference()
+    test_resolve_at_replays_by_knowledge_time()
     print("\nKnowledge Evolution 领域模型契约测试全部通过 ✅")
 
 

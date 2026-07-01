@@ -25,6 +25,10 @@ from shanhai_market_intelligence.assembler import (
     CognitionRefReader,
     ContextAssembler,
 )
+from shanhai_market_intelligence.knowledge_view import (
+    KnowledgeView,
+    build_knowledge_view,
+)
 from shanhai_market_intelligence.models import (
     AsOf,
     CognitionRef,
@@ -49,4 +53,6 @@ __all__ = [
     "MarketContextSnapshot",
     "ContextAssembler",
     "CognitionRefReader",
+    "KnowledgeView",
+    "build_knowledge_view",
 ]

@@ -12,7 +12,10 @@ S4.2-2 范围：Reasoner Slot —— ``ReasoningPort`` Protocol + deterministic
 ``NoopReasoner``（冻结未来智能插槽；不推理、不接 LLM）。
 S4.2-3 范围：Evolution Store —— ``EvolutionStore`` Protocol + append-only
 ``InMemoryEvolutionStore``（只 append + get_history；无 update/delete、无智能查询）。
-**不做** SQLite / Repository / 真实 Reasoner / LLM / Observation adapter / iFinD / Wind。
+S4.3 范围：Knowledge Reference Resolution —— ``KnowledgeResolver.resolve_at``
+把 revision 历史折叠成某时点的 ``ResolvedKnowledge``（ref-only 认知视图，供 Context
+消费）；唯一入口是 ``resolve_at(knowledge_at)``，无 current/latest/best、无 ranking/
+conflict。**不做** SQLite / Repository / 真实 Reasoner / LLM / Observation adapter / iFinD / Wind。
 
 核心资产命名只有 Evidence / Knowledge / Revision / Context / Decision；禁
 KnowledgeSummary/KnowledgeCard/Insight/AIReport 这类 UI/输出层概念（S4.1 Review 点 3）。
@@ -47,6 +50,11 @@ from shanhai_market_intelligence.evolution.reasoner import (
     NOOP_REASONING_MODE,
     NoopReasoner,
     ReasoningPort,
+)
+from shanhai_market_intelligence.evolution.resolver import (
+    KnowledgeResolver,
+    ResolvedKnowledge,
+    RevisionRef,
 )
 from shanhai_market_intelligence.evolution.revision import (
     ALLOWED_TRANSITIONS,
@@ -102,4 +110,8 @@ __all__ = [
     # evolution store (S4.2-3)
     "EvolutionStore",
     "InMemoryEvolutionStore",
+    # knowledge reference resolution (S4.3)
+    "KnowledgeResolver",
+    "ResolvedKnowledge",
+    "RevisionRef",
 ]

@@ -19,6 +19,11 @@ S4.2-2（NoopReasoner，冻结未来智能插槽）追加：
   11. Reasoner 不改变 Candidate（candidate 内容 hash 前后一致；两次 reason 内容 hash 一致）
   12. Reasoner 替换不影响 Gate（NoopReasoner 与 FutureReasoner 都满足 ReasoningPort，
       产出的 ProposedRevision 走同一 Gate 输入协议、均被 admit）
+
+S4.2-3（InMemoryEvolutionStore，append-only 演化历史）追加：
+  13. append-only：save v1 → save v2 → get_history(object) == [v1, v2]
+  14. 历史不可变：v1 append 后再 append v2，v1 记录保持不变（frozen + 副本返回）
+  15. 不同 object 隔离：company_A / company_B 历史不混
 """
 
 from __future__ import annotations
@@ -39,7 +44,9 @@ from shanhai_market_intelligence.evolution import (
     DeterministicRevisionGate,
     EvidenceRef,
     GateRejectReason,
+    InMemoryEvolutionStore,
     KnowledgeObject,
+    KnowledgeRevision,
     NOOP_REASONING_MODE,
     NoopReasoner,
     ProposedRevision,
@@ -115,6 +122,27 @@ def _commit(current: KnowledgeObject | None, beliefs: tuple[Belief, ...]) -> Kno
     assert result.admitted, f"expected admit, got reasons={result.reject_reasons}"
     assert result.knowledge_object is not None
     return result.knowledge_object
+
+
+def _revision(
+    subject: SubjectRef,
+    current: KnowledgeObject | None,
+    beliefs: tuple[Belief, ...],
+) -> tuple[KnowledgeRevision, KnowledgeObject]:
+    """走一遍 Gate，返回 (KnowledgeRevision, KnowledgeObject@vN+1)（供 store 测试用）。"""
+    gate = DeterministicRevisionGate()
+    object_id = current.object_id if current is not None else derive_object_id(subject)
+    result = gate.admit(
+        subject,
+        current,
+        _proposed(beliefs, object_id),
+        CandidateRef(candidate_id="cand-1", hypothesis_version=1),
+        as_of_knowledge_at=_NOW,
+        now=_NOW,
+    )
+    assert result.admitted, f"expected admit, got reasons={result.reject_reasons}"
+    assert result.revision is not None and result.knowledge_object is not None
+    return result.revision, result.knowledge_object
 
 
 def test_evidence_ref_must_have_source() -> None:
@@ -364,6 +392,70 @@ def test_reasoner_swap_does_not_affect_gate() -> None:
     print("[OK] Case 12：Reasoner 替换不影响 Gate（协议稳定，NoopReasoner 与 Future 均 admit）")
 
 
+def test_store_is_append_only_history() -> None:
+    """S4.2-3 Case 13：append-only —— save v1 → save v2 → history == [v1, v2]（有序）。"""
+    store = InMemoryEvolutionStore()
+    rev1, v1 = _revision(_SUBJECT, None, (_belief("b1"),))
+    rev2, _v2 = _revision(
+        _SUBJECT, v1, (_belief("b1"), _belief("b3", evidence=(_evidence("lk-3", "ch-3"),)))
+    )
+    store.append_revision(rev1)
+    store.append_revision(rev2)
+
+    history = store.get_history(rev1.object_id)
+    assert [r.to_version for r in history] == [1, 2], history
+    assert history[0] == rev1 and history[1] == rev2
+    # 结构性 append-only：没有 update/delete 入口（比运行时校验更强）
+    assert not hasattr(store, "update_revision"), "EvolutionStore 不应有 update_revision"
+    assert not hasattr(store, "delete_revision"), "EvolutionStore 不应有 delete_revision"
+    # 也不做智能查询（真值选择 / 冲突消解属未来 Evolution Policy）
+    for banned in ("find_best_belief", "latest_truth", "resolve_conflict"):
+        assert not hasattr(store, banned), f"EvolutionStore 不应有智能查询 {banned}"
+    print("[OK] Case 13：append-only（history==[v1,v2]，无 update/delete/智能查询）")
+
+
+def test_store_history_is_immutable() -> None:
+    """S4.2-3 Case 14：历史不可变 —— append v2 后 v1 记录保持不变。"""
+    store = InMemoryEvolutionStore()
+    rev1, v1 = _revision(_SUBJECT, None, (_belief("b1"),))
+    store.append_revision(rev1)
+
+    snapshot_before = _content_hash(store.get_history(rev1.object_id)[0])
+
+    rev2, _v2 = _revision(_SUBJECT, v1, (_belief("b1"),))
+    store.append_revision(rev2)
+
+    history = store.get_history(rev1.object_id)
+    snapshot_after = _content_hash(history[0])
+    assert snapshot_before == snapshot_after, "append v2 改变了 v1 历史记录（应不可变）"
+
+    # get_history 返回副本：外部改动不污染内部历史
+    history.append(rev1)
+    assert len(store.get_history(rev1.object_id)) == 2, "get_history 未返回副本（内部被污染）"
+    print("[OK] Case 14：历史不可变（append v2 后 v1 记录不变；get_history 返回副本）")
+
+
+def test_store_isolates_distinct_objects() -> None:
+    """S4.2-3 Case 15：不同 object 隔离 —— company_A / company_B 历史不混。"""
+    subject_a = SubjectRef(entity_type="company", entity_id="600519")
+    subject_b = SubjectRef(entity_type="company", entity_id="000001")
+    store = InMemoryEvolutionStore()
+
+    rev_a, _ = _revision(subject_a, None, (_belief("ba"),))
+    rev_b, _ = _revision(subject_b, None, (_belief("bb"),))
+    store.append_revision(rev_a)
+    store.append_revision(rev_b)
+
+    assert rev_a.object_id != rev_b.object_id, "两个 subject 的 object_id 应不同"
+    history_a = store.get_history(rev_a.object_id)
+    history_b = store.get_history(rev_b.object_id)
+    assert history_a == [rev_a], "company_A 历史混入了他者"
+    assert history_b == [rev_b], "company_B 历史混入了他者"
+    # 未知 object 返回空 list（不 raise）
+    assert store.get_history("ko-unknown") == []
+    print("[OK] Case 15：不同 object 隔离（company_A / company_B 历史不混）")
+
+
 def main() -> None:
     test_evidence_ref_must_have_source()
     test_belief_without_evidence_is_invalid()
@@ -377,6 +469,9 @@ def main() -> None:
     test_gate_rejects_missing_evidence_via_schema()
     test_reasoner_does_not_change_candidate()
     test_reasoner_swap_does_not_affect_gate()
+    test_store_is_append_only_history()
+    test_store_history_is_immutable()
+    test_store_isolates_distinct_objects()
     print("\nKnowledge Evolution 领域模型契约测试全部通过 ✅")
 
 

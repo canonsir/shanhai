@@ -1,6 +1,6 @@
 # ADR 0020：Knowledge Evolution Layer（从「派生信念」进入「可演化、可追溯的解释性认知」）
 
-状态：**提案中（Proposed）** —— 三项框架裁决经 Review Gate 确认（见 §3 D1–D3）；详细契约（Knowledge Object / Revision / Evidence Binding / Evolution Pipeline / Snapshot 边界）以 [M3.4 S4.0 Knowledge Evolution Contract Design](../design/m3.4-knowledge-evolution-contract.md) 承载，待本轮 Review Gate 批准。**本 ADR 属 S4.0 Design Gate，doc-only：不写实现、不接 LLM、不接 iFinD、不改 schema。**
+状态：**已采纳（Accepted）** —— 三项框架裁决（D1–D3）+ KnowledgeObject 层细化（D4–D8）经 Review Gate 批准（"✅ ADR0020 Accepted / ✅ S4.0 Contract Accepted / 进入 S4.1 Implementation Design"）。详细契约见 [M3.4 S4.0 Knowledge Evolution Contract Design](../design/m3.4-knowledge-evolution-contract.md)（Contract Accepted）。批准同时追加三项冻结点，见 [§修订记录 R4](#修订记录-r4revision-log)（含新增 **D9** 引用方向不变量）。**本 ADR 仍 doc-only：不写实现、不接 LLM、不接 iFinD、不改 schema；实现前继续 Review Gate（下一阶段 = S4.1 Implementation Design，仍不写代码）。**
 日期：2026-07-01
 目标版本：v0.3.0
 里程碑：Milestone 3 — Market Intelligence Platform Alpha（S4 = Knowledge Evolution 设计阶段）
@@ -168,6 +168,7 @@ Knowledge Revision（vN → vN+1）   新版本 append，evidence-bound，禁覆
 
 - **LLM 只在中间推理步**，且经 `ReasoningPort` 注入；它消费 `Candidate Knowledge Change + Observation 证据`，产出**拟修订提案**，**不写** KnowledgeObject、**不生成** evidence。
 - **Revision Gate 是 KnowledgeObject 的唯一写入口**（对齐 ADR 0017 Decision E / ADR 0018 D4）：校验每条 belief 的 evidence_refs 非空且指向真实 observation；**只固化、不创作**——禁止 gate 携带 LLM 生成的自由文本作为信念内容载体（继承「禁 LLM Summary 作 Promotion 内容生成器」）。
+- **Revision Gate 必须 deterministic（R4-2）**：Gate 只做**机械可判定**的校验——`evidence exists? / schema valid? / version conflict? / provenance complete?`；**禁止**做需要理解/判断的评估——`is this belief reasonable? / is this company good?`。后者属 Reasoning Engine（M3.7）。定性：**Reasoning 创造候选，RevisionGate 验证候选**；二者职责严格分离（详见 §3 D9 前文与实现设计）。
 - **Candidate Knowledge Change ≠ Revision**：候选是「假设」，Revision 是「经证据校验后固化的版本」。二者不同生命周期，禁跳过 pipeline 直达 Revision。
 
 ### D7 — Knowledge Revision = 版本链（append-only），禁止覆盖
@@ -198,6 +199,23 @@ KnowledgeObject@v1 ──previous_version──◄ KnowledgeObject@v2 ──prev
 - **Evolution 永不读/写 Snapshot**：pipeline 只消费 Observation、产出 KnowledgeObject Revision；Snapshot 是下游只读消费者。
 - 给定 `as_of.knowledge_at`，Snapshot 确定性地引用「当时生效的 KnowledgeObject 版本」——Evolution 的版本链 + Observation 回放共同保证 Snapshot 可复现。
 
+### D9 — 引用方向不变量：Knowledge MAY be consumed by Context；MUST NOT depend on Snapshot（R4-1）
+
+固化 Knowledge Evolution 与 Context Layer 之间的**单向引用方向**，防止认知资产反向依赖视图：
+
+```
+KnowledgeObject（认知资产，本层产出）
+        │
+        ▼   Context Layer MAY consume（ContextAssembler 读取 KnowledgeObject，ref-based）
+MarketContextSnapshot（视图，ADR 0019 D3/D6）
+
+禁止反向：KnowledgeObject / Knowledge Evolution ──✗──► MarketContextSnapshot
+```
+
+- **Knowledge Evolution MAY be consumed by Context Layer**：`ContextAssembler` 可读取 KnowledgeObject 的特定版本并 ref-based 引用（D8）。
+- **Knowledge Evolution MUST NOT depend on Context Snapshot**：`KnowledgeObject` / pipeline（ChangeDetector / RevisionGate / Revision）**禁止** import、读取或依赖 `MarketContextSnapshot`。
+- 原因：**Snapshot 是视图（view），KnowledgeObject 是认知资产（asset）**。依赖方向必须 `Knowledge → Context`，不能反过来——否则认知资产会被瞬时视图污染，且形成循环依赖。此不变量由 AST 校验守护（实现期落地）。
+
 ## 4. 非目标（Non-goals，S4.0 全程禁止）
 
 - ❌ 任何实现代码（本 ADR 与契约稿均 doc-only；实现前继续 Review Gate）
@@ -225,6 +243,8 @@ runtime-kernel ─► reasoning-engine ─► market-intelligence ─► market-
 - LLM 唯一入口 = Evolution Pipeline 的 reasoning 步（经 ReasoningPort），禁 Observation→LLM→Knowledge 直连
 - KnowledgeObject 唯一写入口 = Revision Gate；beliefs 必须 evidence-bound
 - Observation 永不反向知道 KnowledgeObject；Snapshot 永不触发 Evolution 推理
+- Knowledge Evolution MAY be consumed by Context Layer；MUST NOT depend on MarketContextSnapshot（D9，R4-1）
+- RevisionGate 只做 deterministic 校验（evidence/schema/version/provenance），禁 reasonableness/quality 判断（R4-2）
 - 版本链 append-only：禁覆盖、禁删除旧版本
 ```
 
@@ -258,7 +278,7 @@ runtime-kernel ─► reasoning-engine ─► market-intelligence ─► market-
 
 ## 影响
 
-- 新增本规划 ADR（Proposed）+ [S4.0 契约设计稿](../design/m3.4-knowledge-evolution-contract.md)，**不新增/修改任何代码、schema、依赖**。
+- 新增本 ADR（Accepted）+ [S4.0 契约设计稿](../design/m3.4-knowledge-evolution-contract.md)（Contract Accepted），**不新增/修改任何代码、schema、依赖**。
 - 明确 ADR 0019 KnowledgeObject 层的语义（interpreted / evidence-bound / versioned），为其未来实现（里程碑经 Review 确认，reasoning 部分归 M3.7）冻结边界。
 - 不触碰 ADR 0019 已冻结的 deterministic Knowledge / ContextAssembler / Snapshot（ref-based / deterministic view）。
 - 不触碰本阶段「暂不开发」清单（实时行情 / 交易 / 自动交易 / 量化 / 回测）。
@@ -271,3 +291,19 @@ runtime-kernel ─► reasoning-engine ─► market-intelligence ─► market-
 - **把解释性推理塞进 ContextAssembler**：推翻 R1-4、污染 deterministic 回放地基，不采纳；解释只发生在 Evolution pipeline，Snapshot 保持 deterministic（D2/D8）。
 - **LLM/ReasoningPort 落在 market-intelligence 内**：把推理器拉进认知层，违反 ADR 0011「不直调模型」与 R1 依赖方向，不采纳；LLM 归 reasoning-engine，evolution 侧只留 ReasoningPort 接口（D3）。
 - **把 Knowledge Evolution 并入 ADR 0019**：0019 已 Contract Accepted 且聚焦 deterministic Context，混入会范围爆炸并模糊「事实/解释」边界，不采纳；分立本 ADR（D1）。
+
+## 修订记录 R4（Revision Log）
+
+**R4 — 2026-07-01，S4.0 Review（"Review Gate 通过，批准进入 S4.1 Implementation Design"）**
+
+Review 批准 ADR 0020 转 **Accepted** 与 S4.0 Contract Accepted，同时在进入实现设计前追加三项冻结点（非阻塞，随本轮记录并入正文对应处）：
+
+| # | 冻结点 | 决定 | 落点 |
+|--|--|--|--|
+| R4-1 | **引用方向不变量** | 新增 **D9**：Knowledge Evolution **MAY** be consumed by Context Layer；**MUST NOT** depend on `MarketContextSnapshot`。Snapshot 是视图、KnowledgeObject 是认知资产，依赖方向只能 `Knowledge → Context`，禁反向（AST 校验守护）。 | §3 D9 / §5 不变量 |
+| R4-2 | **RevisionGate 保持 deterministic** | RevisionGate 只做机械可判定校验（`evidence exists / schema valid / version conflict / provenance complete`）；禁做需要理解的判断（`is this belief reasonable / is this company good`）——后者属 Reasoning Engine。定性：**Reasoning 创造候选，RevisionGate 验证候选**。 | §3 D6 铁律 / §5 不变量 |
+| R4-3 | **暂不设计 confidence 聚合算法** | 保持 O4 开放不提前锁定。未来 confidence 来源可能含 `source reliability + reasoning confidence + historical accuracy + market validation`，现在设计易锁死。 | S4.0 契约稿 §8 O4 |
+
+**执行节奏（Review 指令）**：`进入 S4.1 Implementation Design；⛔ 暂不写代码 / ⛔ 暂不接数据源 / ⛔ 暂不申请 iFinD token`。下一阶段产出 [S4.1 Implementation Design](../design/s4.1-knowledge-evolution-implementation-design.md)（doc-only），经 Review 通过后再进入第一段 Knowledge Evolution runtime 实现。
+
+**数据接入顺序（Review 重申）**：`M3.3 Persistence ✅ → M3.4 Context ✅ → S4 Knowledge Evolution 设计 ✅ → S4.1 Evolution runtime → Data Provider Layer → iFinD/Wind/免费数据接入`。现在接 iFinD 会得到 `iFinD JSON → 业务代码 → LLM` 的返工路径；正确形态是 `任何数据源 → Observation → Evolution → Reasoning`，数据源只是插件。

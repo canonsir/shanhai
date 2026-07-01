@@ -12,9 +12,13 @@ from shanhai_market_data.ports.observation_reader import (
     Observation,
     ObservationReadPort,
 )
+from shanhai_market_data.ports.sqlite_observation_reader import (
+    SQLiteObservationReadPort,
+)
 
 __all__ = [
     "Observation",
     "ObservationReadPort",
     "InMemoryObservationReadPort",
+    "SQLiteObservationReadPort",
 ]

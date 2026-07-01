@@ -48,7 +48,7 @@ Milestone 3 — Market Intelligence Platform Alpha 🚧
  +-- M3.x Semantic Vocabulary Enhancement ⏳ Planned（Knowledge Vocabulary Layer：predicate → display_name → description；doc-only 登记，不改 MarketFact）
  +-- M3.4 Market Intelligence Context Layer 🧭 Contract Accepted + R1 / Next（ADR 0019 + 修订 R1；定义「AI 在某个时间点应拥有什么市场认知」：Observation≠Knowledge 四层分层 / bitemporal as_of{effective_at,knowledge_at} 历史认知回放 / MarketContextSnapshot ref-based deterministic view 首版不落库 / 独立 services/market-intelligence / additive ObservationReadPort（原 KnowledgeReadPort，R1 改名）不改冻结 9 方法。S1 domain skeleton 待 Review Gate 批准开工）
  +-- M3.5 Web Platform ⏳ Not started（原 M3.4 顺延；Bun + Next.js + React + Tailwind + Rspack；apps/{api,console,worker}；定位 Bloomberg 公司百科 + AI Research Notebook）
- +-- M3.6 Data Provider Layer 🧭 Contract Design（ADR 0021 Proposed + M3.6 设计说明；统一 Observation 而非统一 Provider / Observation≈iFinD 稳定子集非 =iFinD DTO / provider 吐草稿+共享 ingestion pipeline 定身份 / 6 条 Provider Boundary / canonical ObservationProvider（M3.2 PublicMarketDataProvider 标 legacy）/ 免费默认 SHANHAI_DATA_PROVIDER=mock|akshare，增强=ifind / 序列 M3.6.0 Contract→M3.6.1 Mock→M3.6.2 ingestion→M3.6.3 iFinD→M3.6.4 akshare，先 Mock 再 iFinD。doc-only，实现待 Review Gate）
+ +-- M3.6 Data Provider 🧭 Design（ADR 0021 Proposed + M3.6 设计说明；统一 Observation 而非统一 Provider；canonical ObservationProvider 契约 + 共享 ingestion pipeline 定身份 + Data Provider Boundary 6 条；先 Mock 再 iFinD：M3.6.0 Contract → 6.1 Mock → 6.2 ingestion → 6.3 iFinD → 6.4 akshare；doc-only 待 Review）
  +-- M3.7 Reasoning Engine ⏳ Planned（AI cognition → feedback loop → knowledge evolution）
  |
  +-- Runtime / Memory / Evolution / Trading ⛔ Not in scope
@@ -201,15 +201,10 @@ Milestone 3 — Market Intelligence Platform Alpha 🚧
 - 第一版定位：「Bloomberg 公司百科 + AI Research Notebook」。
 - 禁止：dashboard / 大屏 / K 线 / 智能交易页面。
 
-### M3.6 Data Provider Layer 🧭 Contract Design（ADR 0021 Proposed，2026-07-01）
-- **定位**：认知链路最上游入口层。外部数据源（iFinD/Wind/akshare/自爬）**均属 Data Provider，不属 Market Intelligence，不属 Knowledge Evolution**；进入系统后必须统一成 `Observation`。链路：`External Data Sources → Data Provider Layer → Market Data Observation → Knowledge Evolution → Context`。
-- **核心裁决（ADR 0021）**：**统一 Observation 而非统一 Provider**（下游只认 Observation，vendor 可替换，禁 provider DTO 泄漏到 Knowledge/Context）；`Observation ≈ iFinD 信息模型稳定子集`（**非** `Observation = iFinD DTO`）；归一化集中到共享 ingestion pipeline（provider 只吐草稿，`content_hash/logical_key` 由 pipeline 算，复用已有 `record_many`，零 schema 改动）；新建 canonical `ObservationProvider`（不复用被 legacy 占用的 `MarketDataProvider` 名），M3.2 `PublicMarketDataProvider`/acquisition 标 legacy 渐迁。
-- **Data Provider Boundary（6 条冻结点，ADR 0021 D7）**：① 只产 Observation ② 不产 Knowledge ③ 不调 LLM ④ 不访问 Evolution ⑤ 可替换 ⑥ credential 配置化。
-- **配置策略**：免费默认 `SHANHAI_DATA_PROVIDER=mock`（或 `=akshare`，无 token 即可跑）；增强 `=ifind` + `IFIND_APP_KEY`/`IFIND_SECRET`（credential 只经 env）；多 provider primary/fallback 未来登记方向、本轮不实现。Context 层对 `SHANHAI_DATA_PROVIDER` 无感知（沿用 R1-3，禁 `if source == "ifind"`）。
-- **子阶段序列（先 Mock 再 iFinD）**：`M3.6.0 Provider Contract → M3.6.1 MockProvider → M3.6.2 Observation ingestion pipeline → M3.6.3 iFinD Adapter → M3.6.4 akshare Adapter → M3.7 Reasoning Engine`。M3.6.2 完成即验证 `真实/假数据 → Observation → Evolution → Context` 链路（验证链路，非验证 iFinD SDK）。
-- **文档**：[ADR 0021 — Data Provider Layer](../架构决策记录/0021-Data-Provider-Layer.md)（Proposed）+ [M3.6 设计说明](../design/m3.6-data-provider-layer-contract.md)（Contract Design）。**doc-only：本阶段不写实现、不接 iFinD、不申请 token、不改 schema；实现前继续 Review Gate。**
-- **iFinD token**：M3.6.3 阶段（先经 M3.6.0/1/2 打通链路）再接；现在接会破坏架构（临时 schema → 未来推倒）。
-- **历史记录（ADR 0019 O5 前描述，保留）**：早期 M3.6 曾表述为 `SHANHAI_DATA_MODE=free/premium/mixed` 装配；ADR 0021 细化为 per-provider `SHANHAI_DATA_PROVIDER` + 统一 Observation 契约，语义一致（mode 收敛为 provider 选择）。
+### M3.6 Data Provider 🧭 Design（Free → Premium）
+- **定位**：在 Context Layer 契约稳定后，把数据源分层为 `Data Provider Interface → Free（akshare/efinance/baostock/public API）| Premium（iFinD/Wind/Tushare Pro/Broker API）`。Repository 不知道来源（源信息只在 `SourceRef`），经 `SHANHAI_DATA_MODE=free/premium/mixed` 装配。
+- **iFinD token**：到「财务历史导入 / 公司画像初始化 / 行业产业链构建 / 一致预期 / 历史事件库」阶段再接；现在接会破坏架构（临时 schema → 未来推倒）。
+- **M3.6 设计阶段进入（[ADR 0021](../架构决策记录/0021-Data-Provider-Layer.md) Proposed + [M3.6 设计说明](../design/m3.6-data-provider-layer-design.md)，2026-07-01）**：S1–S4.3 内部认知闭环已收口（`Observation → ObservationReadPort → Evolution → KnowledgeResolver → KnowledgeView → ContextAssembler`，全程 mock/内存事实），据此**解冻** S4.2/S4.3 的「不接 iFinD/Wind/akshare」阶段禁令，进入 M3.6 Data Provider Layer 设计。核心裁决（doc-only）：**统一 Observation 而非统一 Provider**（外部源结构可异，进 ShanHai 必统一成 `Observation`，换源不影响 Knowledge/Context/Decision）；iFinD 是优先源但**非系统依赖**，`iFinDProvider` 只是可替换 adapter；`Observation ≈ iFinD 信息模型的稳定子集`（**不冻结成 `Observation = iFinD DTO`**）。**Data Provider Boundary（6 条冻结点）**：provider 只产 Observation / 不产 Knowledge / 不调 LLM / 不访问 Evolution / 可替换 / credential 配置化。归一化到 Observation（算 `content_hash`/`logical_key`、定身份）发生在**共享 ingestion pipeline** 一处，provider 只吐 `ObservationDraft`（无身份）。canonical 写侧契约命名 **`ObservationProvider`**（避开 legacy `MarketDataProvider` 撞名）；M3.2 `PublicMarketDataProvider` + `acquisition.py` 保留为 legacy 已验证路径**渐迁**（不推倒、不破 11 套测试）。配置：默认免费 `SHANHAI_DATA_PROVIDER=mock|akshare`，增强 `=ifind`（`IFIND_APP_KEY/SECRET` 环境注入）。子阶段序列 **`M3.6.0 Provider Contract → M3.6.1 MockProvider → M3.6.2 Observation ingestion pipeline → M3.6.3 iFinD Adapter → M3.6.4 akshare Adapter → M3.7 Reasoning Engine`**，**先 Mock 再 iFinD**（先验证 `真实数据 → Observation → Evolution → Context` 链路，非验证 iFinD SDK）。**本轮 doc-only**：不写实现 / 不建 provider 目录 / 不接任何源 / 不申请 token；M3.6.0 骨架待 Review 批准后开工。
 
 ### M3.7 Reasoning Engine ⏳ Planned
 - `MarketContextSnapshot → ReasoningInput → LLM → Decision → Feedback → Knowledge Evolution`。AI cognition + feedback loop 在此闭环。

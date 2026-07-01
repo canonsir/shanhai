@@ -22,6 +22,21 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 MARKET_INTELLIGENCE = ROOT / "services" / "market-intelligence" / "shanhai_market_intelligence"
 MARKET_DATA = ROOT / "services" / "market-data" / "shanhai_market_data"
+EVOLUTION = MARKET_INTELLIGENCE / "evolution"
+
+# evolution/ 禁引用的 context 侧 Snapshot 概念（D9 / R4-1：Knowledge MUST NOT
+# depend on MarketContextSnapshot）。反向（Context MAY consume Knowledge）不在
+# 本轮落地，故不加 context 禁 import evolution 的 case。
+SNAPSHOT_IDENTIFIERS = {
+    "MarketContextSnapshot",
+    "ContextAssembler",
+    "AsOf",
+    "MarketState",
+    "CognitionState",
+    "CognitionRef",
+    "ObservationRef",
+    "KnowledgeRef",
+}
 
 FORBIDDEN_IMPORTS = {
     "shanhai_runtime_kernel",
@@ -169,11 +184,94 @@ def test_market_data_never_references_intelligence() -> None:
     print("[OK] market-data 源码不引用任何 intelligence 概念（R1-1 铁律）")
 
 
+def test_evolution_does_not_depend_on_snapshot() -> None:
+    """D9（R4-1）：Knowledge Evolution MUST NOT depend on MarketContextSnapshot。
+
+    evolution/ 禁 import context 侧 models（``shanhai_market_intelligence.models``）
+    与 assembler，禁在代码里引用 Snapshot 概念标识符（AST，不扫 docstring）。
+    """
+    if not EVOLUTION.exists():
+        print("[SKIP] evolution/ 尚未建立")
+        return
+    violations = []
+    for path in EVOLUTION.rglob("*.py"):
+        bad_idents = _code_identifiers(path) & SNAPSHOT_IDENTIFIERS
+        text = path.read_text(encoding="utf-8")
+        tree = ast.parse(text)
+        bad_imports = set()
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ImportFrom) and node.module:
+                mod = node.module
+                if mod in {
+                    "shanhai_market_intelligence.models",
+                    "shanhai_market_intelligence.assembler",
+                }:
+                    bad_imports.add(mod)
+        bad = sorted(bad_idents | bad_imports)
+        if bad:
+            violations.append((path.relative_to(ROOT), bad))
+
+    assert not violations, f"evolution/ 依赖了 context 侧 Snapshot 概念（D9 违规）：{violations}"
+    print("[OK] D9：evolution/ 不依赖 MarketContextSnapshot / context 侧概念")
+
+
+def test_evolution_does_not_import_reasoning_engine() -> None:
+    """ADR 0020 D3：evolution/ 只依赖 ReasoningPort（Protocol），不 import reasoning-engine。"""
+    if not EVOLUTION.exists():
+        print("[SKIP] evolution/ 尚未建立")
+        return
+    forbidden = {"shanhai_reasoning_engine"}
+    violations = []
+    for path in EVOLUTION.rglob("*.py"):
+        bad = _imports(path) & forbidden
+        if bad:
+            violations.append((path.relative_to(ROOT), sorted(bad)))
+
+    assert not violations, f"evolution/ import 了 reasoning-engine：{violations}"
+    print("[OK] D3：evolution/ 不 import reasoning-engine")
+
+
+def test_evolution_does_not_own_observation() -> None:
+    """R5-1：evolution 不拥有 Observation——禁 import 存储实现 / 内嵌 observation 值。
+
+    evolution 触达 market-data 只经 ``ObservationReadPort``（后续步注入）；本步连
+    port 都不接。断言 evolution/ 源码**不 import** 任何存储实现模块，也不 import
+    ``Observation`` DTO（证据只经 EvidenceRef 引用身份）。
+    """
+    if not EVOLUTION.exists():
+        print("[SKIP] evolution/ 尚未建立")
+        return
+    forbidden_modules = {
+        "shanhai_market_data.sqlite_repository",
+        "shanhai_market_data.ports.sqlite_observation_reader",
+        "shanhai_market_data.ports.in_memory_observation_reader",
+        "shanhai_market_data.ports.observation_reader",
+    }
+    violations = []
+    for path in EVOLUTION.rglob("*.py"):
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        bad = set()
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ImportFrom) and node.module in forbidden_modules:
+                bad.add(node.module)
+                for alias in node.names:
+                    if alias.name == "Observation":
+                        bad.add("Observation")
+        if bad:
+            violations.append((path.relative_to(ROOT), sorted(bad)))
+
+    assert not violations, f"evolution/ 拥有/复制了 Observation（R5-1 违规）：{violations}"
+    print("[OK] R5-1：evolution/ 不拥有 Observation（不 import 存储实现 / Observation DTO）")
+
+
 def main() -> None:
     test_market_intelligence_no_upstream_or_sibling_dependencies()
     test_market_intelligence_does_not_define_trading_surface()
     test_market_intelligence_is_provider_agnostic()
     test_market_data_never_references_intelligence()
+    test_evolution_does_not_depend_on_snapshot()
+    test_evolution_does_not_import_reasoning_engine()
+    test_evolution_does_not_own_observation()
     print("\nMarket Intelligence 依赖边界契约测试全部通过 ✅")
 
 

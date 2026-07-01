@@ -7,6 +7,8 @@
 
 关系：承接 [M3.4 Context Layer Contract Design](../design/m3.4-market-intelligence-context-layer-contract.md)（doc-only 契约稿）。本 ADR 把该稿中的 §10 开放裁决项 O1–O5 与 §2 两处架构观察**固化为决定**。上游 Persistence 契约见 [M3.3 SQLite Implementation](../design/m3.3-sqlite-implementation-plan.md) 与 [Schema Freeze](../design/m3.3-market-persistence-schema.md)（Option C：`knowledge_observation` spine + typed detail）。本 ADR **不**实现 Reasoning Engine / LLM 接入 / Data Provider（分属 M3.6 / M3.7，另立 ADR）。
 
+> **修订 R1（2026-07-01，S1 开工前 Review Gate approved with adjustments）**：Review 在批准进入实现的同时对 5 处做了架构级微调。为遵「记录不覆盖历史」（D8 精神），原始裁决 D1–D8 正文保留，修订以本 R1 与就地 `> 修订` 指针叠加：**(1)** 依赖方向新增 `reasoning-engine` 层，修订为 `runtime-kernel → reasoning-engine → market-intelligence → market-data`，并确立铁律「**market-data 永远不知道 intelligence 存在**」；**(2)** `KnowledgeReadPort` 改名 **`ObservationReadPort`**（market-data 是 Observation Store 不是 Knowledge Store，命名不得暗示其拥有 knowledge）；**(3)** `MarketContextSnapshot` 收紧为 **ref-based** 认知快照，禁成为数据聚合容器；**(4)** `ContextAssembler` 第一版**纯 deterministic**（禁推理/总结/判断/LLM）；**(5)** S1–S4 重排（domain skeleton → ObservationReadPort → SQLite adapter → ContextAssembler）。详见文末 [§修订记录 R1](#修订记录-r1revision-log)。
+
 ## 1. 背景（Context）
 
 M3.3 让 ShanHai 第一次拥有「可持久化认知基础设施」：真实 A 股 observation（行情 / 财务 / 公告）经 source-neutral provider 流入 `MarketKnowledgeRepository`，落 append-only `knowledge_observation` spine（默认 SQLite 后端，保留 InMemory reference / Postgres 扩展）。
@@ -63,18 +65,23 @@ services/
 market-data ─► market-intelligence ─► runtime-kernel
 ```
 
+> **修订 R1（依赖方向）**：新增 `reasoning-engine` 层，依赖方向修订为
+> `runtime-kernel → reasoning-engine → market-intelligence → market-data`（新增 reasoning-engine，插在 runtime-kernel 与 market-intelligence 之间）。**铁律**：`market-data` 永远不知道 `intelligence` 存在——禁止 `market-data import KnowledgeObject`（否则 market-data 的领域模型会被 intelligence 概念污染，重蹈 everything-data）。read 方向仍是 `market-intelligence ──(只读端口)──► market-data`；依赖箭头（谁 import 谁）永远指向 market-data，绝不反向。
+
 - **禁止** runtime 直接调用 market-data（否则 Agent 会逐渐绕过知识层）。Agent 推理应经 market-intelligence 提供的认知产物。
 - `market-intelligence` 读 market-data 的**只读端口**（D2），不 import market-data 的存储实现细节。
 - 未来 `market-intelligence` 下辖 `knowledge / context / cognition`（并预留 `evolution / reasoning / memory` 子域，本 ADR 不实现）。
 
-### D2（O1）— bitemporal 读能力 = 新增独立 `KnowledgeReadPort`，不污染已冻结的 9 方法 Repository 契约
+### D2（O1）— bitemporal 读能力 = 新增独立 `ObservationReadPort`，不污染已冻结的 9 方法 Repository 契约
+
+> **修订 R1（命名）**：原文命名 `KnowledgeReadPort` 已改名 **`ObservationReadPort`**（落 `services/market-data/shanhai_market_data/ports/observation_reader.py`）。理由：market-data 当前职责是 **Observation Store**，不是 Knowledge Store；`Knowledge*` 命名会暗示「market-data 拥有 knowledge」，污染领域所有权。真正的 `Observation → Knowledge Extraction → KnowledgeObject` 是 market-intelligence 内部的事，届时真正的 `KnowledgeReadPort` 应属 market-intelligence。**关键边界**：端口放在 market-data、返回 market-data 自己的只读 DTO，故其签名只用**基元类型**（`knowledge_at: datetime` 等），**不得**引用 market-intelligence 的 `AsOf`/`Observation`/`KnowledgeObject`（否则违反 R1 铁律「market-data 永不知 intelligence」）。下文出现的 `KnowledgeReadPort` 一律按 `ObservationReadPort` 理解。
 
 M3.3 的 9 方法（5 写 4 读）是 current-truth 读契约，**保持冻结**。Context Layer 做 `as_of` 认知需要「截至某 knowledge_at 的 observation」——这是**新读能力**，落在一个独立只读端口：
 
 ```
-KnowledgeReadPort（新增 Protocol，与 9 方法并列）
-  get_observations_as_of(subject, *, knowledge_at, effective_at=None, fact_types=())
-      -> tuple[Observation, ...]
+ObservationReadPort（新增 Protocol，与 9 方法并列；放 market-data/ports/）
+  query(subject, *, knowledge_at, effective_at=None, fact_types=())
+      -> tuple[Observation, ...]        # Observation = market-data 自己的只读 DTO
 ```
 
 - 它读 append-only spine（M3.3 已保留历史），按 `captured_at ≤ knowledge_at` 过滤。
@@ -94,6 +101,10 @@ KnowledgeReadPort（新增 Protocol，与 9 方法并列）
 
 - **禁止**裸 `Context` / `ContextBuilder`（后者太像 daily_stock_analysis，且与 RuntimeContext 概念混淆）。
 - 关系：未来 Agent 推理时，`MarketContextSnapshot` 会成为喂给 `RuntimeContext` 的 task/intent 输入素材之一，但二者不合并。
+
+> **修订 R1（ref-based，防 God Object）**：保持命名 `MarketContextSnapshot`，但**禁止**它变成新的万能对象/数据聚合容器。第一版形状严格收紧为 **ref-based**：
+> `{ subject, as_of, observation_refs, knowledge_refs, market_state, cognition_state, data_quality }`。
+> **禁止**按数据种类平铺内嵌（如 `{financials:{}, news:{}, technical:{}, chip:{}, ...}`）——那会在半年后又长成 daily_stock_analysis 的 `ContextPack`。定义：Snapshot = 「某个时间点，系统**认为自己知道什么**」，而**不是**「今天有哪些数据」。`identity/financial_state/events` 等按种类分区的旧草图字段（见契约稿 §4.2 与实现设计旧稿 §4）以本条为准废弃。
 
 ### D4 — 认知四层分层（Observation ≠ Knowledge ≠ KnowledgeObject ≠ Snapshot）
 
@@ -191,9 +202,15 @@ M3.7 Reasoning Engine（AI cognition → feedback loop）
 market-data ─► market-intelligence ─► runtime-kernel
                      │
                      └─(只读 ref)─► experience（historical_cognition 仅引用 id，不 import）
+```
 
-# 不变量
-- market-intelligence 读 market-data 经 KnowledgeReadPort（只读端口），不 import 存储实现
+> **修订 R1（依赖方向）**：链条修订为 `runtime-kernel → reasoning-engine → market-intelligence → market-data`（新增 reasoning-engine 层，`import` 箭头永远指向 market-data）。铁律：**market-data 永远不知道 intelligence 存在**（禁 `market-data import KnowledgeObject`）。M3.4 只落地 `market-intelligence → market-data`（经 `ObservationReadPort` 只读）；`reasoning-engine` 本阶段只登记不建。
+
+```
+# 不变量（R1 修订后）
+- 依赖箭头：runtime-kernel → reasoning-engine → market-intelligence → market-data（永不反向）
+- market-data 永不 import intelligence 任何概念（KnowledgeObject / MarketContextSnapshot / AsOf …）
+- market-intelligence 读 market-data 经 ObservationReadPort（只读端口，签名仅基元类型），不 import 存储实现
 - market-data 现有依赖禁令不变：禁 import runtime/experience/memory/evolution/feedback，禁 trading 术语（AST 校验）
 - runtime 不直接调用 market-data（须经 market-intelligence 认知产物）
 - Context Layer 对 provider 无感知：禁 `if source == "ifind"`；源信息只在 SourceRef 里
@@ -228,3 +245,21 @@ Provider 无感知保证（回答「未来 iFinD/Wind」）：接入 premium pro
 - **裸 `Context` / `ContextBuilder` 命名**：与 RuntimeContext 撞名、像 daily_stock_analysis，不采纳；`MarketContextSnapshot`（D3）。
 - **为保旧 roadmap 强行保留 M3.4=Web Platform**：路线已实质演进，不采纳；重编号并以 ADR + PROJECT_STATE 记录（D8）。
 - **现在接 iFinD**：现在还不知道 Context Layer 需要哪些字段，提前接会破坏架构（临时 schema → 未来推倒），不采纳；先定义认知，再定义数据/provider。
+
+## 修订记录 R1（Revision Log）
+
+**R1 — 2026-07-01，S1 开工前 Review（"Review Gate approved with adjustments"）**
+
+Review 批准 M3.4 进入实现，但要求在写第一行代码前落实 5 处架构级微调。裁决 D1–D8 主体不变，以下为增量修订（正文对应处已叠加 `> 修订 R1` 指针）：
+
+| # | 调整 | 决定 | 落点 |
+|--|--|--|--|
+| R1-1 | **模块布局 + 依赖方向** | 未来四模块 `services/{market-data, market-intelligence, reasoning-engine, runtime-kernel}`；依赖方向修订为 `runtime-kernel → reasoning-engine → market-intelligence → market-data`（新增 reasoning-engine 层）。铁律：**market-data 永远不知道 intelligence 存在**（禁 `import KnowledgeObject`）。 | §1（D1）/ §5 |
+| R1-2 | **端口改名** | `KnowledgeReadPort` → **`ObservationReadPort`**（market-data 是 Observation Store 不是 Knowledge Store，命名不得暗示拥有 knowledge）。端口仍放 market-data `ports/observation_reader.py`；签名只用基元类型，绝不 import intelligence 概念。备选名 `FactReadPort` / `ObservationQueryPort`。 | §3（D2） |
+| R1-3 | **Snapshot 防 God Object** | 保持命名 `MarketContextSnapshot`，但收紧为 **ref-based**：`{subject, as_of, observation_refs, knowledge_refs, market_state, cognition_state, data_quality}`；禁按数据种类平铺（`financials/news/technical/chip`）。Snapshot = 「某时刻系统认为自己知道什么」，非「今天有哪些数据」。 | §3（D3） |
+| R1-4 | **Assembler deterministic** | `ContextAssembler` 第一版**纯 deterministic**：只做查询 / 过滤 / 排序 / as_of 计算 / provenance 合并 / quality 计算；**禁**推理 / 总结 / 判断 / LLM 自动总结。 | 实现设计 §5 |
+| R1-5 | **S1–S4 重排** | `S1 Domain skeleton（package + domain models + ports interfaces，不接 DB）→ S2 read contract（ObservationReadPort InMemory，不接 SQLite）→ S3 persistence adapter（SQLite adapter，验证 InMemory==SQLite parity）→ S4 context assembly（ContextAssembler 生成 MarketContextSnapshot，测 same observation + same as_of = same snapshot）`。 | 实现设计 §7 |
+
+**执行节奏（Review 指令，verbatim）**：`Proceed S1 only, stop after commit for next gate.` 保持「一阶段设计 → Review → 单 commit → Review → 下一阶段」。
+
+**iFinD 战略提醒（Review 重申）**：现阶段**不接、不要急着接**。正确顺序 `Context Layer → Knowledge Object → Data Requirement → iFinD Mapping`（先定义「我需要什么知识」，再决定「哪些 iFinD 数据填充它」），而非 `iFinD API → 看看能做什么`。ShanHai 在建「认知操作系统」不是「数据仓库」；提前接 iFinD 易滑向 Wind clone。

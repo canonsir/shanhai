@@ -46,7 +46,7 @@ Milestone 3 — Market Intelligence Platform Alpha 🚧
  +-- M3.2 Data Acquisition Foundation ✅ Spike 闭环跑通（真实免费数据 spike：东方财富 + 巨潮资讯经 source-neutral PublicMarketDataProvider 流入 600519.SH，带最小内置 SourceRef provenance；Console 端到端验收。"闭环跑通则 M3.2 正式开始"门槛已达成）
  +-- M3.3 Market Data Persistence Foundation ✅ 收口（Option C 观测 spine + typed detail 的 SQLite Repository：Step 1 sqlite_repository c0572cd / Step 2 SQLite==InMemory parity a5629f2 / Step 3 default backend 切 SQLite 3b148da；保留 InMemory reference + Postgres 扩展；env SHANHAI_MARKET_STORE / SHANHAI_MARKET_SQLITE_PATH。从「运行时对象」进入「可持久化认知基础设施」。原 "Knowledge Provenance / raw snapshot 存储" 未在本阶段做，顺延后续里程碑）
  +-- M3.x Semantic Vocabulary Enhancement ⏳ Planned（Knowledge Vocabulary Layer：predicate → display_name → description；doc-only 登记，不改 MarketFact）
- +-- M3.4 Market Intelligence Context Layer 🧭 Contract Accepted / Next（ADR 0019；定义「AI 在某个时间点应拥有什么市场认知」：Observation≠Knowledge 四层分层 / bitemporal as_of{effective_at,knowledge_at} 历史认知回放 / MarketContextSnapshot deterministic view 首版不落库 / 独立 services/market-intelligence / additive KnowledgeReadPort 不改冻结 9 方法。实现待 Review Gate）
+ +-- M3.4 Market Intelligence Context Layer 🧭 Contract Accepted + R1 / Next（ADR 0019 + 修订 R1；定义「AI 在某个时间点应拥有什么市场认知」：Observation≠Knowledge 四层分层 / bitemporal as_of{effective_at,knowledge_at} 历史认知回放 / MarketContextSnapshot ref-based deterministic view 首版不落库 / 独立 services/market-intelligence / additive ObservationReadPort（原 KnowledgeReadPort，R1 改名）不改冻结 9 方法。S1 domain skeleton 待 Review Gate 批准开工）
  +-- M3.5 Web Platform ⏳ Not started（原 M3.4 顺延；Bun + Next.js + React + Tailwind + Rspack；apps/{api,console,worker}；定位 Bloomberg 公司百科 + AI Research Notebook）
  +-- M3.6 Data Provider ⏳ Planned（Free Provider → Premium Provider；iFinD/Wind/Tushare Pro 在此接，经 SHANHAI_DATA_MODE=free/premium/mixed 装配；Context 层对 provider 无感知）
  +-- M3.7 Reasoning Engine ⏳ Planned（AI cognition → feedback loop → knowledge evolution）
@@ -100,10 +100,10 @@ Milestone 3 — Market Intelligence Platform Alpha 🚧
 
 **M3.3 Market Data Persistence Foundation 已收口**（Option C 观测 spine + typed detail 的 SQLite Repository：Step 1 `sqlite_repository.py` c0572cd / Step 2 SQLite==InMemory parity a5629f2 / Step 3 default backend 切 SQLite 3b148da）——ShanHai 从「运行时对象」进入「可持久化认知基础设施」。**SQLite 只是 Persistence Layer，不是 Knowledge Layer**（不得往里塞公司画像/行业知识/投资逻辑）。
 
-**下一步进入 M3.4 Market Intelligence Context Layer（Contract Accepted，实现待 Review Gate）**：定义「AI 在某个时间点应拥有什么市场认知」而非「今天股价多少」。五项裁决（O1–O5）经 Review Gate 批准，固化于 [ADR 0019](../架构决策记录/0019-Market-Intelligence-Context-Layer.md) 与 [契约稿](../design/m3.4-market-intelligence-context-layer-contract.md)：
-- **O1**：新增独立 `KnowledgeReadPort`（additive read port），不污染 M3.3 冻结的 9 方法契约。
+**下一步进入 M3.4 Market Intelligence Context Layer（Contract Accepted + 修订 R1，S1 待 Review Gate）**：定义「AI 在某个时间点应拥有什么市场认知」而非「今天股价多少」。五项裁决（O1–O5）经 Review Gate 批准，固化于 [ADR 0019](../架构决策记录/0019-Market-Intelligence-Context-Layer.md) 与 [契约稿](../design/m3.4-market-intelligence-context-layer-contract.md)；S1 开工前 Review 追加 5 项架构级微调（[ADR 0019 §修订记录 R1](../架构决策记录/0019-Market-Intelligence-Context-Layer.md#修订记录-r1revision-log)）：
+- **O1（R1-2 改名）**：新增独立 `ObservationReadPort`（原 `KnowledgeReadPort`；market-data 是 Observation Store 不是 Knowledge Store，命名不得暗示拥有 knowledge）——additive read port，不污染 M3.3 冻结的 9 方法契约。
 - **O2**：`MarketContextSnapshot` 首版**不落库**，作为 deterministic view（append-only + 可复现 → 快照可随时重算；未来需 cache/audit/replay 再加 `context_snapshot` 表）。
-- **O3**：新增独立 `services/market-intelligence`（knowledge/context/cognition，预留 evolution/reasoning/memory）；`market-data` 守 observation/persistence 边界，不变成 everything-data；依赖方向 `market-data → market-intelligence → runtime-kernel`，**禁 runtime 直接调 market-data**（否则 Agent 会绕过知识层）。
+- **O3（R1-1 依赖方向）**：新增独立 `services/market-intelligence`（knowledge/context/cognition，预留 evolution/reasoning/memory）；`market-data` 守 observation/persistence 边界，不变成 everything-data；依赖方向修订为 `runtime-kernel → reasoning-engine → market-intelligence → market-data`（新增 reasoning-engine 层，import 箭头永远指向 market-data），铁律 **market-data 永远不知道 intelligence 存在**（禁 `import KnowledgeObject`），**禁 runtime 直接调 market-data**（否则 Agent 会绕过知识层）。
 - **O4**：命名 `MarketContextSnapshot`（市场认知环境），与既有 `RuntimeContext`（Agent 运行环境）区分；禁裸 `Context` / `ContextBuilder`。
 - **O5**：路线**重编号**（记录、非覆盖历史）：`M3.4 = Context Layer / M3.5 = Web Platform（原 M3.4 顺延）/ M3.6 = Data Provider（Free→Premium，iFinD/Wind 在此接）/ M3.7 = Reasoning Engine`。
 
@@ -184,14 +184,14 @@ Milestone 3 — Market Intelligence Platform Alpha 🚧
 ### M3.4 Market Intelligence Context Layer 🧭 Contract Accepted / Next（[ADR 0019](../架构决策记录/0019-Market-Intelligence-Context-Layer.md)）
 - **定位**：ShanHai 从「可持久化基础设施」迈向「认知系统」的分水岭。回答「在某个时间点，如果 AI 要理解一家公司，它**应该看到什么**」，而非「今天股价多少」。Persistence 解决「数据怎么保存」；Context Layer 解决「AI 在某个时间点知道什么」。
 - **契约裁决（O1–O5，已批准）**：
-  - **O1**：bitemporal 读能力 = 新增独立 `KnowledgeReadPort`（`get_observations_as_of(subject, *, knowledge_at, effective_at=None, fact_types=())`），**不污染** M3.3 冻结的 9 方法 Repository 契约；可 InMemory/SQLite 双实现做 parity。
+  - **O1**：bitemporal 读能力 = 新增独立 `ObservationReadPort`（R1-2 改名，原 `KnowledgeReadPort`；`query(subject, *, knowledge_at, effective_at=None, fact_types=())`，签名仅基元类型，绝不 import intelligence 概念），**不污染** M3.3 冻结的 9 方法 Repository 契约；可 InMemory/SQLite 双实现做 parity。
   - **O2**：`MarketContextSnapshot` 首版**不落库**，作为 deterministic view（`ContextAssembler(subject, as_of)` 按需计算）；未来需 cache/audit/replay 再加 `context_snapshot` 表。
-  - **O3**：新增独立模块 **`services/market-intelligence`**（knowledge/context/cognition）；`market-data` 守 observation/persistence 边界，防止膨胀成 everything-data。依赖方向 `market-data → market-intelligence → runtime-kernel`；runtime 不直接调用 market-data。
+  - **O3**：新增独立模块 **`services/market-intelligence`**（knowledge/context/cognition）；`market-data` 守 observation/persistence 边界，防止膨胀成 everything-data。依赖方向（R1-1 修订）`runtime-kernel → reasoning-engine → market-intelligence → market-data`（新增 reasoning-engine 层，import 箭头永远指向 market-data）；铁律 market-data 永远不知道 intelligence 存在；runtime 不直接调用 market-data。
   - **O4**：核心产物命名 **`MarketContextSnapshot`**（避免与既有 `RuntimeContext` 撞名：后者=Agent 运行环境，前者=市场认知环境）。
   - **O5**：路线重编号（记录、非覆盖历史）——`M3.4 = Context Layer / M3.5 = Web Platform / M3.6 = Data Provider / M3.7 = Reasoning Engine`。
 - **认知四层分层**：`Observation（不可变事实输入，M3.3 spine）→ Knowledge（派生信念，latest per logical_key）→ KnowledgeObject（主体聚合，M3.5）→ MarketContextSnapshot（as_of 冻结的可推理可复现认知态）`。Context 层只读、只投影，永不修改 observation。
 - **bitemporal**：`as_of = {effective_at, knowledge_at}` 双轴，复用 fact 既有三时间戳（occurred_at/published_at=effective；captured_at=knowledge）。`knowledge_at` 过滤 `captured_at ≤ knowledge_at` → 历史认知回放（「当时 AI 会看到什么」）确定性可复现。首版不要求完整 SQL:2011 区间 bitemporal。
-- **provenance/quality**：每个 leaf = `{value, provenance[], confidence}`（provenance 即现有 `SourceRef`，零新造词汇）；snapshot 带 `data_quality`（coverage/freshness/conflicts/trust_floor + 显式 `missing[]`）与 `historical_cognition`（引用 experience id/ref，不复制）。让 LLM 区分「知道且可信 / 知道但存疑 / 不知道」。
+- **provenance/quality（R1-3 ref-based）**：Snapshot 收紧为 ref-based——只 `observation_refs`/`knowledge_refs`（引用已持久化事实/信念，不内嵌值）+ `market_state`/`cognition_state`/`data_quality`；provenance 即现有 `SourceRef`（零新造词汇）；`data_quality`（coverage/freshness/conflicts/trust_floor + 显式 `missing[]`）与 `cognition_state`（引用 experience id/ref，不复制）。**禁**按数据种类平铺（`financials/news/technical/chip`），否则半年后又变 daily_stock_analysis。让 LLM 区分「知道且可信 / 知道但存疑 / 不知道」。
 - **provider 无感知**：Context 层不知道数据来自 akshare/iFinD/Wind；接入 premium = Acquisition 层多产生带 `SourceRef(provider=...)` 的 observation；`SHANHAI_DATA_MODE` 对 Context 不可见；禁 `if source == "ifind"`。**现在不接 iFinD**（先定义认知→再定义数据→再定义 provider，不反过来）。
 - **文档**：契约稿 [m3.4-market-intelligence-context-layer-contract.md](../design/m3.4-market-intelligence-context-layer-contract.md)（639c65d）+ 实现设计 [m3.4-context-layer-implementation-design.md](../design/m3.4-context-layer-implementation-design.md)（本轮）+ ADR 0019。
 - **边界**：本阶段**不写实现代码**（Implementation 前继续 Review Gate）；不改 9 方法契约 / schema；不接 provider；不接 LLM / Agent（M3.7）；不物化 Knowledge Object（M3.5）。
@@ -215,7 +215,7 @@ Milestone 3 — Market Intelligence Platform Alpha 🚧
 - [x] **M3.1 Company Intelligence Console Alpha**：✅ Completed（checkpoint `1087e7e`）。Console Alpha 已实现并经真实数据驱动浏览器端到端验证关闭；用户批准 push。验证暴露的两项模型 gap 登记为 M3.2/M3.3 / M3.x（doc-only，不进入实现）。
 - [x] **M3.2 Data Acquisition Foundation**：✅ Spike 闭环跑通。按路线 pivot 做真实数据 Data Adapter Spike（实现优先、不提交 Design Gate）；EastMoney + CNInfo source-neutral adapter 让 600519.SH 真实免费数据带最小内置 provenance 流入并经 Console 端到端验收，「闭环跑通则 M3.2 正式开始」门槛达成。交付 commit `feat(market-data): add free data acquisition foundation`。
 - [x] **M3.3 Market Data Persistence Foundation**：✅ 收口。Option C 观测 spine + typed detail 的 SQLite Repository（Step 1 c0572cd / Step 2 SQLite==InMemory parity a5629f2 / Step 3 default backend 切 SQLite 3b148da）；保留 InMemory reference + Postgres 扩展。设计记录 `docs/design/m3.3-sqlite-implementation-plan.md`。原 "Knowledge Provenance / raw snapshot 存储" 目标顺延（登记保留，见上）。
-- [ ] **M3.4 Market Intelligence Context Layer（当前停靠点 / Next）**：Contract 已批准（ADR 0019；裁决 O1–O5 + 命名/编号）；契约稿 + 实现设计文档已产出。**实现待 Review Gate 批准后开工**（新增 `services/market-intelligence` + `KnowledgeReadPort` + `MarketContextSnapshot` deterministic view + bitemporal as_of，不改 9 方法契约）。
+- [ ] **M3.4 Market Intelligence Context Layer（当前停靠点 / Next）**：Contract 已批准（ADR 0019；裁决 O1–O5 + 命名/编号）+ 修订 R1（S1 开工前 5 项架构级微调）；契约稿 + 实现设计文档已产出并按 R1 更新。**S1 待 Review Gate 批准后开工**（新增 `services/market-intelligence` + `ObservationReadPort`（原 KnowledgeReadPort，R1 改名）+ `MarketContextSnapshot` ref-based deterministic view + bitemporal as_of，不改 9 方法契约；R1-5 分步 `S1 domain skeleton → S2 read contract → S3 SQLite adapter → S4 context assembly`）。
 - ~~PR-4.2 Candidate Provider Adapter~~：**不再推进**（被 Milestone 3 取代；design gate 文档保留作历史参考，不进入实现）。
 - ~~Milestone 2.3 Market Knowledge Expansion~~：蓝本已被 Phase 2 实现采用；后续扩展并入 M3.x（原 M3.3 Knowledge Provenance，现顺延）。
 
@@ -254,7 +254,7 @@ Milestone 3 — Market Intelligence Platform Alpha 🚧
 
 - Model Router 隔离：Agent 禁止直接绑定/调用模型
 - Service 边界：Agent 不直接访问数据库，调用链 `Agent → Tool → Service → Database`
-- 模块独立：harness-core / agent-runtime / runtime-kernel / model-router / wiki-engine / data-pipeline / evaluation / experience / experience-evolution / experience-artifact / memory / feedback / persistence / market-data / market-intelligence（新增，M3.4）边界清晰。依赖方向 `market-data → market-intelligence → runtime-kernel`；runtime 不直接调用 market-data（须经 market-intelligence 认知产物）
+- 模块独立：harness-core / agent-runtime / runtime-kernel / model-router / wiki-engine / data-pipeline / evaluation / experience / experience-evolution / experience-artifact / memory / feedback / persistence / market-data / market-intelligence（新增，M3.4）边界清晰。依赖方向（R1 修订）`runtime-kernel → reasoning-engine → market-intelligence → market-data`（import 箭头永远指向 market-data，绝不反向）；铁律 market-data 永远不知道 intelligence 存在（禁 `import KnowledgeObject`）；runtime 不直接调用 market-data（须经 market-intelligence 认知产物）；reasoning-engine 本期只登记不建
 - 任何架构调整先写 ADR（`docs/架构决策记录/`）
 - Review Gate：「下一步建议」须经架构 Review 批准后方可执行（建议 ≠ 批准）
 

@@ -9,7 +9,7 @@ v0.2.0
 
 ## 当前阶段
 
-Milestone 3 — Market Intelligence Platform Alpha（🚧 进行中 / M3.1 Console Alpha ✅、M3.2 Data Acquisition ✅、M3.3 Market Data Persistence Foundation ✅ 收口，Next: M3.4 Market Intelligence Context Layer — Contract Accepted，实现待 Review Gate）
+Milestone 3 — Market Intelligence Platform Alpha（🚧 进行中 / M3.1 Console Alpha ✅、M3.2 Data Acquisition ✅、M3.3 Market Data Persistence Foundation ✅、M3.4 Context Layer + Knowledge Evolution 内部认知闭环 S1–S4.3 ✅ 收口（全程 mock/内存事实，`Observation → ObservationReadPort → Evolution → KnowledgeResolver.resolve_at → KnowledgeView → ContextAssembler → MarketContextSnapshot` 已验证可回放），Next: M3.6 Data Provider 准备阶段 — ADR 0021 Proposed + R1（doc-only，待 Review Gate 批准后进 M3.6.0 Contract Review））
 
 > 切换点：M2.5 Phase 2 Market Knowledge Foundation 已实现并提交（checkpoint `de296c0`），ShanHai 第一次具备真实 A 股公司知识（实体身份 + MarketFact v1 + 财务/公告事实 + 公司知识时间线）。据此**结束 Foundation / Runtime 抽象阶段**：不再推进 PR-4.2 Candidate Provider，不再深挖 Runtime 契约，正式进入由真实数据驱动的 Market Intelligence Platform 建设。
 > **M3.1 转折点（checkpoint `1087e7e`）**：Company Intelligence Console Alpha 已实现并经真实数据驱动的浏览器端到端验证关闭。这是项目最重要的转折点——从「设计 AI 系统」进入「构建一个真正理解中国资本市场的长期知识系统」。Console 让真实世界的数据模型被人观察、验证（先验证现实承载力，再决定抽象层如何演化），优先级高于回头继续 Experience Runtime 抽象。
@@ -48,7 +48,7 @@ Milestone 3 — Market Intelligence Platform Alpha 🚧
  +-- M3.x Semantic Vocabulary Enhancement ⏳ Planned（Knowledge Vocabulary Layer：predicate → display_name → description；doc-only 登记，不改 MarketFact）
  +-- M3.4 Market Intelligence Context Layer 🧭 Contract Accepted + R1 / Next（ADR 0019 + 修订 R1；定义「AI 在某个时间点应拥有什么市场认知」：Observation≠Knowledge 四层分层 / bitemporal as_of{effective_at,knowledge_at} 历史认知回放 / MarketContextSnapshot ref-based deterministic view 首版不落库 / 独立 services/market-intelligence / additive ObservationReadPort（原 KnowledgeReadPort，R1 改名）不改冻结 9 方法。S1 domain skeleton 待 Review Gate 批准开工）
  +-- M3.5 Web Platform ⏳ Not started（原 M3.4 顺延；Bun + Next.js + React + Tailwind + Rspack；apps/{api,console,worker}；定位 Bloomberg 公司百科 + AI Research Notebook）
- +-- M3.6 Data Provider 🧭 Design（ADR 0021 Proposed + M3.6 设计说明；统一 Observation 而非统一 Provider；canonical ObservationProvider 契约 + 共享 ingestion pipeline 定身份 + Data Provider Boundary 6 条；先 Mock 再 iFinD：M3.6.0 Contract → 6.1 Mock → 6.2 ingestion → 6.3 iFinD → 6.4 akshare；doc-only 待 Review）
+ +-- M3.6 Data Provider 🧭 Design + R1（ADR 0021 Proposed + R1 + M3.6 设计说明；统一 Observation 而非统一 Provider；canonical ObservationProvider 契约 + 共享 ingestion pipeline 定身份 + Data Provider Boundary 6 条；R1 折入外部 Review：新增 D4a「语义映射在 provider 内 / 定身份在共享层」调和、收紧 D3「PublicMarketDataProvider 不立即废弃、避免两套 provider 词汇长期并行」、新增 M3.6.0 doc-only Provider Contract Review。M3.6.0 冻结 5 点清单：canonical=ObservationDraft 不引入分家族 *Record / *Record 若成立即等价 draft / source-specific *Record 会致 shared normalizer 耦合 / PublicMarketDataProvider 仅迁移窗口非未来 contract / 商业 provider 仅可配置 adapter 非系统标准。子阶段重排：M3.6.0 Contract Review → 6.1 契约骨架 → 6.2 Mock → 6.3 ingestion → 6.4 iFinD → 6.5 akshare；先 Mock 再 iFinD；doc-only 待 Review）
  +-- M3.7 Reasoning Engine ⏳ Planned（AI cognition → feedback loop → knowledge evolution）
  |
  +-- Runtime / Memory / Evolution / Trading ⛔ Not in scope

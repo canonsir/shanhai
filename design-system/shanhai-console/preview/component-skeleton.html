@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="../colors_and_type.css">
+<title>Skeleton · 山海</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;padding:24px;background:var(--background);color:var(--foreground);font-family:var(--font-sans);font-size:14px;line-height:1.4}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;align-items:start}
+  .cell{display:flex;flex-direction:column;gap:12px}
+  .label{font:600 11px/1 var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted-foreground)}
+  .panel{border:1px solid var(--border);border-radius:14px;background:var(--card);padding:16px}
+
+  .sk{position:relative;overflow:hidden;background:color-mix(in srgb,var(--muted-foreground) 16%,transparent);border-radius:7px}
+  .sk::after{content:"";position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--background) 60%,transparent),transparent);animation:shimmer 1.4s infinite}
+  @keyframes shimmer{100%{transform:translateX(100%)}}
+  .line{height:12px}
+  .w100{width:100%}.w80{width:80%}.w60{width:60%}.w40{width:40%}
+  .circle{width:40px;height:40px;border-radius:50%}
+  .block{height:64px;border-radius:10px}
+  .stackv{display:flex;flex-direction:column;gap:9px}
+  .cardrow{display:flex;gap:12px;align-items:center}
+  .cardrow .stackv{flex:1}
+  .trow{display:grid;grid-template-columns:24px 1.6fr 1fr 0.8fr;gap:14px;align-items:center;padding:11px 0;border-bottom:1px solid color-mix(in srgb,var(--border) 60%,transparent)}
+  .trow:last-child{border-bottom:0}
+  @media (prefers-reduced-motion: reduce){.sk::after{animation:none}}
+</style>
+</head>
+<body>
+<div class="grid">
+  <div class="cell">
+    <span class="label">Text · 段落</span>
+    <div class="panel stackv">
+      <div class="sk line w100"></div>
+      <div class="sk line w80"></div>
+      <div class="sk line w60"></div>
+      <div class="sk line w40"></div>
+    </div>
+  </div>
+
+  <div class="cell">
+    <span class="label">Card · 列表项</span>
+    <div class="panel stackv">
+      <div class="cardrow">
+        <div class="sk circle"></div>
+        <div class="stackv"><div class="sk line w80"></div><div class="sk line w40"></div></div>
+      </div>
+      <div class="sk block"></div>
+    </div>
+  </div>
+
+  <div class="cell">
+    <span class="label">Table · 表格行</span>
+    <div class="panel">
+      <div class="trow"><div class="sk line" style="height:14px"></div><div class="sk line w80"></div><div class="sk line w60"></div><div class="sk line w40"></div></div>
+      <div class="trow"><div class="sk line" style="height:14px"></div><div class="sk line w60"></div><div class="sk line w80"></div><div class="sk line w40"></div></div>
+      <div class="trow"><div class="sk line" style="height:14px"></div><div class="sk line w80"></div><div class="sk line w40"></div><div class="sk line w60"></div></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

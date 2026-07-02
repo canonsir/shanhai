@@ -1,0 +1,5 @@
+# ContextEvent 统一事实流（append-only engineering record）
+#
+# 事实源。stream.jsonl 已由 Commit 3B（import_chat.py）从 conversations/raw/ 生成
+# （搬运+结构化，actor=unknown，source.ref=raw#<id> 幂等去重，可安全重跑）。
+# 注意：ContextEvent ≠ Runtime Event，不参与 Agent 运行，区别于 ExperienceEvent。

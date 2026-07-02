@@ -1,0 +1,10 @@
+# Layer 2：Decision Registry（决策注册表）
+#
+# 事实源。人工确认。Commit 4 已落地新布局（取代 decision-log.md / rejected-decisions.md）：
+#   README.md         目录说明、registry/records 关系、写入纪律
+#   registry.jsonl    唯一结构事实源：DecisionRecord（JSON，每行一条，机器读）
+#   records/          人读叙述：DEC-XXXX-*.md（每条决策一份，背景/决定/原因/备选/否决/回链）
+# 不维护重复事实（ADR 0000 §D9）：不再派生 registry.yaml；需浏览时跑
+#   python3 -m tools.context.decisions  打印瞬态人读视图（不落盘）。
+# 被本决策否决的方案折进记录本身（rejected_alternatives 字段，与 status=rejected 区分），
+# 不再单设 rejected-decisions.md。

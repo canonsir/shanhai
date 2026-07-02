@@ -1,0 +1,8 @@
+# Conversation Ingestion — inbox（用户输入区，Commit 5D / ADR 0000）
+#
+# 用途：把浏览器导出的 ChatGPT IndexedDB dump（如 ConversationsDatabase.json）
+#       临时放在这里，再运行 `python3 -m tools.context.conversation_ingest`。
+#
+# 特性：临时、可删、不进 git（仅本 .gitkeep 占位被跟踪）。
+# 工具读取后将其规范化写入 ../raw/，并在 ../index.jsonl 登记 catalog。
+# 解析失败的输入移入 ../quarantine/（不丢弃，便于调试）。

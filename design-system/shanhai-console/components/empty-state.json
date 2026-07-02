@@ -1,0 +1,37 @@
+{
+  "slug": "empty-state",
+  "name": "Empty State",
+  "purpose": "Placeholder for zero-data, no-results, and first-run surfaces across console views.",
+  "variantDimensions": {
+    "context": ["no-data", "no-results", "error", "first-run"],
+    "size": ["inline", "block"],
+    "withAction": ["action", "no-action"]
+  },
+  "structures": [
+    {
+      "name": "No Data",
+      "anatomy": ["glyph", "title", "description", "primary-action"],
+      "notes": "Neutral glyph in a muted circle, a short title, and a single primary action."
+    },
+    {
+      "name": "No Results",
+      "anatomy": ["glyph", "title", "hint"],
+      "notes": "Used after a filter or search returns nothing; suggests adjusting query."
+    },
+    {
+      "name": "Error State",
+      "anatomy": ["glyph", "title", "description", "retry-action"],
+      "notes": "Destructive-tinted glyph; offers a retry action."
+    }
+  ],
+  "contentExamples": [
+    "还没有抓取任何公司",
+    "未找到匹配的事实",
+    "数据源暂时不可用",
+    "抓取一家公司"
+  ],
+  "interactionNotes": [
+    "Keep the glyph monochrome and quiet; the action carries the only emphasis.",
+    "Copy should state what is missing and the single best next step."
+  ]
+}

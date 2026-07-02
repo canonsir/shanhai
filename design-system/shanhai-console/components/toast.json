@@ -1,0 +1,37 @@
+{
+  "slug": "toast",
+  "name": "Toast",
+  "purpose": "Transient feedback for background actions such as saves, fetch results, and errors.",
+  "variantDimensions": {
+    "tone": ["info", "success", "warning", "destructive"],
+    "structure": ["message", "title-message", "with-action"],
+    "withClose": ["close", "no-close"]
+  },
+  "structures": [
+    {
+      "name": "Simple Toast",
+      "anatomy": ["leading-icon", "message", "close"],
+      "notes": "Single line with a tone icon; auto-dismiss by default."
+    },
+    {
+      "name": "Title Toast",
+      "anatomy": ["leading-icon", "title", "message", "close"],
+      "notes": "Adds a bold title line for richer feedback."
+    },
+    {
+      "name": "Action Toast",
+      "anatomy": ["leading-icon", "message", "action-button"],
+      "notes": "Trailing inline action such as undo or retry."
+    }
+  ],
+  "contentExamples": [
+    "已保存修改",
+    "已抓取 600519 最新行情",
+    "数据源响应超时",
+    "撤销"
+  ],
+  "interactionNotes": [
+    "Tone is carried by a small leading icon and tinted border-left, keeping the surface calm.",
+    "Stack toasts with consistent spacing; newest enters from the same edge."
+  ]
+}

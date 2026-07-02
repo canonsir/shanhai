@@ -1,0 +1,37 @@
+{
+  "slug": "badge",
+  "name": "Badge",
+  "purpose": "Compact status, category, or count label for tasks, sources, model runs, and market entities.",
+  "variantDimensions": {
+    "tone": ["neutral", "primary", "success", "warning", "destructive", "info"],
+    "shape": ["pill", "soft"],
+    "withDot": ["dot", "no-dot"]
+  },
+  "structures": [
+    {
+      "name": "Status Badge",
+      "anatomy": ["container", "dot", "label"],
+      "notes": "Leading dot borrows tone color; surface uses a tinted color-mix of the same token."
+    },
+    {
+      "name": "Category Tag",
+      "anatomy": ["container", "label"],
+      "notes": "Soft rectangle for industry, sector, or dataset classification."
+    },
+    {
+      "name": "Count Badge",
+      "anatomy": ["container", "numeric-label"],
+      "notes": "Tabular numerals for counters such as unread or pending items."
+    }
+  ],
+  "contentExamples": [
+    "运行中",
+    "已完成",
+    "白酒板块",
+    "12"
+  ],
+  "interactionNotes": [
+    "Badges are non-interactive by default; pair color tone with text so meaning is not color-only.",
+    "Use tinted surfaces via color-mix instead of fully saturated fills to keep the calm tone."
+  ]
+}

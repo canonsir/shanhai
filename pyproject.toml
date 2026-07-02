@@ -10,11 +10,15 @@ members = [
     "services/harness-core",
     "services/model-router",
     "services/agent-runtime",
+    "services/runtime-kernel",
+    "services/experience-runtime",
+    "services/market-data",
     "services/wiki-engine",
     "services/data-pipeline",
     "services/evaluation",
     "services/experience",
     "services/experience-evolution",
+    "services/experience-artifact",
     "services/feedback",
     "services/memory",
     "services/persistence",
@@ -31,11 +35,15 @@ shanhai-tools = { workspace = true }
 shanhai-harness-core = { workspace = true }
 shanhai-model-router = { workspace = true }
 shanhai-agent-runtime = { workspace = true }
+shanhai-runtime-kernel = { workspace = true }
+shanhai-experience-runtime = { workspace = true }
+shanhai-market-data = { workspace = true }
 shanhai-wiki-engine = { workspace = true }
 shanhai-data-pipeline = { workspace = true }
 shanhai-evaluation = { workspace = true }
 shanhai-experience = { workspace = true }
 shanhai-experience-evolution = { workspace = true }
+shanhai-experience-artifact = { workspace = true }
 shanhai-feedback = { workspace = true }
 shanhai-memory = { workspace = true }
 shanhai-persistence = { workspace = true }

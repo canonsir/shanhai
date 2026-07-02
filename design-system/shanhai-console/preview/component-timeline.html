@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="../colors_and_type.css">
+<title>Timeline · 山海</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;padding:24px;background:var(--background);color:var(--foreground);font-family:var(--font-sans);font-size:14px;line-height:1.4}
+  .label{font:600 11px/1 var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted-foreground);margin-bottom:14px;display:block}
+  .panel{max-width:560px;border:1px solid var(--border);border-radius:14px;background:var(--card);padding:18px 20px}
+
+  .tl{position:relative;margin:0;padding:0;list-style:none}
+  .tl::before{content:"";position:absolute;left:7px;top:6px;bottom:6px;width:1px;background:var(--border)}
+  .item{position:relative;padding:0 0 18px 28px}
+  .item:last-child{padding-bottom:0}
+  .node{position:absolute;left:1px;top:2px;width:13px;height:13px;border-radius:50%;background:var(--card);border:2px solid var(--muted-foreground);box-sizing:border-box}
+  .node.fact{border-color:var(--chart-1)}
+  .node.ann{border-color:var(--primary)}
+  .node.event{border-color:#d97706}
+  .node.milestone{background:var(--primary);border-color:var(--primary)}
+
+  .time{font:600 11px/1 var(--font-mono);color:var(--muted-foreground);letter-spacing:.04em}
+  .ttl{font-size:14px;font-weight:600;margin:5px 0 3px}
+  .detail{font-size:13px;color:var(--muted-foreground)}
+  .meta{display:flex;align-items:center;gap:8px;margin-top:7px;flex-wrap:wrap}
+  .tag{display:inline-flex;align-items:center;height:20px;padding:0 8px;border-radius:6px;font:500 11px var(--font-sans);background:color-mix(in srgb,var(--muted-foreground) 14%,transparent);color:var(--muted-foreground)}
+  .src{display:inline-flex;align-items:center;gap:5px;height:20px;padding:0 8px;border-radius:6px;font:500 11px var(--font-mono);background:color-mix(in srgb,var(--chart-2) 14%,transparent);color:var(--chart-2)}
+  .src .dot{width:5px;height:5px;border-radius:50%;background:currentColor}
+</style>
+</head>
+<body>
+<span class="label">Knowledge Timeline · 知识时间线</span>
+<div class="panel">
+  <ul class="tl">
+    <li class="item">
+      <span class="node milestone"></span>
+      <span class="time">2026-06-29</span>
+      <div class="ttl">完成全量事实落库</div>
+      <div class="detail">本次抓取共写入 128 条事实，覆盖行情、财务与公告。</div>
+      <div class="meta"><span class="tag">milestone</span></div>
+    </li>
+    <li class="item">
+      <span class="node ann"></span>
+      <span class="time">2026-04-29</span>
+      <div class="ttl">披露 2025 年度报告</div>
+      <div class="detail">营业收入与净利润同比增长，详见原始公告。</div>
+      <div class="meta"><span class="tag">announcement</span><span class="src"><span class="dot"></span>CNInfo</span></div>
+    </li>
+    <li class="item">
+      <span class="node fact"></span>
+      <span class="time">2026-04-01</span>
+      <div class="ttl">分类于行业：白酒</div>
+      <div class="detail">classified_in_industry → 申万一级行业「食品饮料 / 白酒」。</div>
+      <div class="meta"><span class="tag">fact</span><span class="src"><span class="dot"></span>EastMoney · v1</span></div>
+    </li>
+    <li class="item">
+      <span class="node event"></span>
+      <span class="time">2026-03-15</span>
+      <div class="ttl">纳入沪深 300 指数样本</div>
+      <div class="detail">作为成分股参与指数加权计算。</div>
+      <div class="meta"><span class="tag">event</span></div>
+    </li>
+  </ul>
+</div>
+</body>
+</html>

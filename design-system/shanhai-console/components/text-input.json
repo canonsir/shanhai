@@ -1,0 +1,37 @@
+{
+  "slug": "text-input",
+  "name": "Text Input",
+  "purpose": "Labeled single-line field for forms, settings, and entity attribute entry across console surfaces.",
+  "variantDimensions": {
+    "state": ["default", "focus", "filled", "error", "disabled"],
+    "adornment": ["none", "leading-icon", "trailing-unit", "prefix"],
+    "size": ["sm", "md"]
+  },
+  "structures": [
+    {
+      "name": "Labeled Field",
+      "anatomy": ["label", "control", "helper-text"],
+      "notes": "Default form field with uppercase mono label and quiet helper line."
+    },
+    {
+      "name": "Adorned Field",
+      "anatomy": ["label", "leading-icon", "control", "trailing-unit"],
+      "notes": "Supports leading icon or trailing unit such as a currency or percent token."
+    },
+    {
+      "name": "Error Field",
+      "anatomy": ["label", "control", "error-text"],
+      "notes": "Border and helper switch to destructive token; message states the constraint."
+    }
+  ],
+  "contentExamples": [
+    "公司名称",
+    "贵州茅台",
+    "股票代码",
+    "请输入有效的 6 位代码"
+  ],
+  "interactionNotes": [
+    "Focus uses the ring token with a soft 3px halo rather than a heavy shadow.",
+    "Keep helper and error text on a single quiet line aligned to the control."
+  ]
+}

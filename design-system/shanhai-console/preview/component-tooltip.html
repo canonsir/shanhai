@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="../colors_and_type.css">
+<title>Tooltip · 山海</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;padding:48px 24px;background:var(--background);color:var(--foreground);font-family:var(--font-sans);font-size:14px;line-height:1.4}
+  .stack{display:flex;flex-direction:column;gap:40px;max-width:680px}
+  .group{display:flex;flex-direction:column;gap:18px}
+  .label{font:600 11px/1 var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted-foreground)}
+  .row{display:flex;align-items:center;gap:40px;flex-wrap:wrap}
+
+  .tip{position:relative;display:inline-flex;align-items:center;gap:6px}
+  .trigger{display:inline-flex;align-items:center;gap:6px;color:var(--foreground);cursor:default;border-bottom:1px dashed var(--muted-foreground)}
+  .ibtn{width:26px;height:26px;border:1px solid var(--border);border-radius:8px;background:var(--background);display:grid;place-items:center;color:var(--muted-foreground);cursor:pointer}
+  .icon{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+  .bubble{position:absolute;left:50%;transform:translateX(-50%);background:#0e1115;color:#eff1f4;border:1px solid color-mix(in srgb,#ffffff 14%,transparent);border-radius:9px;padding:8px 10px;font-size:12px;line-height:1.45;max-width:220px;box-shadow:var(--shadow-lg);z-index:2}
+  .bubble.top{bottom:calc(100% + 9px)}
+  .bubble.bottom{top:calc(100% + 9px)}
+  .bubble::after{content:"";position:absolute;left:50%;transform:translateX(-50%) rotate(45deg);width:8px;height:8px;background:#0e1115;border:1px solid color-mix(in srgb,#ffffff 14%,transparent)}
+  .bubble.top::after{bottom:-5px;border-top:0;border-left:0}
+  .bubble.bottom::after{top:-5px;border-bottom:0;border-right:0}
+  .bubble .ttl{font-weight:600;margin-bottom:2px}
+  .bubble .muted{color:color-mix(in srgb,#eff1f4 70%,transparent)}
+  .kv{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;font:12px var(--font-mono)}
+  .kv dt{color:color-mix(in srgb,#eff1f4 60%,transparent)}
+  .kv dd{margin:0;text-align:right}
+</style>
+</head>
+<body>
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol>
+  <symbol id="link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7 0l2-2a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-2 2a5 5 0 0 0 7 7l1-1"/></symbol>
+</svg>
+
+<div class="stack">
+  <div class="group">
+    <span class="label">Text · 谓词解释（top）</span>
+    <div class="row">
+      <span class="tip">
+        <span class="trigger">分类于行业</span>
+        <span class="bubble top">将该公司归入某一行业分类的事实关系（classified_in_industry）。</span>
+      </span>
+    </div>
+  </div>
+
+  <div class="group">
+    <span class="label">Title + Detail · 指标说明（bottom）</span>
+    <div class="row">
+      <span class="tip">
+        <button class="ibtn" aria-label="说明"><svg class="icon"><use href="#info"/></svg></button>
+        <span class="bubble bottom"><span class="ttl">市盈率 (TTM)</span><span class="muted">滚动 12 个月净利润计算，随财报更新。</span></span>
+      </span>
+    </div>
+  </div>
+
+  <div class="group">
+    <span class="label">Key-Value · 溯源提示（top）</span>
+    <div class="row">
+      <span class="tip">
+        <button class="ibtn" aria-label="溯源"><svg class="icon"><use href="#link"/></svg></button>
+        <span class="bubble top">
+          <dl class="kv">
+            <dt>来源</dt><dd>EastMoney</dd>
+            <dt>抓取</dt><dd>2026-06-29</dd>
+            <dt>版本</dt><dd>v1 · #a3f0</dd>
+          </dl>
+        </span>
+      </span>
+    </div>
+  </div>
+</div>
+</body>
+</html>

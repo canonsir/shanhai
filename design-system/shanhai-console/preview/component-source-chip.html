@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="../colors_and_type.css">
+<title>Source Chip · 山海</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;padding:24px;background:var(--background);color:var(--foreground);font-family:var(--font-sans);font-size:14px;line-height:1.4}
+  .stack{display:flex;flex-direction:column;gap:18px;max-width:560px}
+  .group{display:flex;flex-direction:column;gap:10px}
+  .label{font:600 11px/1 var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted-foreground)}
+  .row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+
+  .chip{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 9px;border:1px solid var(--border);border-radius:7px;background:var(--background);font:500 12px var(--font-mono);color:var(--foreground);white-space:nowrap}
+  .chip .dot{width:6px;height:6px;border-radius:50%;flex:none}
+  .chip .time{color:var(--muted-foreground)}
+  .chip .ver{color:var(--muted-foreground)}
+  .chip.link{cursor:pointer}
+  .chip.link:hover{border-color:color-mix(in srgb,var(--primary) 40%,var(--border));background:var(--muted)}
+  .chip .ext{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;color:var(--muted-foreground)}
+  .chip.stale{opacity:.62}
+  .chip.stale .warn{width:12px;height:12px;stroke:#b45309;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+  /* provider dot colors via tokens */
+  .eastmoney .dot{background:var(--chart-2)}
+  .cninfo .dot{background:var(--primary)}
+  .sina .dot{background:#d97706}
+  .tushare .dot{background:var(--muted-foreground)}
+
+  .factrow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 14px;border:1px solid var(--border);border-radius:11px;background:var(--card)}
+  .factrow .k{font:500 13px var(--font-mono);color:var(--muted-foreground)}
+  .factrow .v{font-weight:600}
+</style>
+</head>
+<body>
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="ext" viewBox="0 0 24 24"><path d="M14 4h6v6"/><path d="M20 4l-9 9"/><path d="M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/></symbol>
+  <symbol id="warn" viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01"/><path d="M10.3 4.3 2.7 18a1.5 1.5 0 0 0 1.3 2.3h16a1.5 1.5 0 0 0 1.3-2.3L13.7 4.3a1.5 1.5 0 0 0-2.6 0Z"/></symbol>
+</svg>
+
+<div class="stack">
+  <div class="group">
+    <span class="label">Provider · 数据源</span>
+    <div class="row">
+      <span class="chip eastmoney"><span class="dot"></span>EastMoney</span>
+      <span class="chip cninfo"><span class="dot"></span>CNInfo</span>
+      <span class="chip sina"><span class="dot"></span>新浪财经</span>
+      <span class="chip tushare"><span class="dot"></span>Tushare</span>
+    </div>
+  </div>
+
+  <div class="group">
+    <span class="label">Provenance · 含抓取时间</span>
+    <div class="row">
+      <span class="chip eastmoney"><span class="dot"></span>EastMoney<span class="time">· 2026-06-29</span></span>
+      <span class="chip cninfo"><span class="dot"></span>CNInfo<span class="time">· 2026-04-29</span></span>
+      <span class="chip tushare stale"><span class="dot"></span>Tushare<span class="time">· 2026-01-12</span><svg class="warn"><use href="#warn"/></svg></span>
+    </div>
+  </div>
+
+  <div class="group">
+    <span class="label">Snapshot Link · 原始快照</span>
+    <div class="row">
+      <span class="chip link eastmoney"><span class="dot"></span>EastMoney<span class="ver">· v1 #a3f0</span><svg class="ext"><use href="#ext"/></svg></span>
+      <span class="chip link cninfo"><span class="dot"></span>CNInfo<span class="ver">· v2 #7c1d</span><svg class="ext"><use href="#ext"/></svg></span>
+    </div>
+  </div>
+
+  <div class="group">
+    <span class="label">In Context · 事实行内</span>
+    <div class="factrow">
+      <span><span class="k">classified_in_industry</span> → <span class="v">白酒</span></span>
+      <span class="chip link eastmoney"><span class="dot"></span>EastMoney<span class="ver">· v1 #a3f0</span><svg class="ext"><use href="#ext"/></svg></span>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -5,6 +5,7 @@ description = "ShanHai Experience Evolution — 候选经验生命周期层（AD
 requires-python = ">=3.11"
 dependencies = [
     "pydantic>=2.6",
+    "shanhai-experience-artifact",
 ]
 
 [build-system]

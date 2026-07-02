@@ -4,12 +4,84 @@
 
 ## [Unreleased]
 
+### Added
+- Milestone 2.5 Phase 2 — Market Knowledge Foundation（让真实 A 股公司知识进入系统：MarketFact v1 + FinancialFact + AnnouncementFact + 公司知识时间线 + Tushare 首个 source adapter）。按用户指令取消 design gate，改「实现优先 + 单一 review 文档」（`docs/design/market-foundation-hardening-phase2-implementation-review-m2.5.md`）。
+  - `models.py`：`MarketFact` 从 M2.1 demo 形态升级为认知单元 **v1**（`subject_ref`/`predicate`/`object_value`/`object_ref` + 三时间戳 `occurred_at`/`published_at`/`captured_at` + `source_ref`/`evidence_refs`/`confidence`/`entity_links`/`attributes`，`schema_version="market_fact.v1"`）；新增独立模型 `FinancialFact`（`financial_fact.v1`：period/metric/unit/yoy/qoq/restated）与 `AnnouncementFact`（`announcement_fact.v1`：announcement_id/type/title/document_url/document_hash/extracted_summary）；新增 read model `CompanyTimelineEvent`（`event_time`+`event_time_basis`+`fact_refs`）；新增值对象 `SubjectRef`/`FactAttribute`/`EntityLink`（tuple-of-FrozenModel 保 frozen-hashable）与枚举 `FactType`/`TimeBasis`/`AnnouncementType`；新增 `TushareFinaIndicatorRecord`/`TushareAnnouncementRecord`；`SyncReport` 增 `market_fact_count`/`financial_fact_count`/`announcement_fact_count`。
+  - 新增 `fact_mapper.py`：`build_company_profile_facts`（profile/industry）/ `build_quote_fact`（quote）/ `map_financial_indicator`（一条 fina_indicator 拆为每指标一条 FinancialFact）/ `map_announcement`（anns_d → AnnouncementFact，启发式 `_announcement_type` 分类 + sha 去重/哈希）+ `TUSHARE_SOURCE_REF`。Schema 由实际 ingestion 数据驱动，不手写事实。
+  - 新增 `timeline.py`：`build_company_timeline` 把三类事实家族投影到一条有序公司知识时间线（**read model，非超级 Fact 表**）；默认 `published_at`+`latest_first`，可切 `occurred_at`/升序；`_pick_time` 按 `preferred→published_at→occurred_at→captured_at` 回退，三时间戳永不塌缩。
+  - `tushare.py`：新增 `fina_indicator` / `anns_d` 方法 + 对应解析；`provider.py`：新增可选 `FinancialDataProvider` / `AnnouncementDataProvider` Protocol（与 `MarketDataProvider` 并列）。
+  - `sync.py`：每公司构 market_facts(profile+quote)+financial_facts+announcement_facts，用 `getattr(provider, ...)` 能力探测，provider 不支持时**优雅降级**（仅 MarketFact + timeline）。`store.py`：三类 fact 各自存储桶 + `upsert_*` + `get_company_intelligence_by_ts_code` 装配 + `get_company_timeline(time_basis/latest_first)`。`api.py`：payload 增 `financial_facts`/`announcement_facts`/`timeline`，新增 `get_company_timeline`。`resolver.py`：新增 `company_id_for(ts_code)`。
+  - `apps/api/shanhai_api/main.py`：新增 Console Alpha **数据模型验证页** `/company/{ts_code}`（非产品 Dashboard），消费 `/companies/{ts_code}` 与 `/companies/{ts_code}/timeline`，分区呈现 基本信息/证券关系（四层身份）/行业/财务事实/公告时间线/新闻时间线/MarketFact Timeline；新增 `/companies/{ts_code}/timeline` JSON 路由。
+  - 测试：新增 `tests/market_data/test_market_knowledge_facts.py`（6 用例：MarketFact v1 from sync / FinancialFact via fina_indicator / AnnouncementFact via anns_d / timeline 统一与排序 / 能力缺失优雅降级 / API payload + timeline 端点）；`test_runtime_mvp.py` 增 console detail 路由测试。market-data 全量 5 文件全绿（v1 升级向后兼容，旧测试断言无需改）。
+  - 边界：不修改 RuntimeKernel / Experience Runtime；不实现 Selector / Memory Evolution / Trading Strategy；不做 AI entity merge；不做 Postgres identity registry migration（R1/R2 仍登记不修，归属 Phase 3）；无交易词 surface（依赖边界测试守护）；仅一个 implementation review 文档。
+- Milestone 2.5 Phase 1 — Entity Hardening（Market Entity Identity 从 ts_code attribute 解耦）。
+  - `services/market-data/shanhai_market_data/identity.py`：新增 `new_internal_id(entity_type)` 分配代理键（surrogate key，不编码任何外部码）；旧 `*_from_ts_code` 降级为仅供迁移留痕（legacy_id），不再用于分配 live identity。
+  - 新增 `registry.py`：`IdentityRegistry`（即 `entity_identity_mapping`）—— `resolve_or_allocate` 外部码→代理键确定性映射（同一外部码复用同一 internal id）、`link` 多源外部标识映射到同一代理键、`record_legacy_migration` 记录 old→new 迁移、正向/反向双向索引支持回滚；纯确定性，无 AI merge / fuzzy matching / embedding。新增 `IdentityMapping` 模型。
+  - `resolver.py` v0.1：改为经 `IdentityRegistry` 做确定性解析（external identifier mapping only），不再用 ts_code 同构生成身份；新增 `security_id_for(ts_code)`。
+  - `models.py`：`Company` 新增 `external_ids`（外部码作为属性而非身份）；新增 `IdentityMapping`。
+  - `store.py`：移除硬编码 `security:cn-a:{ts_code}` 反查，改用 `ts_code → security_id` 索引，适配代理键。
+  - `mapper.py` / `sync.py`：`map_stock_basic` / `map_daily_quote` 接受共享 `resolver`，`AShareCompanySyncService` 注入单一 resolver，保证 company bundle 与 quote 的 `security_id` 一致。
+  - 测试：删除「前缀不同即证明 identity 不同」假阳性，改为验证真实生命周期关系（`listed_entity.company_id == company.company_id`、`security.listed_entity_id == listed_entity.listed_entity_id`、`listing.security_id == security.security_id`）+ 代理键不可由 ts_code 推导 + ts_code 仅为 `Security`/`external_ids` 属性；新增 `tests/market_data/test_identity_registry.py`（确定性复用 / 多源映射 / old→new 迁移与回滚 / 冲突报错）。
+  - 边界：不修改 RuntimeKernel / RuntimeContext / Experience Runtime；不实现 PR-4.2 / MarketFact v1（Phase 2）/ Memory Evolution / Trading；不重构 Postgres cache（Phase 3）。完成后停在 M2.5 Phase 1 Closure Review Gate。
+- Experience Runtime PR-4.1 — Contract Layer（纯契约层，零运行集成）。
+  - 新增 `services/experience-runtime`：`shanhai_experience_runtime/{types,candidate_provider,selector,projection}.py`。
+  - Public interfaces：`ExperienceCandidateProvider` / `ExperienceSelector` / `ExperienceProjection`，均为 Protocol interface；不实现真实 provider、selector algorithm、projection runtime。
+  - Type contracts：`ExperienceQuery` / `ExperienceCandidateView` / `ExperienceSelection` / `ExperienceProjectionResult`，以及 `ArtifactRef` / `Metadata` / `Summary` / `DecisionHint`。Pydantic `frozen=True + extra="forbid"`，禁止 Artifact dump / Memory state / learning weight / feedback score。
+  - 新增 `tests/experience_runtime/` contract tests：candidate provider contract、selector contract、projection contract、dependency boundary。
+  - 接入根 `pyproject.toml` workspace（members + sources）；本地 editable `.pth` 指向 `services/experience-runtime`。
+  - 边界（PR-4.1 范围外，明确禁止）：no RuntimeContext integration / no RuntimeKernel execution path / no AgentRunner / no ArtifactReader / no Memory / no Evaluation / no Evolution / no E2E。
+- Runtime Kernel v0.7 Phase 1 / PR-1 — Runtime Kernel Skeleton（纯结构骨架，建立 ownership boundary，零行为变更）。
+  - 新增 `services/runtime-kernel`（orchestrator，非 executor）：`shanhai_runtime_kernel/{kernel,context,lifecycle,events,types}.py`。
+    - `lifecycle.py`：`RuntimeState` 命名态状态机 `CREATED→ASSEMBLING→READY→RUNNING→COMPLETED→CLOSED`（不可逆）+ `can_transition`/`assert_transition` 迁移校验（非法迁移如 `RUNNING→READY` 抛 `ValueError`）。
+    - `context.py`：`RuntimeContext` 不可变容器（Pydantic `frozen`）= 7 个 `*_context` 子契约（identity/task/experience/policy/environment/constraint/metadata）+ `schema_version="1.0"`；run_id 仅在 `identity_context`（单点承载）；不持执行能力（R7 Context Ownership Drift 治理）。
+    - `events.py`：`RuntimeEvent` identity envelope `{event_id, run_id, event_type, timestamp, payload}` + `RuntimeEventType`；payload 透传既有产物，不新造 schema、不建 EventStore。
+    - `kernel.py`：`RuntimeKernel` 4 个公开方法 `create/assemble/execute/close` 占位（`NotImplementedError`）；纯结构，禁实例化 `AgentRunner`/`RunStore`/`ExperienceCandidateProvider`（G1）。
+    - `types.py`：`RuntimeHandle`（run_id + state 不可变快照）。
+  - Contract Test Layer（`tests/runtime_kernel/`，测不可违反的边界而非实现）：`test_context_contract`（immutability/schema_version/run_id 单点/R7 字段集合冻结）、`test_lifecycle_contract`（合法链 + 非法迁移抛错）、`test_event_contract`（envelope schema）、`test_dependency_boundary`（AST 检查：不依赖 experience-artifact/agent-runtime internals + G1 纯结构）。
+  - 接入根 `pyproject.toml` workspace（members + sources）；依赖方向 `runtime-kernel → agent-runtime public interface`（调用非包含），仅依赖 pydantic。
+  - 边界（PR-1 范围外，明确禁止）：no AgentRunner integration / no RunStore change / no Experience Runtime / no Memory / no Domain Provider / no ArtifactReader；ADR 0018 维持 MVP Contract Established 不 Finalize。
+
+### Changed
+- 路线切换 — 结束 Foundation / Runtime 抽象阶段，进入 **Milestone 3：Market Intelligence Platform Alpha**（仅状态登记，无代码改动）。
+  - checkpoint `de296c0`（M2.5 Phase 2）定为 ShanHai 第一个真正产品形态节点；后续围绕真实数据驱动的平台建设展开，不再深挖 Runtime 契约。
+  - 流程收敛为 `Milestone → Feature → Implementation → Review → Merge`，不再使用 PR-4.x 命名与多文档 review gate 循环。
+  - **PR-4.1 Experience Runtime Contract Layer 状态改为 Frozen**（Reason: Waiting for real market knowledge validation）；契约层保留不删除。
+  - **PR-4.2 Candidate Provider Adapter 不再推进**（被 Milestone 3 取代）；design gate 文档保留作历史参考。
+  - Milestone 3 三阶段登记：M3.1 Company Intelligence Console Alpha（验证知识模型）/ M3.2 Data Pipeline 正式化（Raw Data Layer：External → Raw Snapshot → Normalized Entity → Knowledge Fact，含原 Phase 3 Storage Refactor）/ M3.3 Web Platform（Bun + Next.js + React + Tailwind + Rspack，apps/{api,console,worker}）。
+  - Tushare 定位明确为「第一数据供应商」（source adapter），非数据库本体；未来经 Market Data Hub + Adapter Layer 融合多源。详见 `docs/PROJECT_STATE.md`。
+- Runtime Kernel PR-2 — RuntimeContext v1 Contract Implementation（纯契约实现，零执行集成）。
+  - `RuntimeContext` 定位冻结为 **Execution Initialization Snapshot**，只描述本次 Run 为什么 / 如何被语境化，不承载 Agent state / Memory / Conversation state / Experience storage。
+  - `metadata_context → intent_context`：移除自由形态 `MetadataContext`，新增 `IntentContext`（objective / user_intent / decision_intent），避免 metadata 垃圾抽屉。
+  - 七个 context v1 schema 冻结：`identity_context`（run_id / trace_id / schema_version）、`task_context`（task_type / goal / input）、`intent_context`、`experience_context`、`policy_context`、`constraint_context`、`environment_context`。
+  - deep immutable by schema：所有 context model 使用 `ConfigDict(frozen=True, extra="forbid")`；集合字段用 tuple；`schema_version` 固定为 `Literal["1.0"]`。
+  - `experience_context` 只承载 `SelectedExperienceRef` 引用与选择理由/分数，不承载 Artifact content / Memory / embedding / raw document。
+  - 增补 `tests/runtime_kernel/test_context_v1_contract.py`，并强化 `test_context_contract.py`：unknown field reject、execution/storage 字段 reject、schema evolution v1.0 forbid、deep immutable。
+  - 明确未触碰：`kernel.py` / `events.py` / `lifecycle.py` / `agent-runtime` / RunStore / Experience Runtime / Memory / ArtifactReader / E2E。
+- Runtime Kernel PR-3 — RunStore Identity Migration（identity ownership migration only）。
+  - `RunStore.save_run` contract 扩展为 `save_run(run, run_id: str | None = None) -> str`：external `run_id` 为新 Runtime identity 主路径；`run_id=None` 仅作为 migration window fallback。
+  - `InMemoryRunStore` / `SqliteRunStore` / `PostgresRunStore` 同步支持 external `run_id`，并在 fallback 分支发出 `DeprecationWarning`；不暴露 `generate_run_id()`。
+  - 新增 `tests/test_run_store_identity.py` 与 `tests/runtime_kernel/test_run_identity_contract.py`，覆盖 external run_id 持久化、fallback warning、RunStore 不拥有 identity、`RuntimeContext.run_id = RuntimeEvent.run_id = RunRecord.run_id`。
+  - 强化 `tests/test_local_persistence.py`，覆盖 SQLite external identity 与 fallback warning。
+  - 明确未触碰：RuntimeKernel execution path / `kernel.py` / `events.py` / `lifecycle.py` / RuntimeContext contract / AgentRunner / Experience Runtime / Memory / Artifact Layer / Evaluation / E2E。
+
 ## [0.2.0] — 2026-06-23 · Phase 1：Agent Runtime（Experience Evolution Layer Stage 2-b）
 
 ### Added
 - `services/agent-runtime`：执行模型 think → act → observe（ADR 0006）。
   - `types.py`：`AgentStatus` 生命周期 + `Step` / `RunResult` 结构化运行记录 + `Plan`。
   - `context.py`：`AgentContext` 收口模型/工具访问（`complete()`→ModelRouter，`use_tool()`→ToolRegistry），从结构上保证架构铁律。
+- Milestone 2.2 Market Data Runtime MVP。
+  - 新增 `EntityResolver` v0.1：基于 Tushare `ts_code` 确定性生成 Company / ListedEntity / Security / Listing 四层身份，保留 source external id，防止公司与股票代码塌缩。
+  - 新增 `PostgresMarketKnowledgeStore`：惰性依赖 `psycopg`，通过 `SHANHAI_MARKET_PG_DSN` 连接，写入 `market_company_intelligence` read model；本地测试仍可用 memory store。
+  - 新增 `TushareScheduledIngestion`：支持 `run_once()` 与进程内 daily loop，生产可由 cron/systemd/container scheduler 托管；不依赖 RuntimeKernel / AgentRunner。
+  - `apps/api` 新增 Company Intelligence API：`/companies`、`/companies/search`、`/companies/{ts_code}`、`/market/ingestion/tushare/run`，以及只读 Company Console Alpha `/console/companies`。
+  - `.env.example` 新增 `SHANHAI_TUSHARE_TOKEN`、`SHANHAI_MARKET_STORE`、`SHANHAI_MARKET_PG_DSN` 占位；真实 token 不入库。
+  - 边界：不修改 RuntimeKernel / Experience Runtime / RuntimeContext / AgentRunner / Memory；不做 Trading Strategy。
+- Milestone 2 Data Foundation MVP（Market Reality Foundation 第一阶段）。
+  - 新增 `services/market-data`：`TushareProvider`（标准库 HTTP + 可注入 transport，真实 token 走 `SHANHAI_TUSHARE_TOKEN`）、Market Entity Schema MVP（Company / ListedEntity / Security / Listing / Industry / QuoteSnapshot / MarketFact）、`AShareCompanySyncService`、`InMemoryMarketKnowledgeStore`、`CompanyIntelligenceAPI`。
+  - 默认同步目标覆盖贵州茅台、宁德时代、比亚迪、平安银行、招商银行、中国平安、五粮液、隆基绿能、美的集团、中芯国际 10 家 A 股公司；测试使用 fake provider，不发真实网络请求。
+  - 新增 `tests/market_data/`：Tushare Provider 请求/解析/缺 token、10 家公司同步闭环、Company Intelligence API、Company/ListEntity/Security/Listing 身份不塌缩、依赖边界与无交易 surface。
+  - 边界：不修改 RuntimeKernel / Experience Runtime / RuntimeContext / AgentRunner；不实现 PR-4.2 Adapter；不做交易策略；不做 Memory Evolution。
   - `runner.py`：`AgentRunner` 驱动生命周期与运行记录。
   - `agent.py`：`BaseAgent`（think/act/observe 钩子 + max_steps），保留 `Agent` 别名与 `use_tool`/`run` 向后兼容。
   - `examples.py`：`ToolEchoAgent`（单步）、`MultiStepToolAgent`（多步逐项调度）示例。

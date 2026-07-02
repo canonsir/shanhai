@@ -1,0 +1,37 @@
+{
+  "slug": "metric-card",
+  "name": "Metric Card",
+  "purpose": "Single KPI tile for market figures such as price, market cap, PE, and fact counts.",
+  "variantDimensions": {
+    "trend": ["up", "down", "flat"],
+    "structure": ["value", "value-trend", "value-spark"],
+    "emphasis": ["default", "primary"]
+  },
+  "structures": [
+    {
+      "name": "Basic Metric",
+      "anatomy": ["label", "value", "unit"],
+      "notes": "Tabular-numeral value with a quiet uppercase label."
+    },
+    {
+      "name": "Metric with Trend",
+      "anatomy": ["label", "value", "delta-chip"],
+      "notes": "Trailing delta chip uses chart-2 for gains and destructive for losses."
+    },
+    {
+      "name": "Metric with Sparkline",
+      "anatomy": ["label", "value", "sparkline"],
+      "notes": "Inline sparkline drawn from chart tokens for at-a-glance direction."
+    }
+  ],
+  "contentExamples": [
+    "最新价",
+    "1,685.00",
+    "+1.24%",
+    "总市值"
+  ],
+  "interactionNotes": [
+    "Numbers always use tabular-nums; never color the value itself, only the delta.",
+    "Gain/loss must include sign and arrow so meaning is not color-only."
+  ]
+}

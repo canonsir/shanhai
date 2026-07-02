@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="../colors_and_type.css">
+<title>Empty State · 山海</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;padding:24px;background:var(--background);color:var(--foreground);font-family:var(--font-sans);font-size:14px;line-height:1.4}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .cell{display:flex;flex-direction:column;gap:10px}
+  .label{font:600 11px/1 var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted-foreground)}
+
+  .empty{border:1px solid var(--border);border-radius:14px;background:var(--card);padding:36px 24px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;min-height:240px;justify-content:center}
+  .glyph{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;background:var(--muted);color:var(--muted-foreground);margin-bottom:4px}
+  .glyph.danger{background:color-mix(in srgb,var(--destructive) 12%,transparent);color:var(--destructive)}
+  .glyph .icon{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+  .etitle{font-size:15px;font-weight:600}
+  .edesc{font-size:13px;color:var(--muted-foreground);max-width:240px}
+  .btn{margin-top:8px;display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 16px;border:1px solid transparent;border-radius:999px;font:500 13px var(--font-sans);cursor:pointer}
+  .btn.primary{background:var(--primary);color:var(--primary-foreground)}
+  .btn.outline{background:var(--background);color:var(--foreground);border-color:var(--border)}
+  .btn .icon{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+</style>
+</head>
+<body>
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="box" viewBox="0 0 24 24"><path d="M3 8l9-5 9 5v8l-9 5-9-5V8Z"/><path d="M3 8l9 5 9-5M12 13v8"/></symbol>
+  <symbol id="search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+  <symbol id="cloud-off" viewBox="0 0 24 24"><path d="M7 18a4 4 0 0 1-.5-7.97A6 6 0 0 1 16 8"/><path d="M3 3l18 18"/></symbol>
+  <symbol id="plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="refresh" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 4v4h-4"/></symbol>
+</svg>
+
+<div class="grid">
+  <div class="cell">
+    <span class="label">No Data · 首次使用</span>
+    <div class="empty">
+      <div class="glyph"><svg class="icon"><use href="#box"/></svg></div>
+      <div class="etitle">还没有抓取任何公司</div>
+      <div class="edesc">从一家 A 股公司开始，构建你的市场知识库。</div>
+      <button class="btn primary"><svg class="icon"><use href="#plus"/></svg>抓取一家公司</button>
+    </div>
+  </div>
+
+  <div class="cell">
+    <span class="label">No Results · 无匹配</span>
+    <div class="empty">
+      <div class="glyph"><svg class="icon"><use href="#search"/></svg></div>
+      <div class="etitle">未找到匹配的事实</div>
+      <div class="edesc">试着调整筛选条件或更换关键词。</div>
+      <button class="btn outline">清除筛选</button>
+    </div>
+  </div>
+
+  <div class="cell">
+    <span class="label">Error · 加载失败</span>
+    <div class="empty">
+      <div class="glyph danger"><svg class="icon"><use href="#cloud-off"/></svg></div>
+      <div class="etitle">数据源暂时不可用</div>
+      <div class="edesc">EastMoney 接口响应超时，请稍后重试。</div>
+      <button class="btn outline"><svg class="icon"><use href="#refresh"/></svg>重试</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,37 @@
+{
+  "slug": "alert",
+  "name": "Alert",
+  "purpose": "Inline contextual banner for status, guidance, and warnings within a page region.",
+  "variantDimensions": {
+    "tone": ["info", "success", "warning", "destructive"],
+    "structure": ["message", "title-message", "with-action"],
+    "emphasis": ["soft", "outline"]
+  },
+  "structures": [
+    {
+      "name": "Soft Alert",
+      "anatomy": ["leading-icon", "title", "message"],
+      "notes": "Tinted surface and matching icon; lives inline within content flow."
+    },
+    {
+      "name": "Outline Alert",
+      "anatomy": ["leading-icon", "message"],
+      "notes": "Border-led variant for quieter, denser surfaces."
+    },
+    {
+      "name": "Alert with Action",
+      "anatomy": ["leading-icon", "title", "message", "inline-action"],
+      "notes": "Adds a trailing or inline action such as view details or dismiss."
+    }
+  ],
+  "contentExamples": [
+    "部分数据来自缓存",
+    "Tushare 积分不足，已降级为免费数据源",
+    "已切换至暗色主题",
+    "查看详情"
+  ],
+  "interactionNotes": [
+    "Distinct from Toast: Alert is persistent and inline, not transient.",
+    "Use tinted color-mix surfaces so banners stay readable without shouting."
+  ]
+}

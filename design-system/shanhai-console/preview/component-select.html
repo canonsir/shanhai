@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="../colors_and_type.css">
+<title>Select · 山海</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;padding:24px;background:var(--background);color:var(--foreground);font-family:var(--font-sans);font-size:14px;line-height:1.4}
+  .stack{display:flex;gap:28px;flex-wrap:wrap;align-items:flex-start}
+  .group{display:flex;flex-direction:column;gap:9px;width:260px}
+  .label{font:600 11px/1 var(--font-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted-foreground)}
+  .trigger{display:flex;align-items:center;gap:8px;height:40px;padding:0 12px;border:1px solid var(--input);border-radius:10px;background:var(--background);color:var(--foreground);cursor:pointer;font:inherit;width:100%;text-align:left}
+  .trigger .val{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .trigger.placeholder .val{color:var(--muted-foreground)}
+  .trigger.open{border-color:var(--ring);box-shadow:0 0 0 3px color-mix(in srgb,var(--ring) 18%,transparent)}
+  .trigger:disabled{opacity:.5;cursor:not-allowed;background:var(--muted)}
+  .chev{width:16px;height:16px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;color:var(--muted-foreground);transition:transform .16s}
+  .trigger.open .chev{transform:rotate(180deg)}
+
+  .menu{margin-top:6px;border:1px solid var(--border);border-radius:12px;background:var(--popover);color:var(--popover-foreground);padding:5px;box-shadow:var(--shadow-lg)}
+  .glabel{font:600 10px/1 var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted-foreground);padding:8px 9px 4px}
+  .opt{display:flex;align-items:center;gap:8px;height:34px;padding:0 9px;border-radius:8px;cursor:pointer;font:14px var(--font-sans)}
+  .opt:hover{background:color-mix(in srgb,var(--accent) 28%,transparent)}
+  .opt.selected{background:var(--accent);color:var(--accent-foreground);font-weight:500}
+  .opt .ck{width:15px;height:15px;flex:none;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;opacity:0}
+  .opt.selected .ck{opacity:1}
+  .opt .txt{flex:1}
+</style>
+</head>
+<body>
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="check" viewBox="0 0 24 24"><path d="M5 12l5 5L20 6"/></symbol>
+</svg>
+
+<div class="stack">
+  <div class="group">
+    <span class="label">数据源</span>
+    <button class="trigger"><span class="val">全部数据源</span><svg class="chev"><use href="#chev"/></svg></button>
+  </div>
+
+  <div class="group">
+    <span class="label">数据源（展开）</span>
+    <button class="trigger open"><span class="val">EastMoney</span><svg class="chev"><use href="#chev"/></svg></button>
+    <div class="menu" role="listbox">
+      <div class="glabel">免费公开源</div>
+      <div class="opt selected" role="option"><svg class="ck"><use href="#check"/></svg><span class="txt">EastMoney</span></div>
+      <div class="opt" role="option"><svg class="ck"><use href="#check"/></svg><span class="txt">CNInfo 巨潮</span></div>
+      <div class="opt" role="option"><svg class="ck"><use href="#check"/></svg><span class="txt">新浪财经</span></div>
+      <div class="glabel">商业适配器</div>
+      <div class="opt" role="option"><svg class="ck"><use href="#check"/></svg><span class="txt">Tushare</span></div>
+    </div>
+  </div>
+
+  <div class="group">
+    <span class="label">区间（占位）</span>
+    <button class="trigger placeholder"><span class="val">请选择时间区间</span><svg class="chev"><use href="#chev"/></svg></button>
+  </div>
+
+  <div class="group">
+    <span class="label">禁用</span>
+    <button class="trigger" disabled><span class="val">不可更改</span><svg class="chev"><use href="#chev"/></svg></button>
+  </div>
+</div>
+</body>
+</html>

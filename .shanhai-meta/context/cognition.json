@@ -1,0 +1,87 @@
+{
+  "_metadata": {
+    "cognition_id": "sha256:88b592b041ed7653d81a2dbecba8c4102bf370d988010219b580f29e78b48e8e",
+    "generated_at": "2026-06-25T05:18:01+00:00",
+    "generated_by": "tools/context/builder.py",
+    "inputs": [
+      "project.yaml",
+      "decisions/registry.jsonl"
+    ]
+  },
+  "constraints": [
+    {
+      "type": "frozen",
+      "value": "Agent Runtime（services/agent-runtime）"
+    },
+    {
+      "type": "frozen",
+      "value": "Agent Runtime Memory（services/memory，ADR 0012）"
+    },
+    {
+      "type": "frozen",
+      "value": "ExperienceEvent schema / ExperienceStore.append 契约（ADR 0014）"
+    },
+    {
+      "type": "frozen",
+      "value": "Experience Candidate 生命周期（ADR 0017）"
+    },
+    {
+      "type": "frozen",
+      "value": "ContextEvent schema 语义（Context Foundation，ADR 0000，变更需 ADR）"
+    },
+    {
+      "type": "frozen",
+      "value": "DecisionRecord schema 语义（Context Foundation，ADR 0000，变更需 ADR）"
+    },
+    {
+      "type": "frozen",
+      "value": "CognitionSnapshot schema 语义（Context Foundation，ADR 0000，变更需 ADR）"
+    },
+    {
+      "type": "frozen",
+      "value": "v0.2.0 baseline"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-0001",
+      "source": "registry.jsonl",
+      "title": "ShanHai 需要独立的 Meta Context Layer",
+      "type": "architecture"
+    },
+    {
+      "id": "DEC-0002",
+      "source": "registry.jsonl",
+      "title": "Runtime Memory 与 Meta Context 分离",
+      "type": "architecture"
+    },
+    {
+      "id": "DEC-0003",
+      "source": "registry.jsonl",
+      "title": "先完成上下文统一，再进入平台能力建设（Context before Capability）",
+      "type": "strategy"
+    },
+    {
+      "id": "DEC-0005",
+      "source": "registry.jsonl",
+      "title": "Context Identity Principle（稳定身份归标识符，可变属性归元数据）",
+      "type": "architecture"
+    }
+  ],
+  "future_directions": [
+    {
+      "source": "DEC-0004",
+      "title": "未来方向：资本市场短线认知能力（future_direction，不开发）"
+    }
+  ],
+  "identity": {
+    "description": "AI Native 的中国资本市场认知与决策系统",
+    "mission": "构建能持续学习、理解和分析中国资本市场的 AI Native 认知与决策系统（数据→知识→认知→分析→策略→执行）",
+    "project": "ShanHai"
+  },
+  "phase": {
+    "name": "ADR 0000 Project Context Layer（建设中）",
+    "status": "building"
+  },
+  "schema_version": "1.0"
+}

@@ -1,0 +1,29 @@
+{
+  "$schema": "shanhai-design-tokens/spacing",
+  "$comment": "ShanHai Design System 间距 / 圆角 / 阴影 token（平台无关）。事实来源：design-system/shanhai-console/colors_and_type.css 与 css.json。--spacing 基础单位 0.24rem（3.84px），--radius 1.2rem（19.2px）。阴影刻意全部透明（opacity 0）：ShanHai 采用 border-led 分隔而非阴影抬升。",
+  "spacing": {
+    "$comment": "基础单位 base，其余梯度按倍数派生，保持 dashboard 紧凑密度。",
+    "base": "0.24rem",
+    "1": "0.24rem",
+    "2": "0.48rem",
+    "3": "0.72rem",
+    "4": "0.96rem",
+    "6": "1.44rem",
+    "8": "1.92rem"
+  },
+  "radius": {
+    "$comment": "单一共享圆角 token，派生 sm/md/lg 用于控件层级。",
+    "base": "1.2rem",
+    "sm": "calc(1.2rem - 4px)",
+    "md": "calc(1.2rem - 2px)",
+    "lg": "1.2rem"
+  },
+  "shadow": {
+    "$comment": "ShanHai 用边框分隔而非阴影；以下阴影 token 全部透明，保留键以便未来需要时统一开启。",
+    "xs": "0 1px 0px 0px rgb(14 17 21 / 0)",
+    "sm": "0 1px 0px 0px rgb(14 17 21 / 0), 0 1px 2px -1px rgb(14 17 21 / 0)",
+    "md": "0 1px 0px 0px rgb(14 17 21 / 0), 0 2px 4px -1px rgb(14 17 21 / 0)",
+    "lg": "0 1px 0px 0px rgb(14 17 21 / 0), 0 4px 6px -1px rgb(14 17 21 / 0)",
+    "xl": "0 1px 0px 0px rgb(14 17 21 / 0), 0 8px 10px -1px rgb(14 17 21 / 0)"
+  }
+}

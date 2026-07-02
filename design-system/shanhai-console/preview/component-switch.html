@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="../colors_and_type.css">
+<title>Switch · 山海</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;padding:24px;background:var(--background);color:var(--foreground);font-family:var(--font-sans);font-size:14px;line-height:1.4}
+  .stack{display:flex;flex-direction:column;gap:18px;max-width:420px}
+  .group{display:flex;flex-direction:column;gap:12px}
+  .label{font:600 11px/1 var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted-foreground)}
+  .row{display:flex;align-items:center;gap:14px}
+
+  .sw{position:relative;width:40px;height:22px;border-radius:999px;background:color-mix(in srgb,var(--muted-foreground) 28%,transparent);border:0;cursor:pointer;flex:none;transition:background .16s;padding:0}
+  .sw::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .16s}
+  .sw.on{background:var(--primary)}
+  .sw.on::after{transform:translateX(18px)}
+  .sw.sm{width:32px;height:18px}
+  .sw.sm::after{width:14px;height:14px}
+  .sw.sm.on::after{transform:translateX(14px)}
+  .sw:disabled{opacity:.45;cursor:not-allowed}
+
+  .lrow{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:10px 0;border-bottom:1px solid var(--border)}
+  .lrow:last-child{border-bottom:0}
+  .lwrap{display:flex;flex-direction:column;gap:2px}
+  .lwrap .t{font-weight:500}
+  .lwrap .d{font-size:12px;color:var(--muted-foreground)}
+</style>
+</head>
+<body>
+<div class="stack">
+  <div class="group">
+    <span class="label">States · 基础状态</span>
+    <div class="row">
+      <button class="sw" aria-label="关"></button>
+      <button class="sw on" aria-label="开"></button>
+      <button class="sw sm" aria-label="小-关"></button>
+      <button class="sw sm on" aria-label="小-开"></button>
+      <button class="sw" disabled aria-label="禁用-关"></button>
+      <button class="sw on" disabled aria-label="禁用-开"></button>
+    </div>
+  </div>
+
+  <div class="group">
+    <span class="label">Setting Rows · 设置项</span>
+    <div>
+      <div class="lrow">
+        <div class="lwrap"><span class="t">实时刷新行情</span><span class="d">每 15 秒拉取一次最新报价。</span></div>
+        <button class="sw on" aria-label="实时刷新行情"></button>
+      </div>
+      <div class="lrow">
+        <div class="lwrap"><span class="t">显示数据溯源</span><span class="d">在事实旁展示 SourceRef 与抓取时间。</span></div>
+        <button class="sw on" aria-label="显示数据溯源"></button>
+      </div>
+      <div class="lrow">
+        <div class="lwrap"><span class="t">仅看免费数据源</span><span class="d">隐藏 Tushare 等商业适配器结果。</span></div>
+        <button class="sw" aria-label="仅看免费数据源"></button>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

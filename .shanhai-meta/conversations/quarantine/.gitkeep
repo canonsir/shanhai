@@ -1,0 +1,6 @@
+# Conversation Ingestion — quarantine（隔离区，Commit 5D / ADR 0000）
+#
+# 用途：保存无法被 conversation_ingest 解析的 inbox 输入（schema 变化 / 空文件 /
+#       不完整 dump / 无法提取 conversation）。原则：失败不退出、不丢弃，保留问题输入便于调试。
+#
+# 每个隔离文件旁附 <name>.reason.txt 记录失败原因。

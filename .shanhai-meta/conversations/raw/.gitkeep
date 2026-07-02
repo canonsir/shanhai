@@ -1,0 +1,12 @@
+# Layer 1：原始对话归档（Raw Conversation Archive）
+#
+# 事实源。一个 conversation_id 对应一份「最新全量快照」（update-in-place，非按日期归档）。
+# 文件命名约定：<source>-<conversation_id_prefix>-<slug>.json|md
+# 例：chatgpt-6a266982-山海架构.json
+#
+# 文件名只表达「稳定身份」（source + 会话 id 前缀 + 人读 slug）；
+# 时间信息（first_seen_at / last_synced_at / message_count / update_time）
+# 一律归 ../index.jsonl（catalog），不进文件名/路径（文件名不是数据库）。
+#
+# Commit 3A (Raw Archive) 已将 memory/raw.json 原封不动迁入此处；
+# Commit 5D 起由 conversation_ingest 增量纳管，命名由旧 YYYYMMDD- 前缀迁为身份式。

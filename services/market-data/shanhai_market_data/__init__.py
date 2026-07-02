@@ -10,6 +10,7 @@ from shanhai_market_data.acquisition import (
     PublicDataAcquisitionService,
 )
 from shanhai_market_data.api import CompanyIntelligenceAPI
+from shanhai_market_data.composition_root import build_provider_registry
 from shanhai_market_data.domain.repository import MarketKnowledgeRepository
 from shanhai_market_data.models import (
     AnnouncementFact,
@@ -49,12 +50,22 @@ from shanhai_market_data.models import (
     TushareFinaIndicatorRecord,
     TushareStockBasicRecord,
 )
+from shanhai_market_data.observation_provider import (
+    DataQuery,
+    ObservationDraft,
+    ObservationProvider,
+)
 from shanhai_market_data.postgres_store import PostgresMarketKnowledgeStore
 from shanhai_market_data.provider import (
     AnnouncementDataProvider,
     FinancialDataProvider,
     MarketDataProvider,
     PublicMarketDataProvider,
+)
+from shanhai_market_data.provider_registry import (
+    ProviderDescriptor,
+    ProviderRegistry,
+    ProviderTier,
 )
 from shanhai_market_data.providers import CninfoAnnouncementProvider, EastMoneyProvider
 from shanhai_market_data.registry import IdentityRegistry
@@ -83,6 +94,7 @@ __all__ = [
     "CompanyProfileRecord",
     "CompanyTimelineEvent",
     "DEFAULT_A_SHARE_TARGETS",
+    "DataQuery",
     "EastMoneyProvider",
     "EntityLink",
     "EntityResolver",
@@ -104,7 +116,12 @@ __all__ = [
     "MarketFact",
     "MarketKnowledgeRepository",
     "MarketSource",
+    "ObservationDraft",
+    "ObservationProvider",
     "PostgresMarketKnowledgeStore",
+    "ProviderDescriptor",
+    "ProviderRegistry",
+    "ProviderTier",
     "PublicDataAcquisitionService",
     "PublicMarketDataProvider",
     "QuoteRecord",
@@ -126,4 +143,5 @@ __all__ = [
     "TushareScheduledIngestion",
     "TushareStockBasicRecord",
     "build_company_timeline",
+    "build_provider_registry",
 ]

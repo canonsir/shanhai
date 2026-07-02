@@ -7,6 +7,7 @@ PYTHONPATH=services/market-data:. .venv/bin/python -m tests.market_data.test_dep
 from __future__ import annotations
 
 import ast
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -56,7 +57,15 @@ def test_market_data_does_not_define_trading_surface() -> None:
     violations = []
     for path in MARKET_DATA.rglob("*.py"):
         text = path.read_text(encoding="utf-8").lower()
-        bad = sorted(term for term in forbidden_terms if term in text)
+        # Match a forbidden term only as a standalone identifier token: `_` and
+        # other non-alphanumerics count as delimiters, so real trading names like
+        # get_position / place_order trip, while alphabetic words that merely
+        # contain the substring (e.g. com·position·root) do not.
+        bad = sorted(
+            term
+            for term in forbidden_terms
+            if re.search(rf"(?<![a-z0-9]){re.escape(term)}(?![a-z0-9])", text)
+        )
         if bad:
             violations.append((path.relative_to(ROOT), bad))
 
